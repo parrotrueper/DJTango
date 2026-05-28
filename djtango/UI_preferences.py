@@ -6,25 +6,18 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_preferences(object):
     def setupUi(self, preferences):
         preferences.setObjectName("preferences")
         preferences.setWindowModality(QtCore.Qt.ApplicationModal)
         preferences.resize(340, 497)
-        preferences.setStyleSheet("QDialog{\n"
-"    background-color: rgb(42,42,42)\n"
-"}")
         self.verticalLayout = QtWidgets.QVBoxLayout(preferences)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.labelPropTitle = QtWidgets.QLabel(preferences)
-        self.labelPropTitle.setStyleSheet("QLabel{\n"
-"    color:white;\n"
-"    font-size: 14px;\n"
-"}")
         self.labelPropTitle.setObjectName("labelPropTitle")
         self.horizontalLayout.addWidget(self.labelPropTitle)
         self.lineEditSongDir = QtWidgets.QLineEdit(preferences)
@@ -33,11 +26,7 @@ class Ui_preferences(object):
         self.lineEditSongDir.setObjectName("lineEditSongDir")
         self.horizontalLayout.addWidget(self.lineEditSongDir)
         self.pushButtonSelectPath = QtWidgets.QPushButton(preferences)
-        self.pushButtonSelectPath.setStyleSheet("QPushButton {\n"
-"    background-color: #2a2a2a;\n"
-"    color: white;\n"
-"}")
-        self.pushButtonSelectPath.setText("")
+        self.pushButtonSelectPath.setText("Browse...")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/img/search-icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButtonSelectPath.setIcon(icon)
@@ -48,10 +37,6 @@ class Ui_preferences(object):
         self.formLayout_3.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_3.setObjectName("formLayout_3")
         self.labelPropFadoutTime = QtWidgets.QLabel(preferences)
-        self.labelPropFadoutTime.setStyleSheet("QLabel{\n"
-"    color:white;\n"
-"    font-size: 14px;\n"
-"}")
         self.labelPropFadoutTime.setObjectName("labelPropFadoutTime")
         self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelPropFadoutTime)
         self.spinBoxFadeOut = QtWidgets.QSpinBox(preferences)
@@ -62,10 +47,6 @@ class Ui_preferences(object):
         self.formLayout_3.setItem(3, QtWidgets.QFormLayout.LabelRole, spacerItem)
         self.labelPropCortinaDuration = QtWidgets.QLabel(preferences)
         self.labelPropCortinaDuration.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.labelPropCortinaDuration.setStyleSheet("QLabel{\n"
-"    color:white;\n"
-"    font-size: 14px;\n"
-"}")
         self.labelPropCortinaDuration.setObjectName("labelPropCortinaDuration")
         self.formLayout_3.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.labelPropCortinaDuration)
         self.spinBoxCortinaDuration = QtWidgets.QSpinBox(preferences)
@@ -76,41 +57,10 @@ class Ui_preferences(object):
         self.verticalLayout.addLayout(self.formLayout_3)
         self.checkBoxWriteTags = QtWidgets.QCheckBox(preferences)
         self.checkBoxWriteTags.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.checkBoxWriteTags.setStyleSheet("QCheckBox{\n"
-"    border: none;\n"
-"   color: white;\n"
-"    font-size: 14px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"    background-color: rgb(42,42,42);       \n"
-"    border: 1px solid white;\n"
-"    image: url(../gui/img/checkbox_checked.png);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    background-color: rgb(160,52,77);      \n"
-"      border: 1px solid white;  \n"
-"}")
         self.checkBoxWriteTags.setObjectName("checkBoxWriteTags")
         self.verticalLayout.addWidget(self.checkBoxWriteTags)
         self.checkBoxNormalize = QtWidgets.QCheckBox(preferences)
         self.checkBoxNormalize.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.checkBoxNormalize.setStyleSheet("QCheckBox{\n"
-"    border: none;\n"
-"   color: white;\n"
-"    font-size: 14px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"    background-color: rgb(42,42,42);       \n"
-"    border: 1px solid white;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    background-color: rgb(160,52,77);      \n"
-"      border: 1px solid white;  \n"
-"}")
         self.checkBoxNormalize.setObjectName("checkBoxNormalize")
         self.verticalLayout.addWidget(self.checkBoxNormalize)
         self.line = QtWidgets.QFrame(preferences)
@@ -124,7 +74,7 @@ class Ui_preferences(object):
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.label_3 = QtWidgets.QLabel(preferences)
         self.label_3.setStyleSheet("QLabel{\n"
-"    color:white;\n"
+"    color:black;\n"
 "    font-size: 14px;\n"
 "}")
         self.label_3.setObjectName("label_3")
@@ -162,7 +112,7 @@ class Ui_preferences(object):
 "    background-color: #2a2a2a;\n"
 "    color: white;\n"
 " }")
-        self.addTypeButton.setText("")
+        self.addTypeButton.setText("Add type")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/img/plus-button.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addTypeButton.setIcon(icon1)
@@ -175,33 +125,12 @@ class Ui_preferences(object):
 "    background-color: #2a2a2a;\n"
 "    color: white;\n"
 " }")
-        self.removeTypeButton.setText("")
+        self.removeTypeButton.setText("Remove type")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/img/minus-button.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.removeTypeButton.setIcon(icon2)
         self.removeTypeButton.setObjectName("removeTypeButton")
         self.horizontalLayout_5.addWidget(self.removeTypeButton)
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.label_4 = QtWidgets.QLabel(preferences)
-        self.label_4.setStyleSheet("QLabel{\n"
-"    color:white;\n"
-"    font-size: 14px;\n"
-"}")
-        self.label_4.setObjectName("label_4")
-        self.verticalLayout_5.addWidget(self.label_4)
-        self.selectColorButton = QtWidgets.QPushButton(preferences)
-        self.selectColorButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.selectColorButton.setStyleSheet("QPushButton{\n"
-"    background-color: #2a2a2a;\n"
-"    color: white;\n"
-" }")
-        self.selectColorButton.setText("")
-        self.selectColorButton.setObjectName("selectColorButton")
-        self.verticalLayout_5.addWidget(self.selectColorButton)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_5.addItem(spacerItem1)
-        self.horizontalLayout_5.addLayout(self.verticalLayout_5)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem2)
         self.verticalLayout.addLayout(self.horizontalLayout_5)
@@ -225,10 +154,13 @@ class Ui_preferences(object):
 
     def retranslateUi(self, preferences):
         _translate = QtCore.QCoreApplication.translate
-        preferences.setWindowTitle(_translate("preferences", "Dialog"))
-        self.labelPropTitle.setText(_translate("preferences", "Song dir"))
-        self.lineEditSongDir.setToolTip(_translate("preferences", "<html><head/><body><p>This is the place where your song are stored on your computer. Click to edit the path.</p></body></html>"))
-        self.lineEditSongDir.setWhatsThis(_translate("preferences", "This is the place where your song are stored on your computer. You can add more than one dir, separate by a coma."))
+        preferences.setWindowTitle(_translate("preferences", "Preferences"))
+        self.labelPropTitle.setText(_translate("preferences", "Library"))
+        self.lineEditSongDir.setToolTip(_translate("preferences", "<html><head/><body><p>This is the folder where your music library is stored on your computer. Click Browse to choose a new path.</p></body></html>"))
+        self.lineEditSongDir.setWhatsThis(_translate("preferences", "This is the folder where your music library is stored on your computer. You can add more than one directory in future versions."))
+        self.pushButtonSelectPath.setToolTip(_translate("preferences", "Browse for the music library folder."))
+        self.addTypeButton.setToolTip(_translate("preferences", "Add a new tango type."))
+        self.removeTypeButton.setToolTip(_translate("preferences", "Remove the selected tango type."))
         self.labelPropFadoutTime.setText(_translate("preferences", "FadOut time (in sec)"))
         self.spinBoxFadeOut.setToolTip(_translate("preferences", "The time of the Fadout duration."))
         self.labelPropCortinaDuration.setText(_translate("preferences", "Cortina duration (in sec)"))
@@ -236,9 +168,8 @@ class Ui_preferences(object):
         self.checkBoxWriteTags.setText(_translate("preferences", "Always write Tags when updating a songs"))
         self.checkBoxNormalize.setToolTip(_translate("preferences", "<html><head/><body><p>If you check this, eachtime you will make a change on one of your file, the file name and path will be update to respcet the following rules : </p><p>YYYY<span style=\" font-weight:600;\">-</span>Name of song<span style=\" font-weight:600;\">-</span>Artist<span style=\" font-weight:600;\">-</span>Album<span style=\" font-weight:600;\">-</span>Type.ext</p><p><span style=\" color:#ff0004;\">Be aware that this will completly change the organisation of your directory !</span></p></body></html>"))
         self.checkBoxNormalize.setText(_translate("preferences", "Normalize file name and dir"))
-        self.label_3.setText(_translate("preferences", "Tango type"))
-        self.addTypeButton.setToolTip(_translate("preferences", "Add a Tango type"))
-        self.removeTypeButton.setToolTip(_translate("preferences", "Remove a Tango type"))
-        self.label_4.setText(_translate("preferences", "Tango Color"))
+        self.label_3.setText(_translate("preferences", "Track"))
+        self.addTypeButton.setToolTip(_translate("preferences", "Add a Track type"))
+        self.removeTypeButton.setToolTip(_translate("preferences", "Remove the selected Track type"))
 
 import djtango_rc

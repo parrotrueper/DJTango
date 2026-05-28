@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_DialogMilongaName(object):
     def setupUi(self, DialogMilongaName):
@@ -15,16 +15,9 @@ class Ui_DialogMilongaName(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("img/logo-djtango.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         DialogMilongaName.setWindowIcon(icon)
-        DialogMilongaName.setStyleSheet("QDialog{\n"
-"    background-color: rgb(42,42,42)\n"
-"}")
         self.gridLayout = QtWidgets.QGridLayout(DialogMilongaName)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtWidgets.QDialogButtonBox(DialogMilongaName)
-        self.buttonBox.setStyleSheet("QPushButton {\n"
-"    background-color: #2a2a2a;\n"
-"    color: white;\n"
-"}")
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")

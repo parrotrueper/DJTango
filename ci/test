@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Exit on error
+set -euo pipefail
+
+#-------------------------------------------
+# Run the test harness. Invoke as "ci/test".
+#-------------------------------------------
+
+# shellcheck source=/dev/null
+. ci/functions.sh
+
+check_top_dir
+
+IMAGE_NAME="dj-tango-ci-sut"
+NO_CACHE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -rebuild)
+      NO_CACHE="--no-cache"
+      shift
+      ;;
+    *)
+      err "Unknown argument: $1"
+      exit 1
+      ;;
+  esac
+done
+
+if [[ $(is_ci) = "yes" ]]; then
+  info "Running tests in pipeline CI environment"
+else
+  info "Running tests on local machine, in docker container"
+fi
+
+info "Building Docker image $IMAGE_NAME"
+run docker build --pull $NO_CACHE -t "$IMAGE_NAME" -f ci/Dockerfile .
+
+info "Cleaning up any existing test containers"
+run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans || true
+
+info "Running the test suite inside Docker"
+run docker compose -f ./ci/docker-compose.test.yml run --rm sut
+
+info "Cleaning up test containers"
+run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans
+
+

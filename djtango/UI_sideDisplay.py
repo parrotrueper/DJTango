@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_sideDisplay(object):
     def setupUi(self, sideDisplay):
@@ -258,9 +258,9 @@ class Ui_sideDisplay(object):
     def retranslateUi(self, sideDisplay):
         _translate = QtCore.QCoreApplication.translate
         sideDisplay.setWindowTitle(_translate("sideDisplay", "sideDisplay"))
-        self.labelType.setText(_translate("sideDisplay", "Tango Type"))
-        self.labelArtist.setText(_translate("sideDisplay", "Orchesta"))
-        self.labelTitle.setText(_translate("sideDisplay", "Title (year - Author)"))
-        self.labelSinger.setText(_translate("sideDisplay", "Singer:"))
-        self.labelNextTanda.setText(_translate("sideDisplay", "NEXT TANDA (in X song)   |   VALS"))
+        self.labelType.setText(_translate("sideDisplay", "NO TRACK"))
+        self.labelArtist.setText(_translate("sideDisplay", ""))
+        self.labelTitle.setText(_translate("sideDisplay", "No track selected"))
+        self.labelSinger.setText(_translate("sideDisplay", ""))
+        self.labelNextTanda.setText(_translate("sideDisplay", ""))
 

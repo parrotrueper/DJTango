@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os, mimetypes, re
 from djtango import utils
 from djtango.tangosong import TangoSong
 from shutil import move
+
+logger = logging.getLogger(__name__)
 
 #from PyQt4.phonon import Phonon
 #import glob 
@@ -31,9 +34,10 @@ class dirSong:
 					count+=1
 		total = count
 		count = 0
-		self.progress.setMaximum(total)
-		self.progress.setMinimum(0)
-		self.progress.forceShow()
+		if self.progress is not None:
+			self.progress.setMaximum(total)
+			self.progress.setMinimum(0)
+			self.progress.forceShow()
 		abort = False;
 		#self.progress.setWindowModality(Qt.WindowModal);
 		for root, dirs, files in os.walk(self.songpath):
@@ -41,14 +45,16 @@ class dirSong:
 				name, ext = os.path.splitext(i)
 				if ext.lower() in utils.acceptedFileExt:
 					count+=1
-					self.progress.setValue(count)
+					if self.progress is not None:
+						self.progress.setValue(count)
 					self.listFiles[os.path.join(root, i)] = count
 					tmpTango = TangoSong(os.path.join(root, i), count, True)
 					head, tail = os.path.split(tmpTango.path)
-					self.progress.setLabelText("Importing Tangos, please be patient...\n"+str(count)+"/"+str(total)+"\n"+tail)#+str(count)+" / "+str(len(files)+"\n"+tail)
+					if self.progress is not None:
+						self.progress.setLabelText("Importing Tangos, please be patient...\n"+str(count)+"/"+str(total)+"\n"+tail)
 					self.tangos[count] = tmpTango
 					self.djData.insertTango(tmpTango)
-					if self.progress.wasCanceled():
+					if self.progress is not None and self.progress.wasCanceled():
 						abort = True
 						break;
 				if abort:
@@ -56,25 +62,19 @@ class dirSong:
 			if abort:
 				break;
 		if abort:
-			print("I have to delete the database and the file")
+			logger.debug("Import aborted by user; database remains unchanged")
 	
 	def getListFromDir(self):
 		#print ("in getListFromDir : "+self.songpath)
-		count = 0
+		accepted = 0
 		ret = {}
 		mime = mimetypes.MimeTypes()
 		for root, dirs, files in os.walk(self.songpath):
 			for file in files:
-				#print (os.path.join(root, file))
-				#print (mime.guess_type(os.path.join(root, file)))
-				count+=1
 				name, ext = os.path.splitext(file)
-				#if ext in mimetypes.types_map.keys():
-					#print(mimetypes.types_map[ext.lower()])
 				if ext.lower() in utils.acceptedFileExt:
-					ret[os.path.join(root, file)] = count
-				else:
-					print("this file hasn't the right extension: "+os.path.join(root, file))
+					accepted += 1
+					ret[os.path.join(root, file)] = accepted
 		return ret
 
 	def loadTangos(self, tangos):
@@ -83,7 +83,7 @@ class dirSong:
 		for t in tangos:
 			self.tangos[t.ID] = t
 			if t.path in self.listFiles:
-				print("hu ho, this path appear more than once: "+t.path+" Please check your file on remove it eventually")
+				logger.debug("Duplicate tango path detected: %s", t.path)
 			self.listFiles[t.path] = t.ID
 
 	def addTango(self, t):
@@ -161,7 +161,7 @@ class dirSong:
 			os.makedirs(rep)
 
 		if tango.title == "Unknown" and tango.artist == "Unknown":
-			print ("It's unknown, I will not do anything")
+			logger.debug("Normalization skipped because tango metadata is unknown for file: %s", tango.path)
 		else:
 			count = 2 
 			while os.path.isfile(os.path.join(rep, name)):
@@ -172,16 +172,16 @@ class dirSong:
 			if tango.path in self.listFiles: 
 				del(self.listFiles[tango.path])
 			else: 
-				print("Warning: path did not exist in listFiles, I will not update it. Path: "+tango.path)
+				logger.debug("Normalization path not found in listFiles: %s", tango.path)
 			
 			#print("Coying this file in the new directory")
-			move(tango.path, os.path.join(rep, name))
-		
-			print(Tid)
-			self.tangos[Tid].path = os.path.join(rep, name)
+			new_path = os.path.join(rep, name)
+			move(tango.path, new_path)
+
+			logger.debug("Normalized tango ID %s path to %s", Tid, new_path)
+			self.tangos[Tid].path = new_path
 			self.tangos[Tid].titleFields()
-			self.listFiles[tango.path] = tango.ID
-			self.checkEmptyDir()
+			self.listFiles[new_path] = tango.ID
 
 
 	#will remove the empty dir

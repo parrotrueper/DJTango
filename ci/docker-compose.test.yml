@@ -1,0 +1,6 @@
+services:
+  sut:
+    image: dj-tango-ci-sut
+    working_dir: /app
+    command: ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "*_tests.py"]
+    volumes: []

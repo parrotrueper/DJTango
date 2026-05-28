@@ -1,15 +1,26 @@
 # -*- coding:Utf-8 -*-
 
-from PyQt5.Qt import QAbstractTableModel
-from PyQt5.Qt import QSortFilterProxyModel
-from PyQt5.QtCore import Qt
+from djtango.qt_compat import QAbstractTableModel
+from djtango.qt_compat import QSortFilterProxyModel
+from djtango.qt_compat import Qt
 #from PyQt4.QtCore import QString
-from PyQt5.QtGui import QColor
-from PyQt5.QtCore import QDataStream, QIODevice, QVariant
+from djtango.qt_compat import QColor
+from djtango.qt_compat import QDataStream, QIODevice, QVariant
 import operator, re
-from PyQt5.QtCore import QRegExp
+from djtango.qt_compat import QRegExp
 from djtango import utils
 import decimal, random
+
+
+def get_contrast_color(color):
+    luminance = (0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue())
+    return QColor(0, 0, 0) if luminance > 186 else QColor(255, 255, 255)
+
+
+def get_type_font_color(type_entry):
+    if len(type_entry) > 6 and type_entry[6] is not None:
+        return QColor(type_entry[6], type_entry[7], type_entry[8], type_entry[9])
+    return None
 
 #from PyQt4.QtGui import *
 
@@ -24,25 +35,34 @@ class library(QAbstractTableModel):
         return len(self.mylist)
 
     def columnCount(self, parent):
-        return len(self.mylist[0])
+        return len(self.mylist[0]) if self.mylist else 0
 
     def data(self, index, role=Qt.DisplayRole):
-    	if not index.isValid():
-    		return None
-    	elif role==Qt.BackgroundRole:
+        if not index.isValid():
+            return None
+        elif role == Qt.BackgroundRole:
             R = self.TYPE[self.mylist[index.row()][5]][2]
             G = self.TYPE[self.mylist[index.row()][5]][3]
             B = self.TYPE[self.mylist[index.row()][5]][4]
             T = self.TYPE[self.mylist[index.row()][5]][5]
-            return(QColor(R,G,B,T))
-    	elif role != Qt.DisplayRole:
-    		return None
-    	
-    	if index.column() == 4:
-            return self.TYPE[self.mylist[index.row()][5]][1].title()
-    	else:
-    		return self.mylist[index.row()][index.column()]
+            return QColor(R, G, B, T)
+        elif role == Qt.ForegroundRole:
+            type_entry = self.TYPE[self.mylist[index.row()][5]]
+            font_color = get_type_font_color(type_entry)
+            if font_color is not None:
+                return font_color
+            R = type_entry[2]
+            G = type_entry[3]
+            B = type_entry[4]
+            T = type_entry[5]
+            return get_contrast_color(QColor(R, G, B, T))
+        elif role != Qt.DisplayRole:
+            return None
 
+        if index.column() == 4:
+            return self.TYPE[self.mylist[index.row()][5]][1].title()
+        else:
+            return self.mylist[index.row()][index.column()]
     def headerData(self, col, orientation, role):
     	#print (self.header[col])
     	if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -54,14 +74,9 @@ class library(QAbstractTableModel):
     def sort(self, col, order):
         """sort table by given column number col"""
         self.layoutAboutToBeChanged.emit()
-        #self.emit(SIGNAL("layoutAboutToBeChanged()"))
-        print (Qt.InitialSortOrderRole)
-        print (order)
         self.mylist = sorted(self.mylist, key=operator.itemgetter(col))
-        #self.
-        if order == Qt.AscendingOrder:
-        	self.mylist.reverse()
-        #self.emit(SIGNAL("layoutChanged()"))
+        if order != Qt.AscendingOrder:
+            self.mylist.reverse()
         self.layoutChanged.emit()
         
     #renew all the data of the table model
@@ -72,9 +87,9 @@ class library(QAbstractTableModel):
         self.layoutAboutToBeChanged.emit()
         self.mylist = datain
 
-        #self.emit(SIGNAL("LayoutChanged()"))
         self.layoutChanged.emit()
-        self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
+        if self.rowCount(0) > 0 and self.columnCount(0) > 0:
+            self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
         #self.emit(SIGNAL("DataChanged(QModelIndex,QModelIndex)"), self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
 
     
@@ -129,6 +144,18 @@ class milongaSource(QAbstractTableModel):
                 return(QColor(R,G,B,T))
             else:
                 return None
+        elif role==Qt.ForegroundRole:
+            if self.mylist[index.row()][5] in self.TYPE:
+                type_entry = self.TYPE[self.mylist[index.row()][5]]
+                font_color = get_type_font_color(type_entry)
+                if font_color is not None:
+                    return font_color
+                R = type_entry[2]
+                G = type_entry[3]
+                B = type_entry[4]
+                T = type_entry[5]
+                return get_contrast_color(QColor(R, G, B, T))
+            return None
         elif role != Qt.DisplayRole:
             return None
         
@@ -285,6 +312,16 @@ class milongaDest(QAbstractTableModel):
             B = self.TYPE[self.mylist[index.row()][5]][4]
             T = self.TYPE[self.mylist[index.row()][5]][5]
             return(QColor(R,G,B,T))
+        elif role==Qt.ForegroundRole:
+            type_entry = self.TYPE[self.mylist[index.row()][5]]
+            font_color = get_type_font_color(type_entry)
+            if font_color is not None:
+                return font_color
+            R = type_entry[2]
+            G = type_entry[3]
+            B = type_entry[4]
+            T = type_entry[5]
+            return get_contrast_color(QColor(R, G, B, T))
         elif role != Qt.DisplayRole:
             return None
         

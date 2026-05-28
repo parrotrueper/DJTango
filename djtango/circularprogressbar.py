@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, Qt, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, Qt, QtWidgets
 from djtango import utils
 
 #use this web site to build a new one

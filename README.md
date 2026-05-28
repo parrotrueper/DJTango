@@ -1,49 +1,84 @@
-# Project Name
+# DJTango
 
-The software for DJ who want to create great Milongas.
+Software for tango DJs.
 
-This is a software who allow anyone who want DJING tango musique to do it with a software who understand how a "Milonga works"
+Originally forked from https://github.com/flccrakers/dj-tango 
+
+This project is a very different beast from the original source.
+
+**Project status -- Under development**
+
+## Dependencies
+
+### Python dependencies
+
+These are managed in `pyproject.toml`:
+
+* `PySide6`
+* `pydub`
+* `audioread`
+
+Optional test dependencies:
+
+* `nose`
+
+### System library dependencies
+
+For GUI and multimedia support, the container build installs:
+
+* `libgtk-3-0`
+* `libx11-6`
+* `libxrender1`
+* `libxext6`
+* `libsm6`
+* `libglib2.0-0`
+* `libgl1`
+* `libegl1`
+* `libpulse0`
+* `libasound2`
+* `libdbus-1-3`
+* `libxkbcommon-x11-0`
+* `libxcb-xinerama0`
+* `libxcb-icccm4`
+* `libxcb-image0`
+* `libxcb-keysyms1`
+* `libxcb-render-util0`
+* `libxcb-xfixes0`
+* `libxcb-xkb1`
+* `libxrandr2`
+* `libxss1`
+* `libxi6`
+* `libfontconfig1`
+* `libfreetype6`
+* `libgstreamer1.0-0`
+* `libgstreamer-plugins-base1.0-0`
+* `gstreamer1.0-libav`
+* `gstreamer1.0-plugins-good`
+* `gstreamer1.0-plugins-bad`
 
 ## Installation
 
-### Linux: 
-Open a terminal an type 
-<pre><code>git clone https://github.com/flccrakers/dj-tango.git</code></pre>
+* Clone the repository.
+* Setup the environment
+  
+```shell
+./setup-env.sh
+```
 
-You will need to install:
+## Launch
 
-- python
-- QT5
-- PYQT
+```shell
+./run-tdj.sh
+```
 
+## Status
 
-## Usage
+* Finish unit testing -- in progress
+* Finish bug fixes -- in progress
 
-### Linux:
-Enter in the directory dj-tango and launch the program.
-<pre>
-<code>
-cd dj-tango
-./run.sh
-</code>
-</pre>
+## TODO
 
-## Contributing
-
-1. Fork it!
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request :D
-
-## History
-
-TODO: Write history
-
-## Credits
-
-TODO: Write credits
-
-## License
-
-TODO: Write license
+* Create CI 
+* Create deploy
+* Release
+  

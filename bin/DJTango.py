@@ -1,6 +1,17 @@
 #!/usr/bin/python3
 # -*- coding:Utf-8 -*-
+import os
+import sys
 import pdb
+
+if getattr(sys, "frozen", False):
+    ROOT = getattr(sys, "_MEIPASS", os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+else:
+    ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 from djtango.UI_djtango import Ui_AudioPlayerDialog
 from djtango.UI_details import Ui_details
 from djtango.UI_infos import Ui_infos
@@ -11,6 +22,7 @@ from djtango.UI_askDelete import Ui_DialogAskDelete
 from djtango.UI_sideDisplay import Ui_sideDisplay
 from djtango.UI_tapbpm import Ui_tapDialog
 from djtango.UI_infosMilonga import Ui_infosMilonga
+from djtango.UI_trackAppearance import Ui_trackAppearance
 from djtango.form import Ui_Form
 from djtango.tangosong import TangoSong
 from djtango.dirsong import dirSong
@@ -20,43 +32,275 @@ from djtango import tableModels
 from djtango import utils
 from djtango.dirscanningthread import dirScan
 
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QProgressDialog
-from PyQt5.QtWidgets import QShortcut
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtWidgets import QDialog
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.Qt import QApplication
+from djtango.qt_compat import QMainWindow
+from djtango.qt_compat import QProgressDialog
+from djtango.qt_compat import QShortcut
+from djtango.qt_compat import QWidget
+from djtango.qt_compat import QDialog
+from djtango.qt_compat import QMenu
+from djtango.qt_compat import QMessageBox
+from djtango.qt_compat import QStyleFactory
+from djtango.qt_compat import QApplication
 # from PyQt5.Qt import QList
-from PyQt5.Qt import QDesktopWidget
-from PyQt5.Qt import QThread
-from PyQt5.Qt import pyqtSignal
+from djtango.qt_compat import QDesktopWidget
+from djtango.qt_compat import QThread
+from djtango.qt_compat import QObject
+from djtango.qt_compat import QModelIndex
+from djtango.qt_compat import pyqtSignal
+from djtango.qt_compat import pyqtSlot
 # from PyQt5.Qt import SIGNAL
-from PyQt5.Qt import QFileDialog
-from PyQt5.Qt import QIcon
-from PyQt5.Qt import QAction
-from PyQt5.Qt import QAbstractTableModel
-from PyQt5.Qt import QAbstractItemView
-from PyQt5.Qt import QHeaderView
-from PyQt5.Qt import QColorDialog
-from PyQt5.Qt import QSortFilterProxyModel
+from djtango.qt_compat import QFileDialog
+from djtango.qt_compat import QIcon
+from djtango.qt_compat import QAction
+from djtango.qt_compat import QColor
+from djtango.qt_compat import QAbstractTableModel
+from djtango.qt_compat import QAbstractItemView
+from djtango.qt_compat import QHeaderView
+from djtango.qt_compat import QColorDialog
+from djtango.qt_compat import QPalette
+from djtango.qt_compat import QSortFilterProxyModel
+from djtango.qt_compat import QtWidgets
+from djtango.ui_theme import (
+    load_app_theme,
+    dialog_style,
+    progress_dialog_style,
+    qss_color,
+    track_preview_style,
+    button_style,
+    side_display_frame_style,
+    side_display_label_style,
+)
 from mutagen.mp3 import MP3
 
-from PyQt5.QtMultimedia import (QMediaPlayer, QMediaContent)
+from djtango.qt_compat import QMediaPlayer, QMediaContent, Qt, QtCore, QtGui
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-from PyQt5 import QtCore, QtGui
-
+import logging
 import os, sys, time, threading, operator, re, audioread, platform
+
+LOG_DIR = os.path.join(os.path.expanduser("~"), ".djtango")
+try:
+    os.makedirs(LOG_DIR, exist_ok=True)
+except Exception:
+    pass
+
+LOG_FILE = os.path.join(LOG_DIR, "djtango.log")
+logger = logging.getLogger("djtango")
+if not logger.handlers:
+    handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+logger.debug("Logger initialized at %s", LOG_FILE)
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     def _fromUtf8(s):
         return s
+
+
+def tango_type_key_from_row(row):
+    if row < 0:
+        raise ValueError("No tango type selected")
+    return row + 1
+
+
+def apply_tango_type_color(TYPE, row, color):
+    key = tango_type_key_from_row(row)
+    if key not in TYPE:
+        raise KeyError(f"Tango type key not found: {key}")
+    type_entry = TYPE[key]
+    extra = type_entry[6:] if len(type_entry) > 6 else ()
+    TYPE[key] = (
+        type_entry[0],
+        type_entry[1],
+        color.red(),
+        color.green(),
+        color.blue(),
+        color.alpha(),
+    ) + extra
+    logger.debug("Updated tango type %s color to %s", key, TYPE[key][2:])
+    return TYPE[key]
+
+
+def get_contrast_color(color):
+    luminance = (0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue())
+    return QColor(0, 0, 0) if luminance > 186 else QColor(255, 255, 255)
+
+
+def get_type_font_color(type_entry):
+    if len(type_entry) > 6 and type_entry[6] is not None:
+        return QColor(type_entry[6], type_entry[7], type_entry[8], type_entry[9])
+    return None
+
+
+def set_type_font_color(type_entry, color):
+    if len(type_entry) > 6:
+        return type_entry[:6] + (color.red(), color.green(), color.blue(), color.alpha())
+    return type_entry + (color.red(), color.green(), color.blue(), color.alpha())
+
+
+class TrackAppearanceDialog(QDialog):
+    def __init__(self, TYPE, font_colors=None, parent=None):
+        super().__init__(parent)
+        self.original_TYPE = TYPE
+        self.TYPE = dict(TYPE)
+        self.font_colors = dict(font_colors) if font_colors is not None else {}
+        for key, type_item in self.TYPE.items():
+            font_color = get_type_font_color(type_item)
+            if font_color is not None:
+                self.font_colors[key] = font_color
+        self._colorSelectionMode = 'track'
+        self._currentTrackColor = None
+        self._currentFontColor = None
+        self._currentRow = 0
+        self.colorDialog = QColorDialog(self)
+        self.colorDialog.setOption(QColorDialog.ShowAlphaChannel, True)
+        self.colorDialog.setWindowModality(Qt.WindowModal)
+        self.colorDialog.accepted.connect(self._finalizeColorSelection)
+        if hasattr(self.colorDialog, 'currentColorChanged'):
+            self.colorDialog.currentColorChanged.connect(self._previewColorDialog)
+
+        self.ui = Ui_trackAppearance()
+        self.ui.setupUi(self)
+        self.typesList = self.ui.typesList
+        self.editTypeField = self.ui.editTypeField
+        self.addTypeButton = self.ui.addTypeButton
+        self.removeTypeButton = self.ui.removeTypeButton
+        self.previewLabel = self.ui.previewLabel
+        self.selectColorButton = self.ui.selectColorButton
+        self.selectFontColorButton = self.ui.selectFontColorButton
+        self.buttonBox = self.ui.buttonBox
+
+        self.typesList.currentRowChanged.connect(self._selectTangoChange)
+        self.addTypeButton.clicked.connect(self._addTangoType)
+        self.removeTypeButton.clicked.connect(self._removeTangoType)
+        self.selectColorButton.clicked.connect(lambda: self._openColorDialog('track'))
+        self.selectFontColorButton.clicked.connect(lambda: self._openColorDialog('font'))
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self._populateTypes()
+
+    def _populateTypes(self):
+        self.typesList.clear()
+        self._typeKeys = sorted(self.TYPE.keys())
+        for key in self._typeKeys:
+            self.typesList.addItem(self.TYPE[key][1])
+        self.typesList.setCurrentRow(0)
+
+    def _getCurrentTypeKey(self):
+        row = self.typesList.currentRow()
+        return self._typeKeys[row] if 0 <= row < len(self._typeKeys) else None
+
+    def _addTangoType(self):
+        text = self.editTypeField.text().strip()
+        if not text:
+            return
+        next_key = max(self.TYPE.keys(), default=0) + 1
+        default_color = QColor(42, 42, 42, 255)
+        default_font = get_contrast_color(default_color)
+        self.TYPE[next_key] = (
+            next_key,
+            text,
+            42,
+            42,
+            42,
+            255,
+            default_font.red(),
+            default_font.green(),
+            default_font.blue(),
+            default_font.alpha(),
+        )
+        self.editTypeField.clear()
+        self._populateTypes()
+        self.typesList.setCurrentRow(self.typesList.count() - 1)
+
+    def _removeTangoType(self):
+        row = self.typesList.currentRow()
+        if row < 5:
+            QMessageBox.information(self, 'Track Appearance', 'This item is not removable')
+            return
+        key = self._getCurrentTypeKey()
+        if key is None:
+            return
+        self.typesList.takeItem(row)
+        self.TYPE.pop(key, None)
+        self._populateTypes()
+
+    def _selectTangoChange(self, row):
+        if row < 0:
+            return
+        self._currentRow = row
+        key = self._getCurrentTypeKey()
+        type_item = self.TYPE.get(key)
+        if not type_item:
+            return
+        self._currentTrackColor = QColor(type_item[2], type_item[3], type_item[4], type_item[5])
+        self._currentFontColor = get_type_font_color(type_item) or self.font_colors.get(key) or get_contrast_color(self._currentTrackColor)
+        self._applyTrackButtonPreview()
+
+    def _selectTangoColor(self):
+        color = self.colorDialog.currentColor()
+        self._currentTrackColor = color
+        key = self._getCurrentTypeKey()
+        if key is None:
+            return
+        self._currentFontColor = self.font_colors.get(key, get_contrast_color(color))
+        type_entry = self.TYPE[key]
+        extra = type_entry[6:] if len(type_entry) > 6 else ()
+        self.TYPE[key] = (
+            type_entry[0],
+            type_entry[1],
+            color.red(),
+            color.green(),
+            color.blue(),
+            color.alpha(),
+        ) + extra
+        self._applyTrackButtonPreview()
+
+    def _selectTangoFontColor(self):
+        color = self.colorDialog.currentColor()
+        self._currentFontColor = color
+        key = self._getCurrentTypeKey()
+        if key is None:
+            return
+        self.font_colors[key] = color
+        self.TYPE[key] = set_type_font_color(self.TYPE[key], color)
+        self._applyTrackButtonPreview()
+
+    def _finalizeColorSelection(self):
+        if self._colorSelectionMode == 'font':
+            self._selectTangoFontColor()
+        else:
+            self._selectTangoColor()
+
+    def _previewColorDialog(self, color):
+        if self._colorSelectionMode == 'font':
+            self._currentFontColor = color
+        else:
+            self._currentTrackColor = color
+        self._applyTrackButtonPreview()
+
+    def _openColorDialog(self, mode):
+        self._colorSelectionMode = mode
+        if mode == 'track' and self._currentTrackColor is not None:
+            self.colorDialog.setCurrentColor(self._currentTrackColor)
+        elif mode == 'font' and self._currentFontColor is not None:
+            self.colorDialog.setCurrentColor(self._currentFontColor)
+        self.colorDialog.show()
+
+    def _applyTrackButtonPreview(self):
+        if self._currentTrackColor is None:
+            return
+        if self._currentFontColor is None:
+            self._currentFontColor = get_contrast_color(self._currentTrackColor)
+        self.previewLabel.setStyleSheet(track_preview_style(self._currentTrackColor, self._currentFontColor))
+        self.selectColorButton.setStyleSheet(button_style(self._currentTrackColor, get_contrast_color(self._currentTrackColor)))
+        self.selectFontColorButton.setStyleSheet(button_style(self._currentFontColor, get_contrast_color(self._currentFontColor)))
+
+    def _saveTypeChanges(self):
+        pass
 
 
 class InfoThreading(QThread):
@@ -68,7 +312,10 @@ class InfoThreading(QThread):
     def __del__(self):
         # print ("exiting")
         self.exiting = True
-        self.wait()
+        try:
+            self.wait()
+        except RuntimeError:
+            pass
 
     def render(self, timelaps):
         self.timelaps = timelaps
@@ -107,6 +354,9 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        icon_path = os.path.join(ROOT, "gui", "img", "djt.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
         self.bpm = 0
 
@@ -123,6 +373,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self.curTango = None
         self.curLibraryRow = 0
         self.djData = djDataConnection(self.djhome)
+        self.disableDirScan = os.environ.get('DJTANGO_DISABLE_DIR_SCAN', '0') == '1' or os.environ.get('QT_QPA_PLATFORM') == 'offscreen'
 
         self.curTangoEditingIndexes = []
         self.curTangoEditing = 0  # a index telling wich is the current tango idited in properties window
@@ -201,7 +452,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self.FadOutTime = prop['cortinaDuration'] * 1000  # in ms, to get form the database
         self.writeTag = prop['writeTag']
         self.normalize = prop['normalize']
-        self.stepFadOut = self.durationFadOut / self.player.notifyInterval()
+        self.stepFadOut = self.durationFadOut / (self.player.notifyInterval() if hasattr(self.player, 'notifyInterval') else 100)
         self.duration = 0
 
         # print("AUDIO PATH IN INITIALIZING DATA : "+self.audioPath)
@@ -227,40 +478,73 @@ class AudioPlayerDialog(QMainWindow, QObject):
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
 
         if self.firstTime:
-            introDialog = QMessageBox()
-            # introDialog.setPalette(palette)
-            introDialog.setStyleSheet(
-                "QDialog{\n""background-color: rgb(42,42,42); color:white\n""}QPushButton {\n""background-color: #2a2a2a;\n""color: white;\noutline: none\n""}QLabel {\n""background-color: #2a2a2a;\n""color: white;\n""}")
-            introDialog.setWindowTitle("First time user ?")
-            # introDialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel);
-            introDialog.setText(
-                "Hi, I'm DJ-Tango and it appear that is the first time you use me. \nPlease select the directory where all your Tango are stored.");
-            introDialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel);
-            # introDialog.setModal(True)
-            introDialog.setDefaultButton(QMessageBox.Ok);
-            # introDialog.button(QMessageBox.Cancel).setDefault(False)
-            # for button in introDialog.StandardButtons():
-            #    button.setFocusPolicy(setFocusPolicy(QtCore.Qt.NoFocus))
-            # introDialog.
-            # res = introDialog.exec()
-            # print (res)
-            if introDialog.exec() == QMessageBox.Ok:
-                self.audioPath = QFileDialog.getExistingDirectory(self, "Open Tango directory", os.path.expanduser('~'),
-                                                                  QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
-                self.djData.updateSongPath(self.audioPath)
-                time.sleep(0.3)
+            if self.disableDirScan:
+                print('Skipping first-time user dialog in offscreen/CI mode')
             else:
-                sys.exit(0)
-        progressBar = QProgressDialog("Scanning dir and analyzing the songs...", "Abort", 0, 100, self)
-        progressBar.setWindowTitle("Inporting Tangos in the database and set tags")
-        progressBar.setWindowModality(Qt.WindowModal);
-        progressBar.setStyleSheet(
-            "QDialog{\n""background-color: rgb(42,42,42); color:white\n""}"
-            "QPushButton {\n""background-color: #2a2a2a;\n""color: white;\noutline: none\n""}"
-            "QLabel {\n""background-color: #2a2a2a;\n""color: white;\n""}"
-            "QProgressBar {\n""border: 2px solid grey; border-radius: 5px;  background-color: #2a2a2a; color: white; text-align: center""}"
-            "QProgressBar::chunk {""background-color: #a0344d;" "width: 20px;""}")
-        progressBar.reset()
+                introDialog = QMessageBox()
+                # introDialog.setPalette(palette)
+                introDialog.setStyleSheet(dialog_style())
+                introDialog.setWindowTitle("First time user ?")
+                # introDialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel);
+                introDialog.setText(
+                    "Hi, I'm DJ-Tango and it appear that is the first time you use me. \nPlease select the directory where all your Tango are stored.");
+                introDialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel);
+                # introDialog.setModal(True)
+                introDialog.setDefaultButton(QMessageBox.Ok);
+                # introDialog.button(QMessageBox.Cancel).setDefault(False)
+                # for button in introDialog.StandardButtons():
+                #    button.setFocusPolicy(setFocusPolicy(QtCore.Qt.NoFocus))
+                # introDialog.
+                # res = introDialog.exec()
+                # print (res)
+                if introDialog.exec() == QMessageBox.Ok:
+                    self.audioPath = QFileDialog.getExistingDirectory(self, "Open Tango directory", os.path.expanduser('~'),
+                                                                      QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
+                    self.djData.updateSongPath(self.audioPath)
+                    time.sleep(0.3)
+                else:
+                    sys.exit(0)
+
+        class DummyProgressDialog:
+            def setWindowTitle(self, *args, **kwargs):
+                pass
+
+            def setWindowModality(self, *args, **kwargs):
+                pass
+
+            def setStyleSheet(self, *args, **kwargs):
+                pass
+
+            def reset(self, *args, **kwargs):
+                pass
+
+            def setMaximum(self, *args, **kwargs):
+                pass
+
+            def setMinimum(self, *args, **kwargs):
+                pass
+
+            def setValue(self, *args, **kwargs):
+                pass
+
+            def setLabelText(self, *args, **kwargs):
+                pass
+
+            def forceShow(self, *args, **kwargs):
+                pass
+
+            def wasCanceled(self, *args, **kwargs):
+                return False
+
+        if self.disableDirScan:
+            progressBar = DummyProgressDialog()
+        else:
+            progressBar = QProgressDialog("Scanning dir and analyzing the songs...", "Abort", 0, 100, self)
+            progressBar.setWindowTitle("Inporting Tangos in the database and set tags")
+            progressBar.setWindowModality(Qt.WindowModal);
+            progressBar.setStyleSheet(progress_dialog_style())
+            progressBar.reset()
+
         self._tangoList = dirSong(self.audioPath, self.firstTime, progressBar, self.djData)
         progressBar.reset()
         # self.firstTime = False
@@ -272,8 +556,12 @@ class AudioPlayerDialog(QMainWindow, QObject):
         # self.dirthread = MyTimer(20, self.scannDir, ["test"])
 
         self.scanner = dirScan(self._tangoList, self.djData)
-        self.dirthread2 = QThread()
-        self.scanner.moveToThread(self.dirthread2)
+        self.disableDirScan = os.environ.get('DJTANGO_DISABLE_DIR_SCAN', '0') == '1' or os.environ.get('QT_QPA_PLATFORM') == 'offscreen'
+        if not self.disableDirScan:
+            self.dirthread2 = QThread()
+            self.scanner.moveToThread(self.dirthread2)
+        else:
+            self.dirthread2 = None
 
         # j'ai modifié
         # Create self._dialog instance and call
@@ -286,12 +574,16 @@ class AudioPlayerDialog(QMainWindow, QObject):
         # Create the shortcuts
         self._createShorcuts()
 
-        # launch the worer threads
-        print("starting directory scanning")
-        self.dirthread2.start()
+        # launch the worker thread only when directory scanning is enabled
+        if self.dirthread2 is not None:
+            print("starting directory scanning")
+            self.dirthread2.start()
 
-        # Show the Audio player.
-        self.show()
+        # Show the Audio player when not running headless.
+        if not self.disableDirScan:
+            self.show()
+        else:
+            print('Headless mode: main window not shown')
 
     def _createShorcuts(self):
         print("creating shortcuts")
@@ -311,7 +603,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
         displaySideWindowOnCrtlF11 = QShortcut(self)
         displaySideWindowOnCrtlF11.setContext(Qt.WidgetShortcut)
-        displaySideWindowOnCrtlF11.setKey(QtCore.Qt.CTRL + QtCore.Qt.Key_F11)
+        displaySideWindowOnCrtlF11.setKey(QtCore.Qt.CTRL | QtCore.Qt.Key_F11)
         displaySideWindowOnCrtlF11.activated.connect(self._handelDisplaySideScreen)
 
         fullScreenOnF11 = QShortcut(self)
@@ -357,6 +649,9 @@ class AudioPlayerDialog(QMainWindow, QObject):
         """
         self._dialog = Ui_AudioPlayerDialog()
         self._dialog.setupUi(self)
+        icon_path = os.path.join(ROOT, "gui", "img", "djt.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
         self._dialog.retranslateUi(self)
         self.playIcon = QIcon("./djtango/img/play-button.png")
         self.pauseIcon = QIcon("./djtango/img/pause-button.png")
@@ -367,6 +662,9 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self.colorDialog = QColorDialog()
         self.colorDialog.setOption(QColorDialog.ShowAlphaChannel, True)
         self.colorDialog.setWindowModality(Qt.WindowModal)
+        self._colorSelectionMode = 'track'
+        self._currentTrackColor = QColor(42, 42, 42, 255)
+        self._currentFontColor = None
 
         libraryHeader = ['#', ' ', 'Title', 'Artist', 'Album', 'Genre', 'Year', 'BPM', 'Time']
         liraryMilongaHeader = ['#', ' ', 'Title', 'Artist', 'Album', 'Genre']
@@ -447,10 +745,10 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self.prefContent = Ui_preferences()
         self.prefContent.setupUi(self.prefWindow)
         self.prefContent.lineEditSongDir.setText(self.audioPath)
-        self.prefContent.spinBoxFadeOut.setValue(self.durationFadOut / 1000)
-        self.prefContent.spinBoxCortinaDuration.setValue(self.FadOutTime / 1000)
-        self.prefContent.checkBoxWriteTags.setCheckState(self.writeTag)
-        self.prefContent.checkBoxNormalize.setCheckState(self.normalize)
+        self.prefContent.spinBoxFadeOut.setValue(int(self.durationFadOut / 1000))
+        self.prefContent.spinBoxCortinaDuration.setValue(int(self.FadOutTime / 1000))
+        self.prefContent.checkBoxWriteTags.setCheckState(Qt.Checked if self.writeTag else Qt.Unchecked)
+        self.prefContent.checkBoxNormalize.setCheckState(Qt.Checked if self.normalize else Qt.Unchecked)
         for i in self.TYPE.keys():
             self.prefContent.listWidgetTangoType.insertItem(i - 1, self.TYPE[i][1])
             R = self.TYPE[i][2]
@@ -468,17 +766,16 @@ class AudioPlayerDialog(QMainWindow, QObject):
         """
         Overrides QMainWindow.closeEvent.
         """
-        # if self.mediaObj:
-        #    self.mediaObj.stop()
         self.player.stop()
-
-        # self.mediaObj = None
-        # self._clearEffectsObjects()
         self.infoWindow.close()
         self.prefWindow.close()
         self.sideWindow.close()
-        # self.dirthread.stop()
-        self.dirthread2.terminate()
+        if self.dirthread2 is not None:
+            self.scanner.stop()
+            self.dirthread2.quit()
+            if not self.dirthread2.wait(3000):
+                logger.warning("dirScan thread did not stop cleanly; forcing termination")
+                self.dirthread2.terminate()
 
         QMainWindow.closeEvent(self, evt)
 
@@ -501,12 +798,16 @@ class AudioPlayerDialog(QMainWindow, QObject):
         Connect slots with signals.
         """
         # self.dirthread2.finished.connect(self.done)
-        self.dirthread2.started.connect(self.scanner.workOut)
+        if self.dirthread2 is not None:
+            self.dirthread2.started.connect(self.scanner.workOut)
         self.scanner.scanned.connect(self.done)
 
         self._dialog.actionPreferences.triggered.connect(self._handelPrefClose)
+        self._dialog.actionTrackAppearance.triggered.connect(self._openTrackAppearanceDialog)
 
         self._dialog.actionFullscreen.triggered.connect(self._handelFullScren)
+
+        self._dialog.actionImport_directory.triggered.connect(self.open_file_dialog)
 
         self._dialog.actionDisplay_side_screen.setChecked(False)
         self._dialog.actionDisplay_side_screen.triggered.connect(self._handelDisplaySideScreen)
@@ -534,14 +835,18 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
         self.prefContent.addTypeButton.clicked.connect(self._addTangoType)
         self.prefContent.removeTypeButton.clicked.connect(self._removeTangoType)
-        self.prefContent.selectColorButton.clicked.connect(self.colorDialog.show)
-        self.prefContent.listWidgetTangoType.currentRowChanged.connect(self._selectTangoChange)
+        # Track appearance color editing is now handled in a dedicated popup.
+        # self.prefContent.selectColorButton.clicked.connect(lambda: self._openColorDialog('track'))
+        # self.prefContent.selectFontColorButton.clicked.connect(lambda: self._openColorDialog('font'))
+        # self.prefContent.listWidgetTangoType.currentRowChanged.connect(self._selectTangoChange)
         # self.prefContent.lineEditSongDir.clicked.connect(self.openFileDialog)
         # self.prefContent.lineEditSongDir.cursorPositionChanged.connect(self.openFileDialog)
         self.prefContent.pushButtonSelectPath.clicked.connect(self.open_file_dialog)
         # self.colorDialog
 
-        self.colorDialog.accepted.connect(self._selectTangoColor)
+        self.colorDialog.accepted.connect(self._finalizeColorSelection)
+        if hasattr(self.colorDialog, 'currentColorChanged'):
+            self.colorDialog.currentColorChanged.connect(self._previewColorDialog)
         # self.connect(self.colorDialog, SIGNAL("accepted()"), self._selectTangoColor)
 
         # self.connect(self.prefContent.closeButtonPref, SIGNAL("clicked()"), self._handelPrefClose)
@@ -570,7 +875,10 @@ class AudioPlayerDialog(QMainWindow, QObject):
         # self.mediaObj.tick.connect(self._handleTick)
         self.player.durationChanged.connect(self.durationChanged)
         self.player.positionChanged.connect(self.position_changed)
-        self.player.stateChanged.connect(self._handel_state_changed)
+        if hasattr(self.player, 'playbackStateChanged'):
+            self.player.playbackStateChanged.connect(self._handel_state_changed)
+        else:
+            self.player.stateChanged.connect(self._handel_state_changed)
 
         self._dialog.songSlider.sliderMoved.connect(self.seek)
         # self._dialog.songSlider.actionTriggered.connect(self.sliderAction)
@@ -610,14 +918,15 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
     def _handel_state_changed(self):
         # print("state: "+str(self.player.state()))
-        if self.player.state() == QMediaPlayer.PlayingState:
+        current_state = self.player.playbackState() if hasattr(self.player, 'playbackState') else self.player.state()
+        if current_state == QMediaPlayer.PlayingState:
             self._isClicked = False
-        elif self.player.state() == QMediaPlayer.StoppedState:
+        elif current_state == QMediaPlayer.StoppedState:
             if not self._isClicked and self._isPlaying:
                 if self._isMilongaPlaying:
                     if self._dialog.checkBoxLetCortinaUntilEnd.isChecked():
                         # remove the checked state
-                        self._dialog.checkBoxLetCortinaUntilEnd.setCheckState(False)
+                        self._dialog.checkBoxLetCortinaUntilEnd.setCheckState(Qt.Unchecked)
                     self.play_next_milonga_song()
                 else:
                     self.playNextLibrarySong()
@@ -720,7 +1029,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
         tableSize = self._dialog.milongaSource.width()
         # print ("total: "+str(total))
         # print("size of table: "+str(tableSize))
-        size = (tableSize - total - 20) / 3  # size of the scroll
+        size = int((tableSize - total - 20) / 3)  # size of the scroll
 
         self._dialog.milongaSource.horizontalHeader().resizeSection(0, sizeList['#'])
         self._dialog.milongaSource.horizontalHeader().resizeSection(1, sizeList['play'])
@@ -840,7 +1149,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
         mp3infos = menu.addAction("Show mp3 infos")
         tapbpm = menu.addAction("Set the bpm by taping the tempo of the song")
         updateTangoDurations = menu.addAction("update the Tango duration")
-        action = menu.exec_(self._dialog.milongaSource.viewport().mapToGlobal(pos))
+        action = menu.exec(self._dialog.milongaSource.viewport().mapToGlobal(pos))
         if action == detailsAction:
             self.handelOpenPropWidow()
         elif action == deleteAction:
@@ -909,16 +1218,16 @@ class AudioPlayerDialog(QMainWindow, QObject):
                 # print("delta: "+str(max(temp)-min(temp)))
                 if max(temp) - min(temp) < 0.3 and self.bmpState != 2:
                     self.tapContent.labelDone.setText("DONE")
-                    self.tapContent.labelDone.setStyleSheet("color: rgba(70,169,73)")
+                    self.tapContent.labelDone.setStyleSheet("color: rgb(70,169,73)")
                     self.bmpState = 2
                     # print("STOP")
                 elif max(temp) - min(temp) < 0.8 and max(temp) - min(temp) > 0.5 and self.bmpState == 0:
                     self.tapContent.labelDone.setText("CONTINUE")
-                    self.tapContent.labelDone.setStyleSheet("color: rgba(215,0,8)")
+                    self.tapContent.labelDone.setStyleSheet("color: rgb(215,0,8)")
                     self.bmpState = 1
                 elif max(temp) - min(temp) < 0.5 and self.bmpState != 2:
                     self.tapContent.labelDone.setText("ALMOST")
-                    self.tapContent.labelDone.setStyleSheet("color: rgba(240,169,73)")
+                    self.tapContent.labelDone.setStyleSheet("color: rgb(240,169,73)")
 
             self.curTango.bpmHuman = self.bpm
 
@@ -927,18 +1236,18 @@ class AudioPlayerDialog(QMainWindow, QObject):
     def initialiszeBmpInfo(self):
         self.bmpState = 0
         self.tapContent.labelDone.setText("DONE")
-        self.tapContent.labelDone.setStyleSheet("color: rgba(42,42,42)")
+        self.tapContent.labelDone.setStyleSheet("color: rgb(42,42,42)")
         # print(self.curTango.bpmHuman)
         # print(self.curTango.bpmFromFile)
         if self.curTango.bpmHuman == 0 and self.curTango.bpmFromFile == 0:
             self.tapContent.labelTypeBmp.setText("Not set")
-            self.tapContent.labelTypeBmp.setStyleSheet("color: rgba(215,0,8)")
+            self.tapContent.labelTypeBmp.setStyleSheet("color: rgb(215,0,8)")
         elif self.curTango.bpmHuman == 0 and self.curTango.bpmFromFile > 0:
             self.tapContent.labelTypeBmp.setText("Set by computer")
-            self.tapContent.labelTypeBmp.setStyleSheet("color: rgba(240,169,73)")
+            self.tapContent.labelTypeBmp.setStyleSheet("color: rgb(240,169,73)")
         else:
             self.tapContent.labelTypeBmp.setText("Set by human")
-            self.tapContent.labelTypeBmp.setStyleSheet("color: rgba(70,169,73)")
+            self.tapContent.labelTypeBmp.setStyleSheet("color: rgb(70,169,73)")
 
     def _handelValidatebpm(self):
 
@@ -1186,7 +1495,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
     def popupMilonga(self, pos):
         menu = QMenu()
         deleteAction = menu.addAction("Delete")
-        action = menu.exec_(self._dialog.milongaDest.viewport().mapToGlobal(pos))
+        action = menu.exec(self._dialog.milongaDest.viewport().mapToGlobal(pos))
         if action == deleteAction:
             self.deleteTangoInMilonga()
 
@@ -1271,7 +1580,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
     def _handelPrefClose(self):
         # print ("will update preferences")
-        self.prefWindow.exec_()
+        self.prefWindow.exec()
         if self.prefWindow.result() == 0:
             return
 
@@ -1279,7 +1588,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self._tangoList.songpath = self.prefContent.lineEditSongDir.text()
         self.durationFadOut = self.prefContent.spinBoxFadeOut.value() * 1000
         self.FadOutTime = self.prefContent.spinBoxCortinaDuration.value() * 1000
-        self.stepFadOut = self.durationFadOut / self.player.notifyInterval()
+        self.stepFadOut = self.durationFadOut / (self.player.notifyInterval() if hasattr(self.player, 'notifyInterval') else 100)
         self.writeTag = self.prefContent.checkBoxWriteTags.checkState()
         self.normalize = self.prefContent.checkBoxNormalize.checkState()
 
@@ -1288,12 +1597,24 @@ class AudioPlayerDialog(QMainWindow, QObject):
         if self.destModel.rowCount(QModelIndex()) > 1:
             self.updateMilongaInfos();
 
+    def _openTrackAppearanceDialog(self):
+        dialog = TrackAppearanceDialog(self.TYPE, parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            self.TYPE.clear()
+            self.TYPE.update(dialog.TYPE)
+            self.djData.updateType(self.TYPE)
+            self._showInfo('Track appearance saved')
+            self._updateSideScreen()
+
     def open_file_dialog(self):
 
         dir_name = QFileDialog.getExistingDirectory(self, "Open Directory", os.path.expanduser('~'),
                                                     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
-        # print (dirName)
+        if not dir_name:
+            return
+
         self.prefContent.lineEditSongDir.setText(dir_name)
+        self._tangoList.songpath = dir_name
         self.scanningDir = True
         new_files = self._tangoList.checkNewFiles()
         if new_files:
@@ -1329,10 +1650,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
             # print(self.prefContent.listWidgetTangoType.currentRow())
             # self._selectTangoChange()
 
-            self.colorDialog.show()
-
-            # self._selectTangoColor()
-            # TODO : updating the self.TYPE and the database in the update button handling
+            # TODO : updating the self.TYPE and the database in the update button handling
 
     def _removeTangoType(self):
         row = self.prefContent.listWidgetTangoType.currentRow()
@@ -1343,25 +1661,86 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
     def _selectTangoColor(self):
         color = self.colorDialog.currentColor()
-        # print(color.red())
-        self.prefContent.selectColorButton.setStyleSheet(
-            "background-color: rgba(" + str(color.red()) + "," + str(color.green()) + "," + str(
-                color.blue()) + "," + str(color.alpha()) + ")")
+        self._currentTrackColor = color
+        self._applyTrackButtonPreview()
         item = self.prefContent.listWidgetTangoType.currentRow()
-        # print ("item:"+str(item)+" color: "+str(color))
-        self.TYPE[item + 1] = (
-            self.TYPE[item + 1][0], self.TYPE[item + 1][1], color.red(), color.green(), color.blue(), color.alpha())
+        try:
+            apply_tango_type_color(self.TYPE, item, color)
+        except ValueError as err:
+            logger.warning("Color selection failed: %s", err)
+            self._showInfo(str(err))
+        except KeyError as err:
+            logger.error("Color selection failed: %s", err)
+            self._showInfo("Selected tango type is invalid")
+
+    def _selectTangoFontColor(self):
+        color = self.colorDialog.currentColor()
+        self._currentFontColor = color
+        self._applyTrackButtonPreview()
+
+    def _finalizeColorSelection(self):
+        if self._colorSelectionMode == 'font':
+            self._selectTangoFontColor()
+        else:
+            self._selectTangoColor()
+
+    def _contrastColor(self, color):
+        luminance = (0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue())
+        return '#000000' if luminance > 186 else '#ffffff'
+
+    def _previewColorDialog(self, color):
+        if self._colorSelectionMode == 'font':
+            self._currentFontColor = color
+        else:
+            self._currentTrackColor = color
+        self._applyTrackButtonPreview()
+
+    def _openColorDialog(self, mode):
+        self._colorSelectionMode = mode
+        if mode == 'track' and self._currentTrackColor is not None:
+            try:
+                self.colorDialog.setCurrentColor(self._currentTrackColor)
+            except Exception:
+                pass
+        elif mode == 'font' and self._currentFontColor is not None:
+            try:
+                self.colorDialog.setCurrentColor(self._currentFontColor)
+            except Exception:
+                pass
+        self.colorDialog.show()
+
+    def _applyTrackButtonPreview(self):
+        if self._currentTrackColor is None:
+            return
+
+        if self._currentFontColor is None:
+            self._currentFontColor = get_contrast_color(self._currentTrackColor)
+        if hasattr(self.prefContent, 'selectColorButton'):
+            self.prefContent.selectColorButton.setStyleSheet(
+                button_style(self._currentTrackColor, get_contrast_color(self._currentTrackColor))
+            )
+        if hasattr(self.prefContent, 'selectFontColorButton'):
+            self.prefContent.selectFontColorButton.setStyleSheet(
+                button_style(self._currentFontColor, get_contrast_color(self._currentFontColor))
+            )
 
     def _selectTangoChange(self):
         item = self.prefContent.listWidgetTangoType.currentRow()
-        # print("currentrow:"+str(item) )
-        # self.prefContent.listWidgetTangoType.insertItem(i-1, self.TYPE[i][1])
-        R = self.TYPE[item + 1][2]
-        G = self.TYPE[item + 1][3]
-        B = self.TYPE[item + 1][4]
-        T = self.TYPE[item + 1][5]
-        self.prefContent.selectColorButton.setStyleSheet(
-            "background-color: rgba(" + str(R) + "," + str(G) + "," + str(B) + "," + str(T) + ")")
+        if item < 0:
+            logger.debug("_selectTangoChange called with no selection")
+            return
+
+        key = item + 1
+        if key not in self.TYPE:
+            logger.error("_selectTangoChange invalid tango type key: %s", key)
+            return
+
+        R = self.TYPE[key][2]
+        G = self.TYPE[key][3]
+        B = self.TYPE[key][4]
+        T = self.TYPE[key][5]
+        self._currentTrackColor = QColor(R, G, B, T)
+        self._applyTrackButtonPreview()
 
         # print("row changed")
         # pass
@@ -1709,7 +2088,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
             count += 1
 
     def _handel_filter_change(self):
-        reg = re.compile('(.+)\s\(\d+\)')
+        reg = re.compile(r'(.+)\s\(\d+\)')
         # print ("I will filter")
         artist = self._dialog.comboBoxArtist.currentText()
         album = self._dialog.comboBoxAlbum.currentText()
@@ -1779,7 +2158,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
             return
 
         if self._dialog.labelMilongaName.text() == '- No Milonga -':
-            self.milongaNameWindow.exec_()
+            self.milongaNameWindow.exec()
             if self.milongaNameWindow.result() == 1:
                 self.currentMilongaName = self.milongaNameContent.lineEditName.text()
                 self._dialog.labelMilongaName.setText(self.currentMilongaName)
@@ -1798,7 +2177,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
         # if self._dialog.labelMilongaName.text() == '- No Milonga -':
         self.milongaNameContent.lineEditName.setText(self.currentMilongaName)
-        self.milongaNameWindow.exec_()
+        self.milongaNameWindow.exec()
         if self.milongaNameWindow.result() == 1:
             self.currentMilongaName = self.milongaNameContent.lineEditName.text()
             self._dialog.labelMilongaName.setText(self.currentMilongaName)
@@ -1819,7 +2198,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
             return
         # self.currentMilongaName = 'TestMilongaName'
 
-        self.milongaAskDelete.exec_()
+        self.milongaAskDelete.exec()
         if self.milongaAskDelete.result() == 1:
             if self.djData.deleteMilonga(0, self.currentMilongaName):
                 self.destModel.removeRows(0, self.destModel.rowCount(QModelIndex()), QModelIndex())
@@ -1838,7 +2217,7 @@ class AudioPlayerDialog(QMainWindow, QObject):
 
         self.selectMilongaListContent.listWidgetMilongas.clear()
         self.selectMilongaListContent.listWidgetMilongas.addItems(self.djData.getListOfMilongas())
-        self.selectMilongaListWindow.exec_()
+        self.selectMilongaListWindow.exec()
 
         if self.selectMilongaListWindow.result() == 0:
             return
@@ -2019,9 +2398,16 @@ class AudioPlayerDialog(QMainWindow, QObject):
             # print ("will display side screen")
 
             geom = self.desk.availableGeometry(sideDispDeskID)
-            # print (geom)
-            self.sideWindow.move(geom.x(), geom.y())
-            self.sideWindow.showFullScreen()
+            if self.desk.screenCount() > 1:
+                self.sideWindow.move(geom.x(), geom.y())
+                self.sideWindow.showFullScreen()
+            else:
+                width = max(int(geom.width() * 0.45), 600)
+                height = max(int(geom.height() * 0.85), 400)
+                x = geom.x() + geom.width() - width - 20
+                y = geom.y() + 20
+                self.sideWindow.setGeometry(x, y, width, height)
+                self.sideWindow.show()
             self._dialog.actionDisplay_side_screen.setChecked(True)
             # self._dialog.milongaSource.activateWindow()
             # self.setFocus(True)
@@ -2074,12 +2460,24 @@ class AudioPlayerDialog(QMainWindow, QObject):
             B = self.TYPE[self.curTango.type][4]
             T = self.TYPE[self.curTango.type][5]
             # self.prefContent.selectColorButton.setStyleSheet("background-color: rgba("+str(R)+","+str(G)+","+str(B)+","+str(T)+")")
-            self.sideContent.frameType.setStyleSheet(_fromUtf8(
-                "QFrame{\n  background-color: rgba(" + str(R) + "," + str(G) + "," + str(B) + "," + str(
-                    T) + ");\n border: 0px;\n  margin-right: 0px;\n    margin-bottom: 0px;\n margin-left: 0px;\n spacing: 0px;\n padding: 0px;\n} \nQFrame::layout { margin: 0px }"))
+            self.sideContent.frameType.setStyleSheet(_fromUtf8(side_display_frame_style(QColor(R, G, B, T))))
+
+            fontColor = get_type_font_color(self.TYPE.get(self.curTango.type))
+            if fontColor is None:
+                fontColor = get_contrast_color(QColor(R, G, B, T))
+            self._currentSideLabelColor = fontColor
+            self.sideContent.labelType.setStyleSheet(_fromUtf8(side_display_label_style(fontColor)))
 
             # self.sideContent.frameType.setStyleSheet(_fromUtf8("QFrame{\n  background-color: rgba("+str(R)+","+str(G)+","+str(B)+","+str(T)+");\n border: 0px;\n  margin-right: 0px;\n    margin-bottom: 0px;\n margin-left: 0px;\n spacing: 0px;\n padding: 0px;\n} \nQFrame::layout { margin: 0px }")
             self._updateLabelSize()
+        else:
+            self.sideContent.labelType.setText('NO TRACK')
+            self.sideContent.labelArtist.setText('')
+            self.sideContent.labelTitle.setText('No track selected')
+            self.sideContent.labelSinger.setText('')
+            self.sideContent.labelNextTanda.setText('')
+            self.sideContent.frameType.setStyleSheet(_fromUtf8(side_display_frame_style(QColor(0, 0, 0, 255))))
+            self.sideContent.labelType.setStyleSheet(_fromUtf8(side_display_label_style(QColor(0, 255, 255, 255))))
 
     def _updateLabelSize(self):
         size1 = 100
@@ -2127,9 +2525,10 @@ class AudioPlayerDialog(QMainWindow, QObject):
         self.sideContent.labelArtist.setStyleSheet(_fromUtf8(
             "QLabel{\n margin-top: 30px;\n margin-left: 20px;\n margin-bottom: 25px;\n  font-weight: bold;\n color: white;\n font-size: " + str(
                 size1) + "px;\n   font-family: \"sans\"\n}"))
+        label_color = getattr(self, '_currentSideLabelColor', QColor(255, 255, 255))
         self.sideContent.labelType.setStyleSheet(_fromUtf8(
-            "QLabel{\n  background-color: \"transparent\";\n font-weight: bold;\n    color: white;\n font-size: " + str(
-                size1 - 3) + "px;\n margin-left: 20px;\n    font-family: \"sans\"\n}"))
+            "background-color: \"transparent\";\n font-weight: bold;\n    color: %s;\n font-size: " + str(
+                size1 - 3) + "px;\n margin-left: 20px;\n    font-family: \"sans\"\n" % qss_color(label_color)))
 
         self.sideContent.labelTitle.setStyleSheet(_fromUtf8(
             "QLabel{\n  margin-left: 20px;\n    color: white;\n font-size: " + str(
@@ -2214,6 +2613,60 @@ class AudioPlayerDialog(QMainWindow, QObject):
 # ----------------------------------
 # Run the Audio Player !
 # ----------------------------------
-app = QApplication(sys.argv)
-musicPlayer = AudioPlayerDialog()
-app.exec_()
+
+def _ensure_desktop_file():
+    desktop_dir = os.path.expanduser("~/.local/share/applications")
+    try:
+        os.makedirs(desktop_dir, exist_ok=True)
+    except OSError:
+        return
+
+    desktop_file = os.path.join(desktop_dir, "djtango.desktop")
+    exec_path = os.path.join(ROOT, ".venv", "bin", "python")
+    if not os.path.exists(exec_path):
+        exec_path = sys.executable or exec_path
+    app_path = os.path.join(ROOT, "bin", "DJTango.py")
+    icon_path = os.path.join(ROOT, "gui", "img", "djt.ico")
+    desktop_contents = f"""[Desktop Entry]
+Type=Application
+Name=DJTango
+Comment=DJTango music playlist and milonga app
+Exec={exec_path} {app_path}
+Path={ROOT}
+Icon={icon_path}
+Terminal=false
+Categories=Audio;Music;Qt;
+StartupWMClass=djtango
+X-GNOME-WMClass=djtango
+"""
+    try:
+        with open(desktop_file, "w", encoding="utf-8") as handle:
+            handle.write(desktop_contents)
+    except OSError:
+        pass
+
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    _ensure_desktop_file()
+    app = QApplication(argv)
+    app.setApplicationName("DJTango")
+    app.setApplicationDisplayName("")
+    app.setOrganizationName("djtango")
+    app.setDesktopFileName("djtango.desktop")
+    try:
+        icon_path = os.path.join(ROOT, "gui", "img", "djt.ico")
+        if os.path.exists(icon_path):
+            app.setWindowIcon(QIcon(icon_path))
+        native_style = app.style().objectName()
+        app.setStyle(QStyleFactory.create(native_style))
+        app.setPalette(app.style().standardPalette())
+        load_app_theme(app)
+    except Exception as err:
+        logger.warning("Could not apply native OS style: %s", err)
+    musicPlayer = AudioPlayerDialog()
+    return app.exec()
+
+if __name__ == '__main__':
+    raise SystemExit(main())

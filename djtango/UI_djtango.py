@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_AudioPlayerDialog(object):
     def setupUi(self, AudioPlayerDialog):
@@ -18,26 +18,8 @@ class Ui_AudioPlayerDialog(object):
         sizePolicy.setHeightForWidth(AudioPlayerDialog.sizePolicy().hasHeightForWidth())
         AudioPlayerDialog.setSizePolicy(sizePolicy)
         AudioPlayerDialog.setMinimumSize(QtCore.QSize(300, 300))
-        palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(38, 38, 38))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(38, 38, 38))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
-        brush = QtGui.QBrush(QtGui.QColor(38, 38, 38))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(38, 38, 38))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
-        AudioPlayerDialog.setPalette(palette)
+        # Do not force a dark palette here; let the application inherit the OS native style.
+        # AudioPlayerDialog.setPalette(palette)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/img/logo-djtango.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         AudioPlayerDialog.setWindowIcon(icon)
@@ -60,38 +42,10 @@ class Ui_AudioPlayerDialog(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.labelTypeSong = QtWidgets.QLabel(self.centralwidget)
-        palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, brush)
-        self.labelTypeSong.setPalette(palette)
         self.labelTypeSong.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 40px;    \n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.labelTypeSong.setTextFormat(QtCore.Qt.AutoText)
         self.labelTypeSong.setScaledContents(False)
@@ -107,12 +61,14 @@ class Ui_AudioPlayerDialog(object):
         self.horizontalLayout.addWidget(self.line)
         spacerItem2 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem2)
+        self.line.setStyleSheet("background-color: #006666;")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.labelTitle = QtWidgets.QLabel(self.centralwidget)
         self.labelTitle.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 22px;    \n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.labelTitle.setObjectName("labelTitle")
         self.verticalLayout.addWidget(self.labelTitle)
@@ -120,25 +76,28 @@ class Ui_AudioPlayerDialog(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.labelArtist = QtWidgets.QLabel(self.centralwidget)
         self.labelArtist.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 14px;\n"
 "    font-weight: bold;\n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.labelArtist.setObjectName("labelArtist")
         self.horizontalLayout_3.addWidget(self.labelArtist)
         self.labelSep = QtWidgets.QLabel(self.centralwidget)
         self.labelSep.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 18px;\n"
 "    font-style: bold;\n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.labelSep.setObjectName("labelSep")
         self.horizontalLayout_3.addWidget(self.labelSep)
         self.labelAlbum = QtWidgets.QLabel(self.centralwidget)
         self.labelAlbum.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 14px;\n"
 "    font-style: italic;\n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.labelAlbum.setObjectName("labelAlbum")
         self.horizontalLayout_3.addWidget(self.labelAlbum)
@@ -150,7 +109,6 @@ class Ui_AudioPlayerDialog(object):
         self.checkBoxLetCortinaUntilEnd.setFocusPolicy(QtCore.Qt.NoFocus)
         self.checkBoxLetCortinaUntilEnd.setStyleSheet("QCheckBox{\n"
 "    border: none;\n"
-"   color: white;\n"
 "    font-size: 14px;\n"
 "}\n"
 "\n"
@@ -168,8 +126,8 @@ class Ui_AudioPlayerDialog(object):
         self.horizontalLayout.addWidget(self.checkBoxLetCortinaUntilEnd)
         self.timeLabel = QtWidgets.QLabel(self.centralwidget)
         self.timeLabel.setStyleSheet("QLabel{\n"
-"    color: white;\n"
-"    \n"
+"    color: #00ffff;\n"
+"    background: transparent;\n"
 "}")
         self.timeLabel.setObjectName("timeLabel")
         self.horizontalLayout.addWidget(self.timeLabel)
@@ -214,11 +172,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -242,11 +200,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -281,11 +239,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -309,11 +267,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -388,13 +346,13 @@ class Ui_AudioPlayerDialog(object):
 "{\n"
 "    color:white;\n"
 "    padding:1px;\n"
-"    background-color:rgba(160,52,77,80);\n"
+"    background-color:rgba(160,52,77,0.8);\n"
 "    border-style: none;\n"
 "}\n"
 "QComboBox QListView\n"
 "{\n"
 "    border-style: none;\n"
-"    background-color:rgba(42,42,42)\n"
+"    background-color:rgb(42,42,42);\n"
 "    \n"
 "}\n"
 "QComboBox::drop-down\n"
@@ -427,13 +385,13 @@ class Ui_AudioPlayerDialog(object):
 "{\n"
 "    color:white;\n"
 "    padding:1px;\n"
-"    background-color:rgba(160,52,77,80);\n"
+"    background-color:rgba(160,52,77,0.8);\n"
 "    border-style: none;\n"
 "}\n"
 "QComboBox QListView\n"
 "{\n"
 "    border-style: none;\n"
-"    background-color:rgba(42,42,42)\n"
+"    background-color:rgb(42,42,42);\n"
 "    \n"
 "}\n"
 "QComboBox::drop-down\n"
@@ -465,13 +423,13 @@ class Ui_AudioPlayerDialog(object):
 "{\n"
 "    color:white;\n"
 "    padding:1px;\n"
-"    background-color:rgba(160,52,77,80);\n"
+"    background-color:rgba(160,52,77,0.8);\n"
 "    border-style: none;\n"
 "}\n"
 "QComboBox QListView\n"
 "{\n"
 "    border-style: none;\n"
-"    background-color:rgba(42,42,42)\n"
+"    background-color:rgb(42,42,42);\n"
 "    \n"
 "}\n"
 "QComboBox::drop-down\n"
@@ -517,7 +475,6 @@ class Ui_AudioPlayerDialog(object):
         self.verticalLayout_7.addLayout(self.horizontalLayout_5)
         self.labelsongNB_source = QtWidgets.QLabel(self.centralwidget)
         self.labelsongNB_source.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 14px;\n"
 "    font-weight: bold;\n"
 "}")
@@ -675,11 +632,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -690,7 +647,6 @@ class Ui_AudioPlayerDialog(object):
         self.horizontalLayout_6.addWidget(self.pushButtonMilongaClear)
         self.labelMilongaName = QtWidgets.QLabel(self.centralwidget)
         self.labelMilongaName.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 14px;\n"
 "    font-weight: bold;\n"
 "}")
@@ -709,11 +665,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -737,11 +693,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -765,11 +721,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -793,11 +749,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -821,11 +777,11 @@ class Ui_AudioPlayerDialog(object):
 " }\n"
 "QPushButton:hover{\n"
 "  border-radius: 4px;\n"
-"  border: 1px solid rgba(160,52,77,70);\n"
+"  border: 1px solid rgba(160,52,77,0.7);\n"
 "}\n"
 "\n"
 "QPushButton:pressed{\n"
-"background-color:rgba(160,52,77,100);\n"
+"background-color:rgba(160,52,77,1);\n"
 "}\n"
 "\n"
 "")
@@ -839,7 +795,6 @@ class Ui_AudioPlayerDialog(object):
         self.verticalLayout_8.addLayout(self.horizontalLayout_6)
         self.labelSizeDuration = QtWidgets.QLabel(self.centralwidget)
         self.labelSizeDuration.setStyleSheet("QLabel{\n"
-"    color: white;\n"
 "    font-size: 14px;\n"
 "    font-weight: bold;\n"
 "}")
@@ -888,10 +843,12 @@ class Ui_AudioPlayerDialog(object):
         self.menuEdition = QtWidgets.QMenu(self.menubar)
         self.menuEdition.setObjectName("menuEdition")
         self.menuDisplay = QtWidgets.QMenu(self.menubar)
-        self.menuDisplay.setObjectName("menuDisplay")
+        self.menuDisplay.setObjectName("menuView")
         AudioPlayerDialog.setMenuBar(self.menubar)
         self.actionPreferences = QtWidgets.QAction(AudioPlayerDialog)
         self.actionPreferences.setObjectName("actionPreferences")
+        self.actionTrackAppearance = QtWidgets.QAction(AudioPlayerDialog)
+        self.actionTrackAppearance.setObjectName("actionTrackAppearance")
         self.actionFullscreen = QtWidgets.QAction(AudioPlayerDialog)
         self.actionFullscreen.setCheckable(True)
         self.actionFullscreen.setObjectName("actionFullscreen")
@@ -912,6 +869,7 @@ class Ui_AudioPlayerDialog(object):
         self.menuFile.addAction(self.actionImport_file)
         self.menuFile.addAction(self.actionImport_directory)
         self.menuEdition.addAction(self.actionPreferences)
+        self.menuEdition.addAction(self.actionTrackAppearance)
         self.menuEdition.addSeparator()
         self.menuEdition.addAction(self.actionEdit_details_of_current_song)
         self.menuEdition.addAction(self.actionLoad_BPM_from_ID3_Tag)
@@ -927,42 +885,46 @@ class Ui_AudioPlayerDialog(object):
 
     def retranslateUi(self, AudioPlayerDialog):
         _translate = QtCore.QCoreApplication.translate
-        AudioPlayerDialog.setWindowTitle(_translate("AudioPlayerDialog", "DjTango"))
-        self.labelTypeSong.setText(_translate("AudioPlayerDialog", "-"))
-        self.labelTitle.setText(_translate("AudioPlayerDialog", "TextLabel"))
-        self.labelArtist.setText(_translate("AudioPlayerDialog", "NA"))
+        AudioPlayerDialog.setWindowTitle(_translate("AudioPlayerDialog", "DJTango"))
+        self.labelTypeSong.setText(_translate("AudioPlayerDialog", "Type"))
+        self.labelTitle.setText(_translate("AudioPlayerDialog", "- No song selected -"))
+        self.labelArtist.setText(_translate("AudioPlayerDialog", "Artist"))
         self.labelSep.setText(_translate("AudioPlayerDialog", "-"))
-        self.labelAlbum.setText(_translate("AudioPlayerDialog", "NA"))
-        self.checkBoxLetCortinaUntilEnd.setText(_translate("AudioPlayerDialog", "End Cort."))
-        self.timeLabel.setText(_translate("AudioPlayerDialog", "-"))
-        self.playToolButton.setToolTip(_translate("AudioPlayerDialog", "play / pause"))
+        self.labelAlbum.setText(_translate("AudioPlayerDialog", "Album"))
+        self.checkBoxLetCortinaUntilEnd.setText(_translate("AudioPlayerDialog", "End Cortina"))
+        self.timeLabel.setText(_translate("AudioPlayerDialog", "00:00"))
+        self.playToolButton.setToolTip(_translate("AudioPlayerDialog", "Play / pause"))
         self.playToolButton.setShortcut(_translate("AudioPlayerDialog", "Space"))
-        self.stopToolButton.setToolTip(_translate("AudioPlayerDialog", "stop"))
-        self.pushButtonClearFilter.setToolTip(_translate("AudioPlayerDialog", "clear the filters"))
-        self.lineEditFilter.setToolTip(_translate("AudioPlayerDialog", "Enter some text and type enter to filter"))
-        self.labelsongNB_source.setText(_translate("AudioPlayerDialog", "0 song"))
-        self.pushButtonMilongaClear.setToolTip(_translate("AudioPlayerDialog", "clear the milonga table (will not be saved)"))
+        self.stopToolButton.setToolTip(_translate("AudioPlayerDialog", "Stop playback"))
+        self.pushButtonRandom.setToolTip(_translate("AudioPlayerDialog", "Shuffle playlist"))
+        self.pushButtonClearFilter.setToolTip(_translate("AudioPlayerDialog", "Clear filters"))
+        self.lineEditFilter.setToolTip(_translate("AudioPlayerDialog", "Enter text and press Enter to filter"))
+        self.labelsongNB_source.setText(_translate("AudioPlayerDialog", "0 songs"))
+        self.pushButtonMilongaClear.setToolTip(_translate("AudioPlayerDialog", "Clear the milonga playlist (does not save)"))
         self.labelMilongaName.setText(_translate("AudioPlayerDialog", "- No Milonga -"))
-        self.pushButtonLoadMilonga.setToolTip(_translate("AudioPlayerDialog", "Load Milonga"))
+        self.pushButtonLoadMilonga.setToolTip(_translate("AudioPlayerDialog", "Load milonga"))
         self.pushButtonLoadMilonga.setShortcut(_translate("AudioPlayerDialog", "Ctrl+O"))
-        self.pushButtonInfoMilonga.setToolTip(_translate("AudioPlayerDialog", "Give infos about milonga"))
-        self.pushButtonSaveMilongaAs.setToolTip(_translate("AudioPlayerDialog", "save Milanga as"))
-        self.pushButtonSaveMilonga.setToolTip(_translate("AudioPlayerDialog", "Save Milonga"))
+        self.pushButtonInfoMilonga.setToolTip(_translate("AudioPlayerDialog", "Show milonga information"))
+        self.pushButtonSaveMilongaAs.setToolTip(_translate("AudioPlayerDialog", "Save milonga as..."))
+        self.pushButtonSaveMilonga.setToolTip(_translate("AudioPlayerDialog", "Save milonga"))
         self.pushButtonSaveMilonga.setShortcut(_translate("AudioPlayerDialog", "Ctrl+S"))
-        self.pushButtonDeleteMilonga.setToolTip(_translate("AudioPlayerDialog", "Delete this Milonga"))
+        self.pushButtonDeleteMilonga.setToolTip(_translate("AudioPlayerDialog", "Delete current milonga"))
+        self.pushButtonHideDest.setToolTip(_translate("AudioPlayerDialog", "Show/hide playlist panel"))
+        self.pushButtonHideSource.setToolTip(_translate("AudioPlayerDialog", "Show/hide library panel"))
         self.labelSizeDuration.setText(_translate("AudioPlayerDialog", "0 song    |    duration : 00:00    |    Milonga will end at 12:35"))
         self.menuFile.setTitle(_translate("AudioPlayerDialog", "File"))
-        self.menuEdition.setTitle(_translate("AudioPlayerDialog", "Edition"))
-        self.menuDisplay.setTitle(_translate("AudioPlayerDialog", "Display"))
+        self.menuEdition.setTitle(_translate("AudioPlayerDialog", "Edit"))
+        self.menuDisplay.setTitle(_translate("AudioPlayerDialog", "View"))
         self.actionPreferences.setText(_translate("AudioPlayerDialog", "Preferences"))
+        self.actionTrackAppearance.setText(_translate("AudioPlayerDialog", "Track Appearance"))
         self.actionFullscreen.setText(_translate("AudioPlayerDialog", "Fullscreen"))
         self.actionFullscreen.setShortcut(_translate("AudioPlayerDialog", "F11"))
-        self.actionDisplay_side_screen.setText(_translate("AudioPlayerDialog", "Display side screen"))
+        self.actionDisplay_side_screen.setText(_translate("AudioPlayerDialog", "Toggle side screen"))
         self.actionDisplay_side_screen.setShortcut(_translate("AudioPlayerDialog", "Ctrl+F11"))
         self.actionImport_file.setText(_translate("AudioPlayerDialog", "Import file(s)"))
         self.actionImport_directory.setText(_translate("AudioPlayerDialog", "Import directory"))
-        self.actionEdit_details_of_current_song.setText(_translate("AudioPlayerDialog", "Edit details of selected song(s)"))
-        self.actionLoad_BPM_from_ID3_Tag.setText(_translate("AudioPlayerDialog", "Load BPM from ID3 Tag"))
-        self.actionTap_yourself_BPM.setText(_translate("AudioPlayerDialog", "Tap yourself BPM"))
+        self.actionEdit_details_of_current_song.setText(_translate("AudioPlayerDialog", "Edit selected song details"))
+        self.actionLoad_BPM_from_ID3_Tag.setText(_translate("AudioPlayerDialog", "Load BPM from ID3 tag"))
+        self.actionTap_yourself_BPM.setText(_translate("AudioPlayerDialog", "Tap BPM manually"))
 
 import djtango_rc

@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Exit on error
+set -eEuo pipefail
+
+# shellcheck source=/dev/null
+. ci/functions.sh
+
+# Error handling
+trap 'err "ERROR at $0 line ${BASH_LINENO[0]}. Exiting."; exit 1' ERR
+
+if [[ -f /.dockerenv ]]; then
+	warn "This script needs to be run from the host"
+	fatal 1 "not in a docker container -- not yet anyway!"
+else
+
+	run docker pull orhunp/git-cliff
+	#shellcheck disable=2312
+	docker run -t --volume "$(pwd)":/app/ orhunp/git-cliff:latest >CHANGELOG.md 2>&1
+
+	# Remove consecutive duplicate lines from CHANGELOG.md
+	awk 'NR == 1 || $0 != prev { print } { prev = $0 }' CHANGELOG.md >CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+
+	# patch cliff warning messages for non-compliant messages naughtiness
+
+	warn "Patching naughty commit messages in the CHANGELOG.md"
+	# Strip ANSI escape codes
+	sed -i 's/\x1b\[[0-9;]*m//g' CHANGELOG.md
+
+	# Inline logic from ci/move-warnings.sh
+	input_file="CHANGELOG.md"
+
+	# Temporary file for output
+	temp_file=$(mktemp)
+
+	# Variable to collect WARN lines
+	warn_lines=""
+
+	# Flag to track if we've passed the '# Changelog' header
+	in_changelog=false
+
+	# Read the file line by line
+	while IFS= read -r line; do
+		# Remove carriage return if present (for CRLF files)
+		line=${line%%$'\r'}
+		# Trim leading and trailing whitespace
+		trimmed_line=$(echo "${line}" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//') || true
+		if [[ "${trimmed_line}" == "# Changelog" ]]; then
+			# Found the changelog header, set flag
+			in_changelog=true
+			echo "${line}" >> "${temp_file}"
+		elif [[ "${trimmed_line}" =~ ^WARN ]]; then
+			# If WARN line before '# Changelog', collect it
+			if [[ "${in_changelog}" == false ]]; then
+				warn_lines+="- ${trimmed_line#WARN  git_cliff_core::changelog > }"$'\n'
+			else
+				# If WARN after '# Changelog' (unlikely in this file), collect it as well
+				warn_lines+="- ${trimmed_line#WARN  git_cliff_core::changelog > }"$'\n'
+			fi
+		else
+			# Output non-WARN lines and lines other than Warnings subsection
+			echo "${line}" >> "${temp_file}"
+		fi
+	done < "${input_file}"
+
+	# Append the Warnings subsection and collected WARN lines at the end of the file
+	if [[ -n "${warn_lines}" ]]; then
+		{
+			echo ""
+			echo "## NON-COMPLIANT COMMIT MESSAGES"
+			echo ""
+			echo "Please use conventional commit format"
+			echo ""
+			echo "These commits did not match conventional format"
+			echo ""
+			echo "${warn_lines}"
+		} >> "${temp_file}"
+	fi
+
+	# Overwrite the original file with the modified content
+	mv "${temp_file}" "${input_file}"
+
+	echo "" >> "${input_file}"
+
+	# Remove git_cliff_core::changelog warning lines
+	sed -i 's/WARN  git_cliff_core::changelog >//g' CHANGELOG.md
+
+	# also remove the commit did not match blah blah
+	sed -i "s/- Commit did not match conventional format: \`Missing type in the commit summary, expected \`type: description\`/:/g" CHANGELOG.md
+fi
+
+# remove the last carriage return from the file
+printf "%s\n" "$(< CHANGELOG.md)" > tmp_chlog
+mv tmp_chlog CHANGELOG.md
+

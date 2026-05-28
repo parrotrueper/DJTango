@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_DialogAskDelete(object):
     def setupUi(self, DialogAskDelete):

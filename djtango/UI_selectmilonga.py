@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from djtango.qt_compat import QtCore, QtGui, QtWidgets
 
 class Ui_selectmilonga(object):
     def setupUi(self, selectmilonga):
@@ -16,9 +16,6 @@ class Ui_selectmilonga(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../../../.designer/backup/img/logo-djtango.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         selectmilonga.setWindowIcon(icon)
-        selectmilonga.setStyleSheet("QDialog{\n"
-"    background-color: rgb(42,42,42)\n"
-"}")
         self.verticalLayout = QtWidgets.QVBoxLayout(selectmilonga)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label = QtWidgets.QLabel(selectmilonga)
@@ -85,20 +82,9 @@ class Ui_selectmilonga(object):
         brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
-        self.listWidgetMilongas.setPalette(palette)
-        self.listWidgetMilongas.setStyleSheet("QListWidget{\n"
-"    background-color: rgb(42,42,42);\n"
-"    color: white;\n"
-"    \n"
-"}\n"
-"\n"
-"QListWidget::item:selected {\n"
-"    background-color: rgb(160,52,77);\n"
-"}")
         self.listWidgetMilongas.setObjectName("listWidgetMilongas")
         self.verticalLayout.addWidget(self.listWidgetMilongas)
         self.buttonBox = QtWidgets.QDialogButtonBox(selectmilonga)
-        palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
@@ -117,11 +103,6 @@ class Ui_selectmilonga(object):
         brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
-        self.buttonBox.setPalette(palette)
-        self.buttonBox.setStyleSheet("QPushButton {\n"
-"    background-color: #2a2a2a;\n"
-"    color: white;\n"
-"}")
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")

@@ -15,11 +15,12 @@ CREATE TABLE "tangos" (
 	`author`	TEXT DEFAULT 'Unknown',
 	`tstart`	INTEGER DEFAULT 0,
 	`tend`	INTEGER DEFAULT 0,
+	`treated`	INTEGER DEFAULT 0,
 	PRIMARY KEY(ID)
 );
 CREATE TABLE tangoType
 			(ID INTEGER PRIMARY KEY ASC, type text, R integer, G integer, B integer, 
-			T integer);
+			T integer, fontR integer, fontG integer, fontB integer, fontT integer);
 CREATE TABLE "preferences" (
 	`baseDir`	text DEFAULT 'none',
 	`timeCortina`	integer DEFAULT 46,

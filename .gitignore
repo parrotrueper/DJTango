@@ -1,5 +1,29 @@
-__pycahce__
-*.pyc
-.idea/
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
 venv/
 venv1/
+
+# IDE/editor
+.idea/
+.vscode/
+
+# Test / build
+.pytest_cache/
+.mypy_cache/
+.build/
+dist/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Qt resource / generated files
+*.qmlc
+
+# CI artifacts
+ci/artifacts/

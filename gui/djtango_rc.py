@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore
+from djtango.qt_compat import QtCore
 
 qt_resource_data = b"\
 \x00\x00\x06\x96\

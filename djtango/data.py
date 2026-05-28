@@ -16,8 +16,19 @@ class djDataConnection:
         self.pathTangoDatabase = os.path.join(home, 'el-recodo.db')
         self.typeList = {}
 
+        if os.path.exists(self.path):
+            self.ensureTreatedColumn()
+            self.ensureTangoTypeColumns()
+
     def getDataFromSql(self, sqlfile):
         ret = ""
+        base_dir = os.path.dirname(__file__)
+        if not os.path.isabs(sqlfile):
+            normalized = sqlfile.lstrip('./\\')
+            if normalized.startswith('djtango' + os.sep):
+                normalized = normalized[len('djtango' + os.sep):]
+            sqlfile = os.path.join(base_dir, normalized)
+
         with open(sqlfile) as file:
             for line in file:
                 ret += line
@@ -26,21 +37,54 @@ class djDataConnection:
 
     def createDatabase(self):
         open(self.path, 'w').close()
-        open(self.pathTangoDatabase, 'w').close
+        open(self.pathTangoDatabase, 'w').close()
 
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
 
         # create the table
-        script = self.getDataFromSql('./djtango/sql/databaseCreation.sql')
+        script = self.getDataFromSql('sql/databaseCreation.sql')
         print(script)
         cursor.executescript(script)
 
         # fill the default table
-        script = self.getDataFromSql('./djtango/sql/databaseFill.sql')
+        script = self.getDataFromSql('sql/databaseFill.sql')
         print(script)
         cursor.executescript(script)
 
+        conn.commit()
+        conn.close()
+
+        self.ensureTreatedColumn()
+
+    def ensureTreatedColumn(self):
+        conn = sqlite3.connect(self.path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tangos'")
+        if cursor.fetchone() is None:
+            conn.close()
+            return
+
+        cursor.execute("PRAGMA table_info(tangos)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if 'treated' not in columns:
+            cursor.execute("ALTER TABLE tangos ADD COLUMN treated INTEGER DEFAULT 0")
+            conn.commit()
+        conn.close()
+
+    def ensureTangoTypeColumns(self):
+        conn = sqlite3.connect(self.path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tangoType'")
+        if cursor.fetchone() is None:
+            conn.close()
+            return
+
+        cursor.execute("PRAGMA table_info(tangoType)")
+        columns = [row[1] for row in cursor.fetchall()]
+        for column in ('fontR', 'fontG', 'fontB', 'fontT'):
+            if column not in columns:
+                cursor.execute(f"ALTER TABLE tangoType ADD COLUMN {column} INTEGER DEFAULT NULL")
         conn.commit()
         conn.close()
 
@@ -135,7 +179,7 @@ class djDataConnection:
             ctango.author = row[12]
             ctango.tstart = row[13]
             ctango.tend = row[14]
-            ctango.treated = row[15]
+            ctango.treated = row[15] if len(row) > 15 else 0
 
             tangoList.append(ctango)
         # print (ctango.type)
@@ -161,19 +205,19 @@ class djDataConnection:
             return False
 
     def insertTango(self, tango):
-        conn = sqlite3.connect(self.path)
-        cursor = conn.cursor()
-
         # don't insert a tango who already exist
         if self.existTango(tango):
             return
 
-        if not self.typeList:
-            sql = "SELECT * FROM tangoType"
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            for row in rows:
-                self.typeList[row[1]] = row[0]
+        with sqlite3.connect(self.path) as conn:
+            cursor = conn.cursor()
+
+            if not self.typeList:
+                sql = "SELECT * FROM tangoType"
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                for row in rows:
+                    self.typeList[row[1]] = row[0]
 
         if str(tango.type).lower() in self.typeList:
             tango.type = self.typeList[str(tango.type).lower()]
@@ -223,7 +267,7 @@ class djDataConnection:
             ctango.author = row[12]
             ctango.tstart = row[13]
             ctango.tend = row[14]
-            ctango.treated = row[15]
+            ctango.treated = row[15] if len(row) > 15 else 0
 
             tangoList.append(ctango)
         # print (ctango.type)
@@ -234,9 +278,8 @@ class djDataConnection:
         ID = self.getMilongaID(name)
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
-        sql = "SELECT * FROM tangos, Milonga_Tango WHERE tangos.ID = Milonga_Tango.idTango AND Milonga_Tango.IdMilonga = " + str(
-            ID)
-        cursor.execute(sql)
+        sql = "SELECT * FROM tangos, Milonga_Tango WHERE tangos.ID = Milonga_Tango.idTango AND Milonga_Tango.IdMilonga = ?"
+        cursor.execute(sql, (ID,))
         rows = cursor.fetchall()
         conn.close()
 
@@ -260,20 +303,21 @@ class djDataConnection:
             ctango.author = row[12]
             ctango.tstart = row[13]
             ctango.tend = row[14]
-            ctango.treated = row[15]
+            ctango.treated = row[15] if len(row) > 15 else 0
             tangoList.append(ctango)
         # print (ctango.type)
         return tangoList
 
     def getTangoFromListID(self, listID):
-        s = ','
-        listIDstring = s.join(["'" + str(ID) + "'" for ID in listID])
-        sql = "SELECT * FROM tangos WHERE ID IN (" + listIDstring + ")"
-        # print (sql)
+        if not listID:
+            return []
+
+        placeholders = ','.join(['?'] * len(listID))
+        sql = f"SELECT * FROM tangos WHERE ID IN ({placeholders})"
 
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
-        cursor.execute(sql)
+        cursor.execute(sql, tuple(listID))
         rows = cursor.fetchall()
         conn.close()
 
@@ -297,7 +341,7 @@ class djDataConnection:
             ctango.author = row[12]
             ctango.tstart = row[13]
             ctango.tend = row[14]
-            ctango.treated = row[15]
+            ctango.treated = row[15] if len(row) > 15 else 0
 
             tangoList.append(ctango)
         # print (ctango.type)
@@ -414,14 +458,25 @@ class djDataConnection:
         # print (TYPE)
         # print(TYPE.length)
 
-        sql = """DELETE FROM tangoType"""
-        cursor.execute(sql)
+        cursor.execute("DELETE FROM tangoType")
 
-        # "INSERT INTO tangos (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
-        sql = "INSERT INTO tangoType (ID, type, R, G, B, T) VALUES(?,?,?,?,?,?)"
+        cursor.execute("PRAGMA table_info(tangoType)")
+        columns = [row[1] for row in cursor.fetchall()]
+        has_font_columns = all(column in columns for column in ('fontR', 'fontG', 'fontB', 'fontT'))
+
+        if has_font_columns:
+            sql = "INSERT INTO tangoType (ID, type, R, G, B, T, fontR, fontG, fontB, fontT) VALUES(?,?,?,?,?,?,?,?,?,?)"
+        else:
+            sql = "INSERT INTO tangoType (ID, type, R, G, B, T) VALUES(?,?,?,?,?,?)"
+
         for nb in TYPE:
-            # print (TYPE[nb][0])
-            cursor.execute(sql, TYPE[nb])
+            type_entry = TYPE[nb]
+            if has_font_columns:
+                if len(type_entry) < 10:
+                    type_entry = type_entry + (None, None, None, None)
+                cursor.execute(sql, type_entry[:10])
+            else:
+                cursor.execute(sql, type_entry[:6])
             conn.commit()
 
         conn.close()
@@ -429,15 +484,13 @@ class djDataConnection:
     def setNewSongAvailable(self, value):
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
-        val = 0
-        if value:
-            val = 1
+        val = 1 if value else 0
 
-        sql = "UPDATE preferences SET newSongAvailable= " + val
-        cursor.execute(sql)
+        sql = "UPDATE preferences SET newSongAvailable = ?"
+        cursor.execute(sql, (val,))
 
         conn.commit()
-        conn.colse()
+        conn.close()
 
     def getPreferences(self):
         ret = {}
