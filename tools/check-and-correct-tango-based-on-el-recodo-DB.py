@@ -612,4 +612,3 @@ for tango in listOfTango:
 
 printResum([noMatching, matched, multiChoice, altCort])
 
-

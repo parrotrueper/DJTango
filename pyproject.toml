@@ -25,10 +25,11 @@ classifiers = [
 [project.optional-dependencies]
 test = [
   "nose",
+  "pytest",
 ]
 
 [project.scripts]
-djtango = "bin.djtango_cli:main"
+djtango = "tools.djtango_cli:main"
 
 [project.urls]
 Homepage = "https://example.com/dj-tango"
@@ -36,4 +37,4 @@ Download = "https://example.com/dj-tango/download"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["djtango", "bin", "mutagen", "tests"]
+include = ["djtango", "tools", "mutagen", "tests"]

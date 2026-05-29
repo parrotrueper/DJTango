@@ -39,7 +39,7 @@ try:
         from PySide6.QtCore import QVariant
     except ImportError:
         QVariant = object
-    from PySide6.QtGui import QColor, QIcon, QPalette, QBrush, QImage, QPainter, QPen, QPainterPath, QShortcut, QAction
+    from PySide6.QtGui import QColor, QIcon, QPalette, QBrush, QImage, QPainter, QPen, QPainterPath, QShortcut, QAction, QFont, QFontMetrics, QCursor
     from PySide6.QtWidgets import (
         QMainWindow,
         QProgressDialog,

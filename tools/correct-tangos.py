@@ -78,4 +78,3 @@ for index in range(1, len(tangoList)):
 		curIndex = []
 		i = 1
 			
-

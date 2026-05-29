@@ -16,7 +16,7 @@ fi
 . .venv/bin/activate
 
 if [ "$#" -eq 0 ]; then
-  exec .venv/bin/python bin/djtango_cli.py --help
+  exec .venv/bin/python tools/djtango_cli.py --help
 else
-  exec .venv/bin/python bin/djtango_cli.py "$@"
+  exec .venv/bin/python tools/djtango_cli.py "$@"
 fi

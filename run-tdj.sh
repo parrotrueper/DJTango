@@ -20,4 +20,4 @@ if ! .venv/bin/python -c 'import PySide6' >/dev/null 2>&1 && ! .venv/bin/python 
   exit 1
 fi
 
-exec .venv/bin/python bin/DJTango.py "$@"
+exec .venv/bin/python djtango/DJTango.py "$@"

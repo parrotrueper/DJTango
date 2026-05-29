@@ -205,9 +205,3 @@ class dirSong:
 			#for directory in dirs:
 				#os.rmdir()
 				#print(directory)
-
-
-
-
-
-

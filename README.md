@@ -65,6 +65,21 @@ For GUI and multimedia support, the container build installs:
 ./setup-env.sh
 ```
 
+## Testing
+
+Run the unit tests with:
+
+```shell
+source .venv/bin/activate
+python -m pytest -q
+```
+
+For CI tests inside Docker, use:
+
+```shell
+./ci/test
+```
+
 ## Launch
 
 ```shell

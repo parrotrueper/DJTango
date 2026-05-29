@@ -6,8 +6,8 @@ DJ Tango is a Python-based tool for managing tango music libraries and DJing.
 
 It includes:
 
-- A GUI mode for interactive browsing and playback (`bin/DJTango.py`)
-- A CLI mode for database initialization, scanning, and library inspection (`bin/djtango_cli.py`)
+- A GUI mode for interactive browsing and playback (`djtango/DJTango.py`)
+- A CLI mode for database initialization, scanning, and library inspection (`tools/djtango_cli.py`)
 - A SQLite-backed local database stored in `~/.djtango`
 
 At the moment, the project is designed to run from a Python virtual environment.
@@ -82,7 +82,7 @@ Use the GUI launcher script:
 ./run-tdj.sh
 ```
 
-This script checks for `.venv` and the Qt bindings, then starts `bin/DJTango.py`.
+This script checks for `.venv` and the Qt bindings, then starts `djtango/DJTango.py`.
 
 ### First run behavior
 The first time DJ Tango runs, it will detect that no database exists and will create one in the DJ home directory.
@@ -212,7 +212,7 @@ Run the unit tests locally with:
 
 ```bash
 source .venv/bin/activate
-python -m unittest discover -s tests -p '*_tests.py'
+python -m pytest -q
 ```
 
 For container-based CI testing, use the repository test harness:
@@ -231,9 +231,11 @@ To force a Docker image rebuild for CI tests:
 
 ## Project structure
 
-- `bin/`
-  - `DJTango.py` — GUI application entrypoint
+- `tools/`
   - `djtango_cli.py` — CLI application entrypoint
+- `djtango/`
+  - `DJTango.py` — GUI application entrypoint
+  - `data.py` — database connection and CRUD operations
   - `run-tdj.sh` — GUI launcher script
   - `run-tdj-cli.sh` — CLI launcher script
 - `djtango/`

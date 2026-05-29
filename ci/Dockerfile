@@ -48,4 +48,4 @@ RUN python -m pip install -e .[test]
 RUN pyinstaller --noconfirm --clean --onefile --name DJTango \
     --add-data "gui/img:gui/img" \
     --add-data "djtango/img:djtango/img" \
-    bin/DJTango.py
+    djtango/DJTango.py

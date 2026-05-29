@@ -1815,12 +1815,12 @@ QHeaderView{
   </action>
   <action name="actionImport_file">
    <property name="text">
-    <string>Import file(s)</string>
+    <string>Add files</string>
    </property>
   </action>
   <action name="actionImport_directory">
    <property name="text">
-    <string>Import directory</string>
+    <string>Add directory</string>
    </property>
   </action>
   <action name="actionEdit_details_of_current_song">
