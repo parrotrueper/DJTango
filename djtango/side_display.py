@@ -46,14 +46,15 @@ class SideDisplayMixin:
         if self.curTango is not None:
             nextTanda = self.getNextTanda()
             self.sideContent.labelArtist.setText(self.curTango.artist)
-            if self.curTango.type == 4:
-                self.sideContent.labelType.setText(self.TYPE[self.curTango.type][1].upper())
+            type_id = self._resolve_type_id(self.curTango.type)
+            if type_id == 4:
+                self.sideContent.labelType.setText(self.TYPE[type_id][1].upper())
             else:
                 if not self._isMilongaPlaying:
-                    self.sideContent.labelType.setText(self.TYPE[self.curTango.type][1].upper())
+                    self.sideContent.labelType.setText(self.TYPE[type_id][1].upper())
                 else:
                     self.sideContent.labelType.setText(
-                        self.TYPE[self.curTango.type][1].upper()
+                        self.TYPE[type_id][1].upper()
                         + " - "
                         + str(nextTanda['nbintanda'] - nextTanda['num'] + 1)
                         + "/"
@@ -72,15 +73,15 @@ class SideDisplayMixin:
             else:
                 self.sideContent.labelNextTanda.setText("NEXT TANDA  |  " + str(nextTanda['type']))
 
-            R = self.TYPE[self.curTango.type][2]
-            G = self.TYPE[self.curTango.type][3]
-            B = self.TYPE[self.curTango.type][4]
-            T = self.TYPE[self.curTango.type][5]
+            R = self.TYPE[type_id][2]
+            G = self.TYPE[type_id][3]
+            B = self.TYPE[type_id][4]
+            T = self.TYPE[type_id][5]
             self.sideContent.frameType.setStyleSheet(
                 _fromUtf8(side_display_frame_style(QColor(R, G, B, T)))
             )
 
-            fontColor = get_type_font_color(self.TYPE.get(self.curTango.type))
+            fontColor = get_type_font_color(self.TYPE.get(type_id))
             if fontColor is None:
                 fontColor = get_contrast_color(QColor(R, G, B, T))
             self._currentSideLabelColor = fontColor

@@ -3,57 +3,67 @@
 import logging
 import os, mimetypes, re
 from djtango import utils
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 from shutil import move
 
 logger = logging.getLogger(__name__)
 
-#from PyQt4.phonon import Phonon
-#import glob 
-
 class dirSong:
 	def __init__(self, cpath = '', fill=False, progressBar = None, djData = None):
-		self.songpath = cpath
+		self.songpath = os.path.abspath(cpath) if cpath else ''
 		self.listFiles ={}
-		self.tangos ={}
+		self.tracks ={}
 		self.progress = progressBar
 		self.djData = djData
+		self.excluded_paths = set()
+		if self.djData is not None and hasattr(self.djData, 'getExcludedPaths'):
+			for path in self.djData.getExcludedPaths():
+				self.excluded_paths.add(os.path.abspath(path))
 		if fill:
 			self.fillListOfFile()
-		
-
-	#def getTangos(self):
-	#	return self.tangos
-
+	def _path_is_excluded(self, path):
+		normalized = os.path.abspath(path)
+		for excluded in self.excluded_paths:
+			if normalized == excluded or normalized.startswith(excluded + os.sep):
+				return True
 	def fillListOfFile(self):
 		count = 0
 		for root, dirs, files in os.walk(self.songpath):
+			if self._path_is_excluded(root):
+				continue
 			for i in files:
+				path = os.path.join(root, i)
+				if self._path_is_excluded(path):
+					continue
 				name, ext = os.path.splitext(i)
 				if ext.lower() in utils.acceptedFileExt:
-					count+=1
+					count += 1
 		total = count
 		count = 0
 		if self.progress is not None:
 			self.progress.setMaximum(total)
 			self.progress.setMinimum(0)
 			self.progress.forceShow()
-		abort = False;
-		#self.progress.setWindowModality(Qt.WindowModal);
+		abort = False
 		for root, dirs, files in os.walk(self.songpath):
+			if self._path_is_excluded(root):
+				continue
 			for i in files:
+				path = os.path.join(root, i)
+				if self._path_is_excluded(path):
+					continue
 				name, ext = os.path.splitext(i)
 				if ext.lower() in utils.acceptedFileExt:
-					count+=1
+					count += 1
 					if self.progress is not None:
 						self.progress.setValue(count)
-					self.listFiles[os.path.join(root, i)] = count
-					tmpTango = TangoSong(os.path.join(root, i), count, True)
+					self.listFiles[path] = count
+					tmpTango = TrackSong(path, count, True)
 					head, tail = os.path.split(tmpTango.path)
 					if self.progress is not None:
-						self.progress.setLabelText("Importing Tangos, please be patient...\n"+str(count)+"/"+str(total)+"\n"+tail)
-					self.tangos[count] = tmpTango
-					self.djData.insertTango(tmpTango)
+						self.progress.setLabelText("Importing Tracks, please be patient...\n" + str(count) + "/" + str(total) + "\n" + tail)
+					self.tracks[count] = tmpTango
+					self.djData.insertTrack(tmpTango)
 					if self.progress is not None and self.progress.wasCanceled():
 						abort = True
 						break;
@@ -63,52 +73,61 @@ class dirSong:
 				break;
 		if abort:
 			logger.debug("Import aborted by user; database remains unchanged")
-	
+
 	def getListFromDir(self):
-		#print ("in getListFromDir : "+self.songpath)
 		accepted = 0
 		ret = {}
 		mime = mimetypes.MimeTypes()
 		for root, dirs, files in os.walk(self.songpath):
+			if self._path_is_excluded(root):
+				continue
 			for file in files:
+				path = os.path.join(root, file)
+				if self._path_is_excluded(path):
+					continue
 				name, ext = os.path.splitext(file)
 				if ext.lower() in utils.acceptedFileExt:
 					accepted += 1
-					ret[os.path.join(root, file)] = accepted
+					ret[path] = accepted
 		return ret
 
-	def loadTangos(self, tangos):
-		#check if the tango is not arleady existing and do someting with it
+	def loadTangos(self, tracks):
+		#check if the track is not arleady existing and do someting with it
 		#countExistingPath = {}
-		for t in tangos:
-			self.tangos[t.ID] = t
+		for t in tracks:
+			self.tracks[t.ID] = t
 			if t.path in self.listFiles:
-				logger.debug("Duplicate tango path detected: %s", t.path)
+				logger.debug("Duplicate track path detected: %s", t.path)
 			self.listFiles[t.path] = t.ID
 
+	def excludePath(self, path):
+		normalized = os.path.abspath(path)
+		if normalized not in self.excluded_paths:
+			self.excluded_paths.add(normalized)
+		for track_id in list(self.tracks.keys()):
+			track = self.tracks[track_id]
+			if self._path_is_excluded(track.path):
+				self.removeTango(track_id)
+		for file_path in list(self.listFiles.keys()):
+			if self._path_is_excluded(file_path):
+				del self.listFiles[file_path]
+
 	def addTango(self, t):
-		#check if the tango is not arleady existing and do someting with it
-		self.tangos[t.ID] = t
+		#check if the track is not arleady existing and do someting with it
+		self.tracks[t.ID] = t
 		self.listFiles[t.path] = t.ID
-		#print ("adding a Tango")
 
 	def removeTango(self, ID):
-		t = self.tangos[ID]
-		del self.tangos[ID]
+		t = self.tracks[ID]
+		del self.tracks[ID]
 		del self.listFiles[t.path]
-		#print("removing")
 
 	def checkNewFiles(self):
 		ret = []
-		#print ("# of tangos in the database :\t"+str(len(self.tangos)))
-		#print("# of tangos in the table: \t"+str(len(self.listFiles)))
 		newfiles = self.getListFromDir()
-		#print ("# of tangos on the Hard Drive :\t"+str(len(newfiles)))
-		if not len(self.tangos) == len(newfiles):
-			#print("les deux ne sont pas de la même taille")
+		if not len(self.tracks) == len(newfiles):
 			for key in newfiles.keys():
 				if not key in self.listFiles:
-					#print ("file to add : "+key)
 					ret.append(key)
 		return ret
 
@@ -116,92 +135,74 @@ class dirSong:
 		ret=[]
 		if realfiles:
 			files = self.getListFromDir()
-			#print ("files on hard drive: "+str(len(files)))
 			for file in files:
 				if file in self.listFiles:
 					pass
 				else:
 					ret.append(file)
 		else:
-			#print ("files in database: "+str(len(self.tangos)))
-			for i in self.tangos:
-				tango = self.tangos[i]
-				if not os.path.isfile(tango.path):
-					ret.append(tango.path)
-					#print (str(i))
+			for i in self.tracks:
+				track = self.tracks[i]
+				if not os.path.isfile(track.path):
+					ret.append(track.path)
 				
 
 		
 		return ret
 
-# this function will take a tango and verify if the naming correspond to the norm and if the folders are corrects.
+# this function will take a track and verify if the naming correspond to the norm and if the folders are corrects.
 # if not, it will normalize it
-# root is the root folder where tango are stored
+# root is the root folder where track are stored
 	def normalizeTango(self, Tid, TYPE):
-		#print("try to normalise")
-		tango = self.tangos[Tid]
-		filename, file_extension = os.path.splitext(tango.path)
-		#root = self.songpath
-		name = str(tango.year)+"-"+utils.removeOddCaracters(tango.title)+"-"+utils.remove_accents(tango.artist).upper()+"-"+utils.remove_accents(tango.album).upper()+"-"+TYPE[tango.type][1].upper()+file_extension
+		track = self.tracks[Tid]
+		filename, file_extension = os.path.splitext(track.path)
+		name = str(track.year)+"-"+utils.removeOddCaracters(track.title)+"-"+utils.remove_accents(track.artist).upper()+"-"+utils.remove_accents(track.album).upper()+"-"+TYPE[track.type][1].upper()+file_extension
 
 		name = utils.remvoveSlash(name) #be sure that no more slash are in the filename
 
-		if tango.type == 4:
+		if track.type == 4:
 			rep = os.path.join(self.songpath, "CORTINA")
-		elif tango.type < 4:
-			rep = os.path.join(self.songpath, "TANGO", utils.remove_accents(tango.artist).upper())
-		elif tango.type >5 :
-			rep = os.path.join(self.songpath, "ALTERNATIF", utils.remove_accents(tango.artist).upper())
+		elif track.type < 4:
+			rep = os.path.join(self.songpath, "TANGO", utils.remove_accents(track.artist).upper())
+		elif track.type >5 :
+			rep = os.path.join(self.songpath, "ALTERNATIF", utils.remove_accents(track.artist).upper())
 		else:
 			rep = os.path.join(self.songpath, "UNKNOWN")
-
-		#print("REP IS : "+rep)
 
 		if not os.path.isdir(rep):
 			os.makedirs(rep)
 
-		if tango.title == "Unknown" and tango.artist == "Unknown":
-			logger.debug("Normalization skipped because tango metadata is unknown for file: %s", tango.path)
+		if track.title == "Unknown" and track.artist == "Unknown":
+			logger.debug("Normalization skipped because track metadata is unknown for file: %s", track.path)
 		else:
 			count = 2 
 			while os.path.isfile(os.path.join(rep, name)):
-				name = str(tango.year)+"-"+utils.removeOddCaracters(tango.title)+"_"+str(count)+"-"+utils.remove_accents(tango.artist).upper()+"-"+utils.remove_accents(tango.album).upper()+"-"+TYPE[tango.type][1].upper()+file_extension
+				name = str(track.year)+"-"+utils.removeOddCaracters(track.title)+"_"+str(count)+"-"+utils.remove_accents(track.artist).upper()+"-"+utils.remove_accents(track.album).upper()+"-"+TYPE[track.type][1].upper()+file_extension
 				name = utils.remvoveSlash(name) #be sure that no more slash are in the filename
 				count+=1;
-			#print("here I should create a new file")
-			if tango.path in self.listFiles: 
-				del(self.listFiles[tango.path])
+			if track.path in self.listFiles: 
+				del(self.listFiles[track.path])
 			else: 
-				logger.debug("Normalization path not found in listFiles: %s", tango.path)
-			
-			#print("Coying this file in the new directory")
-			new_path = os.path.join(rep, name)
-			move(tango.path, new_path)
+				logger.debug("Normalization path not found in listFiles: %s", track.path)
 
-			logger.debug("Normalized tango ID %s path to %s", Tid, new_path)
-			self.tangos[Tid].path = new_path
-			self.tangos[Tid].titleFields()
-			self.listFiles[new_path] = tango.ID
+			new_path = os.path.join(rep, name)
+			move(track.path, new_path)
+
+			logger.debug("Normalized track ID %s path to %s", Tid, new_path)
+			self.tracks[Tid].path = new_path
+			self.tracks[Tid].titleFields()
+			self.listFiles[new_path] = track.ID
 
 
 	#will remove the empty dir
 	def checkEmptyDir(self):
-		#TODO: check for files wich are not music and remove them
 		for root, dirs, files in os.walk(self.songpath):
-			#print (root)
-			#print(dirs)
 			for file in files:
 				filename, file_extension = os.path.splitext(file)
 				if file_extension.lower() not in utils.acceptedFileExt:
-					#print("I should remvoe this file, but I'm still in testing mod so I'm waiting for my developper to add the proper function: "+os.path.join(root, file)) 
 					os.remove(os.path.join(root, file))
-				#else:
-				#	print(os.path.join(root, file))
 			try:
 				os.rmdir(root)
 			except OSError:
 				pass
-		#print (files)
-			#for directory in dirs:
-				#os.rmdir()
-				#print(directory)
+

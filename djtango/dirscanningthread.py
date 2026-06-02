@@ -4,21 +4,20 @@ import logging
 import time
 from random import randint
 from djtango import utils
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 from djtango.dirsong import dirSong
 from djtango.data import djDataConnection
 from djtango.qt_compat import QMutex, pyqtSignal, QObject, pyqtSlot
-#from PyQt5.QtCore import pyqtSignal
 
 logger = logging.getLogger(__name__)
 
 
 class dirScan(QObject):
 	scanned = pyqtSignal(list,list)
-	def __init__(self, tangoList, djData, parent = None):
+	def __init__(self, trackList, djData, parent = None):
 		super(dirScan, self).__init__(parent)
 		logger.debug("dirScan worker thread initialized")
-		self.tangoList = tangoList
+		self.trackList = trackList
 		self.emitted = False
 		self.running = True
 		self.djData = djData
@@ -28,25 +27,22 @@ class dirScan(QObject):
 		while self.running:
 			# logger.debug("SCANNING !")
 			if not self.emitted:
-				newfiles = self.tangoList.checkNewFiles()
+				newfiles = self.trackList.checkNewFiles()
 				if newfiles:
-					# logger.debug("Nb of new tango: %s", len(newfiles))
+					logger.debug("Nb of new track: %s", len(newfiles))
 					datas = []
 					# firstID = 0
-					tangos = []
+					tracks = []
 					for path in newfiles:
-						logger.debug("Processing new tango file: %s", path)
-						insertedtango = TangoSong(path, 0, True)
-						insertedID = self.djData.insertTango(insertedtango)
-						# if firstID == 0:
-						#	firstID = insertedID
+						logger.debug("Processing new track file: %s", path)
+						insertedtango = TrackSong(path, 0, True)
+						insertedID = self.djData.insertTrack(insertedtango)
 						insertedtango.ID = insertedID
-						# logger.debug("ID: %s", insertedID)
-						tangos.append(insertedtango)
+						tracks.append(insertedtango)
 						data = insertedtango.list()
 						datas.append(data)
-					logger.debug("Inserted %s newly discovered tango entries into the database", len(datas))
-					self.scanned.emit(datas, tangos)
+					logger.debug("Inserted %s newly discovered track entries into the database", len(datas))
+					self.scanned.emit(datas, tracks)
 			else:
 				logger.debug("dirScan worker skipped this iteration because a scan is already active")
 
@@ -60,20 +56,10 @@ class dirScan(QObject):
 		self.emitted = status
 
 	@pyqtSlot(dirSong)
-	def updateTangoList(self, tangoList):
-		self.tangoList = tangoList
+	def updateTangoList(self, trackList):
+		self.trackList = trackList
 
 	def stop(self):
 		logger.debug("Stopping dirScan worker thread")
 		self.running = False
-	@pyqtSlot(bool)
-	def setUpdatingStatus(self, status ):
-		self.emitted = status
-
-	@pyqtSlot(dirSong)
-	def updateTangoList(self, tangoList):
-		self.tangoList = tangoList
-
-    
-
 

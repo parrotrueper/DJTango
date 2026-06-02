@@ -13,30 +13,30 @@ import os, sys, time, threading, operator, re
 
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djData = djDataConnection(djhome)
-tangoList = djData.getAllTangos()
+trackList = djData.getAllTracks()
 
-TYPE=djData.getTangoTypeList()
+TYPE=djData.getTrackTypeList()
 count = 0
 countNU = 0
 tagedFileNB =0
-lenght = len(tangoList)
-for tango in tangoList:
+lenght = len(trackList)
+for track in trackList:
 	count+=1
-	print(str(tango.ID)+" - "+tango.path)
+	print(str(track.ID)+" - "+track.path)
 	
-	if not os.path.isfile(tango.path):
-		djData.deleteTango(tango.ID)
+	if not os.path.isfile(track.path):
+		djData.deleteTango(track.ID)
 	else :
 	
 		countNU+=1
-		ext = os.path.splitext(tango.path)[1][1:]
+		ext = os.path.splitext(track.path)[1][1:]
 
 		try:
-			song = AudioSegment.from_file(tango.path, ext.lower())
+			song = AudioSegment.from_file(track.path, ext.lower())
 
-			tango.duration=len(song)
-			#print(tango.duration)
-			djData.updateTango(tango)
+			track.duration=len(song)
+			#print(track.duration)
+			djData.updateTrack(track)
 		except Exception as err:
 			print(err)
 			pass

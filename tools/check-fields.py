@@ -2,13 +2,13 @@
 # -*- coding:Utf-8 -*
 
 from djtango.data import djDataConnection
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 import os
 
 #listOfTango = []
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djData = djDataConnection(djhome)
-TYPE = djData.getTangoTypeList()
+TYPE = djData.getTrackTypeList()
 
 
 def getFormatedNb(nb):
@@ -32,54 +32,54 @@ def getTypeFromName(name):
 	return ret
 
 
-#tangoInDB = djData.getAllTangInTangoDatabase()
+#trackInDB = djData.getAllTangInTangoDatabase()
 
-listOfTango = djData.getAllTangos()
+listOfTango = djData.getAllTracks()
 noMatching = 0
 matched = 0
 multiChoice = 0
 noMatched = []
 
 
-for tango in listOfTango:
-	#print (tango.list())
-	rows = djData.existTangoInTangoDatabase(tango)#if exist in el-recodo database
+for track in listOfTango:
+	#print (track.list())
+	rows = djData.existTangoInTangoDatabase(track)#if exist in el-recodo database
 	#print(rows)
-	if len(rows) == 0: #If we can't find this tango in el-recodo database
-		#print(tango.listUpdateDB())
+	if len(rows) == 0: #If we can't find this track in el-recodo database
+		#print(track.listUpdateDB())
 		noMatching+=1
-		noMatched.append(tango)
-	elif len(rows) == 1: #if only one tango is corresponding to el-recodo database (better case)
+		noMatched.append(track)
+	elif len(rows) == 1: #if only one track is corresponding to el-recodo database (better case)
 		matched+=1
 		row = list(rows[0])
 		#print(row)
-		if tango.year < 10 or tango.year>1990:
-		#if tango.year >=0:
+		if track.year < 10 or track.year>1990:
+		#if track.year >=0:
 			for i in range (0, len(row)):
 			#print(row[i])
 				if(row[i] == '?' or row[i] == '' or row[i] == ' '):
 					row[i] = 'Unnkown'
 			
-			#print(tango.listUpdateDB())
+			#print(track.listUpdateDB())
 			#print ("will update date, composer, singer")
 			#print("row: ")
 			#print(rows[0])
-			tango.year = row[7]
-			tango.singer = row[10]
-			tango.composer = row[11]
-			tango.author = row[12]
-			#print ("tango modifié : "+str(tango.listUpdateDB()))
+			track.year = row[7]
+			track.singer = row[10]
+			track.composer = row[11]
+			track.author = row[12]
+			#print ("track modifié : "+str(track.listUpdateDB()))
 			#print()
-			djData.updateTango(tango)
-		if tango.type == 5:
-			tango.type = getTypeFromName(row[6])
+			djData.updateTrack(track)
+		if track.type == 5:
+			track.type = getTypeFromName(row[6])
 			#print(row[6]+" -> "+str(getTypeFromName(row[6])))
 
-			djData.updateTango(tango)
+			djData.updateTrack(track)
 
 
-	else: #if we have more than one tango
-		#print (tango.title+" | "+tango.artist)
+	else: #if we have more than one track
+		#print (track.title+" | "+track.artist)
 		#print(rows)
 		#for row in rows:
 		#	print (row)
@@ -91,13 +91,13 @@ for tango in listOfTango:
 
 count = 0
 fichier = open("./tobecorrected.csv", "w")
-for tango in noMatched:
-	tList = tango.list()
+for track in noMatched:
+	tList = track.list()
 	#if tList[5] <4 and not (tList[3].lower() == 'miguel calo'):
 	
 	if tList[5] <4 :
 		count+=1
-		print(tango.listUpdateDB())
+		print(track.listUpdateDB())
 		#print ('{0:10}  {1:30}  {2:30}  {3:2}'.format(str(tList[0]), tList[2].lower(), tList[3].lower(), tList[5]))
 		fichier.write("%s;%s;%s\n" % (str(tList[0]),tList[2].lower(),tList[3].lower()))
 	

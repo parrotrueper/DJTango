@@ -111,7 +111,7 @@ class Ui_property(object):
         QtCore.QMetaObject.connectSlotsByName(property)
 
     def retranslateUi(self, property):
-        property.setWindowTitle(_translate("property", "Song Properties", None))
+        property.setWindowTitle(_translate("property", "Track Properties", None))
         self.label.setText(_translate("property", "TextLabel", None))
         self.label_2.setText(_translate("property", "TextLabel", None))
         self.label_3.setText(_translate("property", "TextLabel", None))

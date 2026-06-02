@@ -14,7 +14,7 @@ class AudioPlaybackMixin:
 
     def _libraryClicked(self):
         if self._isMilongaPlaying:
-            self._showInfo("You can't play a tango if a milonga is playing. Stop the Milonga first")
+            self._showInfo("You can't play a track if the Milonga is playing. Stop the Milonga first")
             return
         if self.propWindow.isVisible():
             return
@@ -24,7 +24,7 @@ class AudioPlaybackMixin:
         if len(indexes) == 1:
             self._currentIndex = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
             self.curLibraryRow = indexes[0].row()
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             self.updatePlayingCursor()
             self._load_new_media()
             self._play_media()
@@ -32,7 +32,7 @@ class AudioPlaybackMixin:
 
     def _destLibraryClicked(self):
         if self._isMilongaPlaying:
-            self._showInfo("You can't play a tango if a milonga is playing. Stop the Milonga first")
+            self._showInfo("You can't play a track if the Milonga is playing. Stop the Milonga first")
             return
         if self.propWindow.isVisible():
             return
@@ -43,18 +43,18 @@ class AudioPlaybackMixin:
         if len(indexes) == 1:
             self._currentIndex = self.destModel.data(indexes[0], Qt.DisplayRole)
             self.curLibraryRow = indexes[0].row()
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             self._load_new_media()
             self._play_media()
 
     def update_duration(self):
         sys_name = platform.system()
         if sys_name == 'Linux':
-            for key in self._tangoList.tangos:
-                tmpTango = self._tangoList.tangos[key]
+            for key in self._tangoList.tracks:
+                tmpTango = self._tangoList.tracks[key]
                 audio = audioread.audio_open(tmpTango.path)
                 tmpTango.duration = audio.duration * 1000
-                self.djData.updateTango(tmpTango)
+                self.djData.updateTrack(tmpTango)
         elif sys_name == 'Windows':
             self._showInfo('You can not run this command on Windows :-(')
 
@@ -71,7 +71,7 @@ class AudioPlaybackMixin:
             return
 
         if self.curTango is None:
-            self._showInfo("No tango selected")
+            self._showInfo("No track selected")
             return
 
         self._dialog.playToolButton.setIcon(self.pauseIcon)
@@ -88,13 +88,36 @@ class AudioPlaybackMixin:
         except Exception as err:
             print(err)
 
-    def update_tango_infos(self, tango):
-        if self.curTango is not None and self.curTango.ID == tango.ID:
-            self.curTango = tango
-            self._dialog.labelTypeSong.setText(self.TYPE[tango.type][1].upper())
-            self._dialog.labelArtist.setText(tango.artist)
-            self._dialog.labelAlbum.setText(tango.album)
-            self._dialog.labelTitle.setText(tango.title)
+    def _resolve_type_id(self, type_value):
+        if type_value in self.TYPE:
+            return type_value
+        if isinstance(type_value, str):
+            lookup = type_value.strip().lower()
+            for key, value in self.TYPE.items():
+                if str(value[1]).lower() == lookup:
+                    return key
+            try:
+                numeric = int(type_value)
+                if numeric in self.TYPE:
+                    return numeric
+            except (TypeError, ValueError):
+                pass
+        try:
+            numeric = int(type_value)
+            if numeric in self.TYPE:
+                return numeric
+        except (TypeError, ValueError):
+            pass
+        return 5
+
+    def update_tango_infos(self, track):
+        if self.curTango is not None and self.curTango.ID == track.ID:
+            self.curTango = track
+            type_id = self._resolve_type_id(track.type)
+            self._dialog.labelTypeSong.setText(self.TYPE[type_id][1].upper())
+            self._dialog.labelArtist.setText(track.artist)
+            self._dialog.labelAlbum.setText(track.album)
+            self._dialog.labelTitle.setText(track.title)
 
     def stop_media(self):
         if not self.ok_to_play_pause_stop():
@@ -119,7 +142,7 @@ class AudioPlaybackMixin:
     def ok_to_play_pause_stop(self):
         ok_to_proceed = True
         if self.mediaSource is None:
-            err = "No tango selected, please select a tango first"
+            err = "No track selected"
             self._dialog.playToolButton.setIcon(self.playIcon)
             self._showInfo(err)
             ok_to_proceed = False
@@ -141,7 +164,7 @@ class AudioPlaybackMixin:
         self.curLibraryRow = 0
         index = self.destModel.index(self.curLibraryRow, 0)
         self._currentIndex = self.destModel.data(index, Qt.DisplayRole)
-        self.curTango = self._tangoList.tangos[self._currentIndex]
+        self.curTango = self._tangoList.tracks[self._currentIndex]
         self._isMilongaPlaying = True
         self._updateSideScreen()
         self._startMilongaTimeStamp = time.time()
@@ -175,17 +198,17 @@ class AudioPlaybackMixin:
             self.curTango.duration = duration * 1000
             if self._isMilongaPlaying:
                 indexes = self._dialog.milongaDest.selectionModel().selectedRows()
-                tangoID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
+                trackID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
             else:
                 indexes = self._dialog.milongaSource.selectionModel().selectedRows()
-                tangoID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
-                data = self._tangoList.tangos[tangoID].list()
+                trackID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
+                data = self._tangoList.tracks[trackID].list()
                 count = 0
                 for cdata in data:
                     index = self.sourceProxyModel.index(indexes[0].row(), count)
                     self.sourceProxyModel.setData(index, cdata, Qt.EditRole)
                     count += 1
-            self.djData.updateTango(self.curTango)
+            self.djData.updateTrack(self.curTango)
 
     def position_changed(self, progress):
         slider_progress = progress / 1000
@@ -238,7 +261,7 @@ class AudioPlaybackMixin:
         self.updatePlayingCursor()
 
         if rowIndex <= self.destModel.rowCount(QModelIndex()):
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             if self.curTango.type == 4:
                 time.sleep(0.5)
             if self.sideWindow.isFullScreen() and rowIndex == self.destModel.rowCount(QModelIndex()):
@@ -250,7 +273,7 @@ class AudioPlaybackMixin:
             else:
                 self.play_next_milonga_song()
         else:
-            self._showInfo("The milonga is finished")
+            self._showInfo("The playlist set is finished")
 
     def playNextLibrarySong(self):
         rowIndex = self.curLibraryRow + 1
@@ -264,7 +287,7 @@ class AudioPlaybackMixin:
         time.sleep(0.1)
 
         if rowIndex <= self.sourceProxyModel.rowCount(QModelIndex()):
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             self._load_new_media()
             self._play_media()
             self._updateSideScreen()

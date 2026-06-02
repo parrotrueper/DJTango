@@ -8,17 +8,17 @@ import string, os
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djData = djDataConnection(djhome)
 
-tangoList = dirSong('/home/hoonakker/media/tango-propres-HQ', False)
-tangoList.loadTangos(djData.getAllTangos())
-fileOnHD = tangoList.getListFromDir()
-tangos ={}
-for ID in tangoList.tangos:
-	#print (tangoList.tangos[ID].path)
-	tangos[tangoList.tangos[ID].path] = ID
+trackList = dirSong('/home/hoonakker/media/track-propres-HQ', False)
+trackList.loadTangos(djData.getAllTracks())
+fileOnHD = trackList.getListFromDir()
+tracks ={}
+for ID in trackList.tracks:
+	#print (trackList.tracks[ID].path)
+	tracks[trackList.tracks[ID].path] = ID
 
 tmp = {}
 for file in fileOnHD:
-	if file in tangos and file in tmp:
+	if file in tracks and file in tmp:
 		tmp[file]+=1
 		print (tmp[file])
 	else:

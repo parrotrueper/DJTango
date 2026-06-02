@@ -2,9 +2,9 @@ import threading
 import time
 
 from djtango.UI_trackAppearance import Ui_trackAppearance
-from djtango.qt_compat import QColor, QColorDialog, QDialog, QThread, QMessageBox, Qt
+from djtango.qt_compat import QColor, QColorDialog, QDialog, QThread, QMessageBox, Qt, QtWidgets
 from djtango.ui_theme import button_style, track_preview_style
-from djtango.ui_utils import get_contrast_color, get_type_font_color, set_type_font_color, apply_tango_type_color
+from djtango.ui_utils import get_contrast_color, get_type_font_color, set_type_font_color, apply_track_type_color
 
 
 class TrackAppearanceDialog(QDialog):
@@ -20,6 +20,7 @@ class TrackAppearanceDialog(QDialog):
         self._colorSelectionMode = 'track'
         self._currentTrackColor = None
         self._currentFontColor = None
+        self._currentFont = None
         self._currentRow = 0
         self.colorDialog = QColorDialog(self)
         self.colorDialog.setOption(QColorDialog.ShowAlphaChannel, True)
@@ -37,6 +38,7 @@ class TrackAppearanceDialog(QDialog):
         self.previewLabel = self.ui.previewLabel
         self.selectColorButton = self.ui.selectColorButton
         self.selectFontColorButton = self.ui.selectFontColorButton
+        self.selectFontButton = self.ui.selectFontButton
         self.buttonBox = self.ui.buttonBox
 
         self.typesList.currentRowChanged.connect(self._selectTangoChange)
@@ -44,8 +46,11 @@ class TrackAppearanceDialog(QDialog):
         self.removeTypeButton.clicked.connect(self._removeTangoType)
         self.selectColorButton.clicked.connect(lambda: self._openColorDialog('track'))
         self.selectFontColorButton.clicked.connect(lambda: self._openColorDialog('font'))
-        self.buttonBox.accepted.connect(self.accept)
+        self.selectFontButton.clicked.connect(self._openFontDialog)
+        self.buttonBox.accepted.connect(self._onAccepted)
         self.buttonBox.rejected.connect(self.reject)
+        self.applyButton = self.ui.applyButton
+        self.applyButton.clicked.connect(self._applyTypeChanges)
 
         self._populateTypes()
 
@@ -157,17 +162,60 @@ class TrackAppearanceDialog(QDialog):
             self.colorDialog.setCurrentColor(self._currentFontColor)
         self.colorDialog.show()
 
+    def _openFontDialog(self):
+        current_font = self._currentFont or self.previewLabel.font()
+        font_dialog = QtWidgets.QFontDialog(self)
+        font_dialog.setCurrentFont(current_font)
+        font_dialog.setWindowTitle('Choose font')
+        if font_dialog.exec() == QDialog.Accepted:
+            self._currentFont = font_dialog.selectedFont()
+            self._applyTrackButtonPreview()
+
     def _applyTrackButtonPreview(self):
         if self._currentTrackColor is None:
             return
         if self._currentFontColor is None:
             self._currentFontColor = get_contrast_color(self._currentTrackColor)
         self.previewLabel.setStyleSheet(track_preview_style(self._currentTrackColor, self._currentFontColor))
+        if self._currentFont is not None:
+            self.previewLabel.setFont(self._currentFont)
         self.selectColorButton.setStyleSheet(button_style(self._currentTrackColor, get_contrast_color(self._currentTrackColor)))
         self.selectFontColorButton.setStyleSheet(button_style(self._currentFontColor, get_contrast_color(self._currentFontColor)))
+        self.selectFontButton.setStyleSheet(button_style(self._currentFontColor, get_contrast_color(self._currentFontColor)))
 
     def _saveTypeChanges(self):
-        pass
+        """Persist the current dialog TYPE changes back to the original parent TYPE dict."""
+        self.original_TYPE.clear()
+        self.original_TYPE.update(self.TYPE)
+
+    def _applyGlobalFontToParent(self, parent):
+        if self._currentFont is None:
+            return
+        if hasattr(parent, '_dialog'):
+            if hasattr(parent._dialog, 'milongaSource'):
+                parent._dialog.milongaSource.setFont(self._currentFont)
+            if hasattr(parent._dialog, 'milongaDest'):
+                parent._dialog.milongaDest.setFont(self._currentFont)
+        parent.trackAppearanceFont = self._currentFont
+
+    def _applyTypeChanges(self):
+        self._saveTypeChanges()
+        parent = self.parent()
+        if parent is not None:
+            self._applyGlobalFontToParent(parent)
+            if hasattr(parent, 'djData') and hasattr(parent.djData, 'updateType'):
+                try:
+                    parent.djData.updateType(parent.TYPE)
+                except Exception:
+                    pass
+            if hasattr(parent, '_showInfo'):
+                parent._showInfo('Track appearance applied')
+            if hasattr(parent, '_updateSideScreen'):
+                parent._updateSideScreen()
+
+    def _onAccepted(self):
+        self._applyTypeChanges()
+        self.accept()
 
 
 class InfoThreading(QThread):
@@ -189,7 +237,7 @@ class InfoThreading(QThread):
 
     def run(self):
         now = time.time()
-        while time.time() - now < self.timelaps:
+        while not self.exiting and time.time() - now < self.timelaps:
             time.sleep(1)
 
 

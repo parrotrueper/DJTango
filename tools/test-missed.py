@@ -8,10 +8,10 @@ import string, os
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djData = djDataConnection(djhome)
 
-tangoList = dirSong('/home/hoonakker/media/tango-propres-HQ', False)
-tangoList.loadTangos(djData.getAllTangos())
-missed = tangoList.getMissedFiles()
-missedFiles = tangoList.getMissedFiles(True)
+trackList = dirSong('/home/hoonakker/media/track-propres-HQ', False)
+trackList.loadTangos(djData.getAllTracks())
+missed = trackList.getMissedFiles()
+missedFiles = trackList.getMissedFiles(True)
 
 
 for miss in missed:

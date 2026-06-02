@@ -11,48 +11,48 @@ class TrackPropertiesMixin:
     def handelOpenPropWidow(self):
         self.disabledTableView()
         self._dialog.milongaSource.setSortingEnabled(False)
-        self.updateTangoProp()
-        self.TangoBeforeChange = self._tangoList.tangos[self.curTangoEditing]
+        self.updateTrackProp()
+        self.TrackBeforeChange = self._tangoList.tracks[self.curTangoEditing]
         self.propWindow.show()
         self.scanningDir = True
 
     def _handlePropWindowClose(self):
-        self.updateTangoSong()
-        self.TangoBeforeChange = self._tangoList.tangos[self.curTangoEditing]
+        self.updateTrackSong()
+        self.TrackBeforeChange = self._tangoList.tracks[self.curTangoEditing]
         self.propWindow.close()
         self._dialog.milongaSource.setSortingEnabled(True)
         self.enableTableView()
         self.scanningDir = False
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' song(s)')
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' track(s)')
 
     def _handlePropWindowNext(self):
         self.enableTableView()
-        self.updateTangoSong()
-        self.TangoBeforeChange = self._tangoList.tangos[self.curTangoEditing]
+        self.updateTrackSong()
+        self.TrackBeforeChange = self._tangoList.tracks[self.curTangoEditing]
         if self.curLibraryRow + 1 < self.sourceProxyModel.rowCount(QModelIndex()):
             self.curLibraryRow += 1
             index = self.sourceProxyModel.index(self.curLibraryRow, 0)
             self.curTangoEditing = self.sourceProxyModel.data(index, Qt.DisplayRole)
             self._dialog.milongaSource.selectRow(self.curLibraryRow)
-            self.updateTangoProp()
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' song(s)')
+            self.updateTrackProp()
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' track(s)')
         self.disabledTableView()
         self.scanningDir = True
 
     def _handlePropWindowPrevious(self):
         self.enableTableView()
-        self.updateTangoSong()
+        self.updateTrackSong()
         if self.curLibraryRow > 0:
             self.curLibraryRow -= 1
             self._dialog.milongaSource.selectRow(self.curLibraryRow)
             index = self.sourceProxyModel.index(self.curLibraryRow, 0)
             self.curTangoEditing = self.sourceProxyModel.data(index, Qt.DisplayRole)
-            self.updateTangoProp()
+            self.updateTrackProp()
         self.disabledTableView()
         self.scanningDir = True
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' song(s)')
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' track(s)')
 
-    def updateTangoProp(self):
+    def updateTrackProp(self):
         indexes = self._dialog.milongaSource.selectionModel().selectedRows()
         if len(indexes) > 1:
             self.detailsContent.nextButton.setVisible(False)
@@ -63,10 +63,10 @@ class TrackPropertiesMixin:
             self.detailsContent.previousButton.setVisible(True)
             self.curTangoEditing = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
             self.curLibraryRow = indexes[0].row()
-            self.detailsContent.textPath.setText(self._tangoList.tangos[self.curTangoEditing].path)
+            self.detailsContent.textPath.setText(self._tangoList.tracks[self.curTangoEditing].path)
             if self.detailsContent.checkBoxPlayMusic.isChecked():
                 self._isClicked = True
-                self.curTango = self._tangoList.tangos[self.curTangoEditing]
+                self.curTango = self._tangoList.tracks[self.curTangoEditing]
                 self._load_new_media()
                 self._play_media()
         sameFieldValue = self.getSameFieldInfos(indexes)
@@ -100,53 +100,53 @@ class TrackPropertiesMixin:
     def getSameFieldInfos(self, indexes):
         sameFieldValue = {}
         for index in indexes:
-            tangoID = self.sourceProxyModel.data(index, Qt.DisplayRole)
-            tango = self._tangoList.tangos[tangoID]
-            sameFieldValue['artist'] = tango.artist if 'artist' not in sameFieldValue else sameFieldValue['artist'] if sameFieldValue['artist'] == tango.artist else False
-            sameFieldValue['album'] = tango.album if 'album' not in sameFieldValue else sameFieldValue['album'] if sameFieldValue['album'] == tango.album else False
-            sameFieldValue['type'] = tango.type if 'type' not in sameFieldValue else sameFieldValue['type'] if sameFieldValue['type'] == tango.type else False
-            sameFieldValue['year'] = tango.year if 'year' not in sameFieldValue else sameFieldValue['year'] if sameFieldValue['year'] == tango.year else False
-            sameFieldValue['title'] = tango.title if 'title' not in sameFieldValue else sameFieldValue['title'] if sameFieldValue['title'] == tango.title else False
+            trackID = self.sourceProxyModel.data(index, Qt.DisplayRole)
+            track = self._tangoList.tracks[trackID]
+            sameFieldValue['artist'] = track.artist if 'artist' not in sameFieldValue else sameFieldValue['artist'] if sameFieldValue['artist'] == track.artist else False
+            sameFieldValue['album'] = track.album if 'album' not in sameFieldValue else sameFieldValue['album'] if sameFieldValue['album'] == track.album else False
+            sameFieldValue['type'] = track.type if 'type' not in sameFieldValue else sameFieldValue['type'] if sameFieldValue['type'] == track.type else False
+            sameFieldValue['year'] = track.year if 'year' not in sameFieldValue else sameFieldValue['year'] if sameFieldValue['year'] == track.year else False
+            sameFieldValue['title'] = track.title if 'title' not in sameFieldValue else sameFieldValue['title'] if sameFieldValue['title'] == track.title else False
         return sameFieldValue
 
     def isSomethingChanged(self):
         return not (
-            self.TangoBeforeChange.artist == self.detailsContent.lineEditArtist.text() and
-            self.TangoBeforeChange.title == self.detailsContent.lineEditTitle.text() and
-            self.TangoBeforeChange.year == self.detailsContent.spinBoxYear.value() and
-            self.TangoBeforeChange.type == self.detailsContent.comboBoxTangoType.currentIndex() + 1 and
-            self.TangoBeforeChange.album == self.detailsContent.lineEditAlbum.text()
+            self.TrackBeforeChange.artist == self.detailsContent.lineEditArtist.text() and
+            self.TrackBeforeChange.title == self.detailsContent.lineEditTitle.text() and
+            self.TrackBeforeChange.year == self.detailsContent.spinBoxYear.value() and
+            self.TrackBeforeChange.type == self.detailsContent.comboBoxTangoType.currentIndex() + 1 and
+            self.TrackBeforeChange.album == self.detailsContent.lineEditAlbum.text()
         )
 
-    def updateTangoSong(self):
+    def updateTrackSong(self):
         if not self.isSomethingChanged():
             return
         self.scanningDir = True
         indexes = self._dialog.milongaSource.selectionModel().selectedRows()
         for index in indexes:
-            tangoID = self.sourceProxyModel.data(index, Qt.DisplayRole)
-            tango = self._tangoList.tangos[tangoID]
+            trackID = self.sourceProxyModel.data(index, Qt.DisplayRole)
+            track = self._tangoList.tracks[trackID]
             artist = self.detailsContent.lineEditArtist.text()
             title = self.detailsContent.lineEditTitle.text()
             album = self.detailsContent.lineEditAlbum.text()
             if artist != '-':
-                tango.artist = artist or 'Unknown'
+                track.artist = artist or 'Unknown'
             if title != '-':
-                tango.title = title or 'Unknown'
+                track.title = title or 'Unknown'
             if self.detailsContent.spinBoxYear.value() > 0:
-                tango.year = self.detailsContent.spinBoxYear.value()
+                track.year = self.detailsContent.spinBoxYear.value()
             if album != '-':
-                tango.album = album or 'Unknown'
+                track.album = album or 'Unknown'
             if self.detailsContent.comboBoxTangoType.currentIndex() > -1:
-                tango.type = self.detailsContent.comboBoxTangoType.currentIndex() + 1
+                track.type = self.detailsContent.comboBoxTangoType.currentIndex() + 1
             if self.normalize == 2:
-                self._tangoList.normalizeTango(tangoID, self.TYPE)
+                self._tangoList.normalizeTango(trackID, self.TYPE)
             if self.writeTag == 2:
-                tango.writeTags(self.TYPE)
-            data = tango.list()
+                track.writeTags(self.TYPE)
+            data = track.list()
             for count, cdata in enumerate(data):
                 list_index = self.sourceProxyModel.index(index.row(), count)
                 self.sourceProxyModel.setData(list_index, cdata, Qt.EditRole)
-            self.djData.updateTango(tango)
-            self.update_tango_infos(tango)
+            self.djData.updateTrack(track)
+            self.update_tango_infos(track)
         self.scanningDir = False

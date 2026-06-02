@@ -536,20 +536,27 @@ class Ui_AudioPlayerDialog(object):
         brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(34, 34, 48))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.AlternateBase, brush)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.AlternateBase, brush)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.AlternateBase, brush)
         self.milongaSource.setPalette(palette)
+        self.milongaSource.setAlternatingRowColors(True)
         self.milongaSource.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.milongaSource.setStyleSheet("QTableView{\n"
-"    color:white;\n"
+"    color:#d3d3d3;\n"
 "    font-size: 12px;\n"
 "    background: rgb(42, 42, 42);\n"
-"    \n"
+"    alternate-background-color: rgb(34, 34, 48);\n"
+"    selection-background-color: rgb(64, 64, 64);\n"
+"    selection-color: white;\n"
 "}\n"
 "QHeaderView::section{\n"
 "    color:white;\n"
 "    background: rgb(42, 42, 42);\n"
+"    border: 1px solid rgb(32, 32, 32);\n"
 "}\n"
-"\n"
-"\n"
 "QHeaderView{\n"
 "    color:white;\n"
 "    background: rgb(42, 42, 42);\n"
@@ -840,6 +847,8 @@ class Ui_AudioPlayerDialog(object):
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
+        self.menuLibrary = QtWidgets.QMenu(self.menuFile)
+        self.menuLibrary.setObjectName("menuLibrary")
         self.menuEdition = QtWidgets.QMenu(self.menubar)
         self.menuEdition.setObjectName("menuEdition")
         self.menuDisplay = QtWidgets.QMenu(self.menubar)
@@ -860,14 +869,18 @@ class Ui_AudioPlayerDialog(object):
         self.actionImport_file.setObjectName("actionImport_file")
         self.actionImport_directory = QtWidgets.QAction(AudioPlayerDialog)
         self.actionImport_directory.setObjectName("actionImport_directory")
+        self.actionLibraryContents = QtWidgets.QAction(AudioPlayerDialog)
+        self.actionLibraryContents.setObjectName("actionLibraryContents")
         self.actionEdit_details_of_current_song = QtWidgets.QAction(AudioPlayerDialog)
         self.actionEdit_details_of_current_song.setObjectName("actionEdit_details_of_current_song")
         self.actionLoad_BPM_from_ID3_Tag = QtWidgets.QAction(AudioPlayerDialog)
         self.actionLoad_BPM_from_ID3_Tag.setObjectName("actionLoad_BPM_from_ID3_Tag")
         self.actionTap_yourself_BPM = QtWidgets.QAction(AudioPlayerDialog)
         self.actionTap_yourself_BPM.setObjectName("actionTap_yourself_BPM")
-        self.menuFile.addAction(self.actionImport_file)
-        self.menuFile.addAction(self.actionImport_directory)
+        self.menuFile.addMenu(self.menuLibrary)
+        self.menuLibrary.addAction(self.actionImport_file)
+        self.menuLibrary.addAction(self.actionImport_directory)
+        self.menuLibrary.addAction(self.actionLibraryContents)
         self.menuEdition.addAction(self.actionPreferences)
         self.menuEdition.addAction(self.actionTrackAppearance)
         self.menuEdition.addSeparator()
@@ -887,7 +900,7 @@ class Ui_AudioPlayerDialog(object):
         _translate = QtCore.QCoreApplication.translate
         AudioPlayerDialog.setWindowTitle(_translate("AudioPlayerDialog", "DJTango"))
         self.labelTypeSong.setText(_translate("AudioPlayerDialog", "Type"))
-        self.labelTitle.setText(_translate("AudioPlayerDialog", "- No song selected -"))
+        self.labelTitle.setText(_translate("AudioPlayerDialog", "- No track selected -"))
         self.labelArtist.setText(_translate("AudioPlayerDialog", "Artist"))
         self.labelSep.setText(_translate("AudioPlayerDialog", "-"))
         self.labelAlbum.setText(_translate("AudioPlayerDialog", "Album"))
@@ -899,7 +912,7 @@ class Ui_AudioPlayerDialog(object):
         self.pushButtonRandom.setToolTip(_translate("AudioPlayerDialog", "Shuffle playlist"))
         self.pushButtonClearFilter.setToolTip(_translate("AudioPlayerDialog", "Clear filters"))
         self.lineEditFilter.setToolTip(_translate("AudioPlayerDialog", "Enter text and press Enter to filter"))
-        self.labelsongNB_source.setText(_translate("AudioPlayerDialog", "0 songs"))
+        self.labelsongNB_source.setText(_translate("AudioPlayerDialog", "0 tracks"))
         self.pushButtonMilongaClear.setToolTip(_translate("AudioPlayerDialog", "Clear the milonga playlist (does not save)"))
         self.labelMilongaName.setText(_translate("AudioPlayerDialog", "- No Milonga -"))
         self.pushButtonLoadMilonga.setToolTip(_translate("AudioPlayerDialog", "Load milonga"))
@@ -911,8 +924,9 @@ class Ui_AudioPlayerDialog(object):
         self.pushButtonDeleteMilonga.setToolTip(_translate("AudioPlayerDialog", "Delete current milonga"))
         self.pushButtonHideDest.setToolTip(_translate("AudioPlayerDialog", "Show/hide playlist panel"))
         self.pushButtonHideSource.setToolTip(_translate("AudioPlayerDialog", "Show/hide library panel"))
-        self.labelSizeDuration.setText(_translate("AudioPlayerDialog", "0 song    |    duration : 00:00    |    Milonga will end at 12:35"))
+        self.labelSizeDuration.setText(_translate("AudioPlayerDialog", "0 tracks    |    duration : 00:00    |    Milonga will end at 12:35"))
         self.menuFile.setTitle(_translate("AudioPlayerDialog", "File"))
+        self.menuLibrary.setTitle(_translate("AudioPlayerDialog", "Library"))
         self.menuEdition.setTitle(_translate("AudioPlayerDialog", "Edit"))
         self.menuDisplay.setTitle(_translate("AudioPlayerDialog", "View"))
         self.actionPreferences.setText(_translate("AudioPlayerDialog", "Preferences"))
@@ -923,7 +937,8 @@ class Ui_AudioPlayerDialog(object):
         self.actionDisplay_side_screen.setShortcut(_translate("AudioPlayerDialog", "Ctrl+F11"))
         self.actionImport_file.setText(_translate("AudioPlayerDialog", "Add files"))
         self.actionImport_directory.setText(_translate("AudioPlayerDialog", "Add directory"))
-        self.actionEdit_details_of_current_song.setText(_translate("AudioPlayerDialog", "Edit selected song details"))
+        self.actionLibraryContents.setText(_translate("AudioPlayerDialog", "Library contents..."))
+        self.actionEdit_details_of_current_song.setText(_translate("AudioPlayerDialog", "Edit selected track details"))
         self.actionLoad_BPM_from_ID3_Tag.setText(_translate("AudioPlayerDialog", "Load BPM from ID3 tag"))
         self.actionTap_yourself_BPM.setText(_translate("AudioPlayerDialog", "Tap BPM manually"))
 

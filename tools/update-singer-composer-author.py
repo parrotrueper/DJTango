@@ -11,23 +11,23 @@ djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 
 djData = djDataConnection(djhome)
 
-Tangos = djData.getAllTangos()
+Tracks = djData.getAllTracks()
 #start = 3880
 start = 0
 
-#print (Tangos)
-for tango in Tangos:
-	if tango.ID > start:
-		if not tango.singer:
-			tango.singer = 'Unknown'
-		if not tango.author:
-			tango.author = 'Unknown'
-		if not tango.composer:
-			tango.composer = 'Unknown'
+#print (Tracks)
+for track in Tracks:
+	if track.ID > start:
+		if not track.singer:
+			track.singer = 'Unknown'
+		if not track.author:
+			track.author = 'Unknown'
+		if not track.composer:
+			track.composer = 'Unknown'
 		
 
 
-		#print (tango.title+" "+str(tango.ID)+" -> "+string.capwords(tango.title))
-		print (tango.listUpdateDB())
-		djData.updateTango(tango)
+		#print (track.title+" "+str(track.ID)+" -> "+string.capwords(track.title))
+		print (track.listUpdateDB())
+		djData.updateTrack(track)
 	

@@ -1,0 +1,7 @@
+services:
+  sut:
+    image: djtango-dev
+    working_dir: /workspace
+    command: ["bash", "-lc", "bash ./ci/install-deps.sh && ./dev-check.sh"]
+    volumes:
+      - ../:/workspace

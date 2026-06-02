@@ -17,10 +17,7 @@ def removeOddCaracters(input_str):
 	output = output.replace('.', '')
 	return output
 def msecToms(msec):
-	#print ("msec: "+str(msec))
-	#print(type(msec))
 	if type(msec) is not float and type(msec) is not int:
-		#msec = 0
 		return msec #we asume that the value is already a string set to the right value
 	m,s=(0,0)
 	if msec >= 0:

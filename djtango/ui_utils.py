@@ -1,16 +1,16 @@
 from djtango.qt_compat import QColor
 
 
-def tango_type_key_from_row(row):
+def track_type_key_from_row(row):
     if row < 0:
-        raise ValueError("No tango type selected")
+        raise ValueError("No track type selected")
     return row + 1
 
 
-def apply_tango_type_color(TYPE, row, color):
-    key = tango_type_key_from_row(row)
+def apply_track_type_color(TYPE, row, color):
+    key = track_type_key_from_row(row)
     if key not in TYPE:
-        raise KeyError(f"Tango type key not found: {key}")
+        raise KeyError(f"Track type key not found: {key}")
     type_entry = TYPE[key]
     extra = type_entry[6:] if len(type_entry) > 6 else ()
     TYPE[key] = (

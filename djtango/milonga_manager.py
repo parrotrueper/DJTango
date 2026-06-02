@@ -2,6 +2,7 @@ import time
 
 from djtango import utils
 from djtango.qt_compat import QMenu, QModelIndex, Qt
+from djtango.tableModels import normalize_type_key
 
 
 class MilongaManagerMixin:
@@ -81,29 +82,42 @@ class MilongaManagerMixin:
         if self.selectMilongaListWindow.result() == 0:
             return
         self.currentMilongaName = self.selectMilongaListContent.listWidgetMilongas.currentItem().data(Qt.DisplayRole)
-        tango_list = self.djData.getTangoFromMilonga(self.currentMilongaName)
+        tango_list = self.djData.getTrackFromMilonga(self.currentMilongaName)
 
-        data = [tango.list() for tango in tango_list]
+        data = [track.list() for track in tango_list]
 
         self._dialog.labelMilongaName.setText(self.currentMilongaName)
         self.destModel.changeData(data)
         self.updateMilongaInfos(tango_list)
 
-    def updateMilongaInfos(self, tangoList=None):
-        tangoIdList = self.getIDListFromMilonga()
-        tangoList = self.djData.getTangoFromListID(tangoIdList)
+    def _normalize_track_type(self, track_type):
+        type_key = normalize_type_key(track_type, self.TYPE)
+        if type_key in self.TYPE:
+            return type_key
+        try:
+            type_key = int(track_type)
+        except (TypeError, ValueError):
+            type_key = 5
+        if type_key not in self.TYPE:
+            type_key = 5
+        return type_key
+
+    def updateMilongaInfos(self, trackList=None):
+        trackIdList = self.getIDListFromMilonga()
+        trackList = self.djData.getTrackFromListID(trackIdList)
         songnum = 0
         classique = 0
         totalDuration = 0
         totalDurWithCort = 0
         typeCount = {}
-        for tango in tangoList:
-            typeCount[tango.type] = typeCount.get(tango.type, 0) + tango.duration
-            if tango.type < 4:
-                classique += tango.duration
-            if tango.type != 4:
-                totalDuration += float(tango.duration)
-                totalDurWithCort += float(tango.duration)
+        for track in trackList:
+            type_key = self._normalize_track_type(track.type)
+            typeCount[type_key] = typeCount.get(type_key, 0) + track.duration
+            if type_key < 4:
+                classique += track.duration
+            if type_key != 4:
+                totalDuration += float(track.duration)
+                totalDurWithCort += float(track.duration)
                 songnum += 1
             else:
                 totalDuration += self.FadOutTime
@@ -126,7 +140,7 @@ class MilongaManagerMixin:
         end = time.strftime("%H:%M", time.localtime(self._startMilongaTimeStamp + totalDuration / 1000))
         text = (
             str(songnum)
-            + " song(s)    |    duration : "
+            + " track(s)    |    duration : "
             + str(utils.msecToHouMin(totalDuration))
             + "    |    Milonga will end at "
             + end
@@ -134,12 +148,12 @@ class MilongaManagerMixin:
         self._dialog.labelSizeDuration.setText(text)
 
     def getIDListFromMilonga(self):
-        tangoIdList = []
+        trackIdList = []
         for i in range(0, self.destModel.rowCount(QModelIndex())):
             index = self.destModel.index(i, 0)
-            tangoID = self.destModel.data(index, Qt.DisplayRole)
-            tangoIdList.append(tangoID)
-        return tangoIdList
+            trackID = self.destModel.data(index, Qt.DisplayRole)
+            trackIdList.append(trackID)
+        return trackIdList
 
     def _clearMilonga(self):
         if self._isMilongaPlaying:
@@ -156,7 +170,7 @@ class MilongaManagerMixin:
         self.curLibraryRow = 0
         index = self.destModel.index(self.curLibraryRow, 0)
         self._currentIndex = self.destModel.data(index, Qt.DisplayRole)
-        self.curTango = self._tangoList.tangos[self._currentIndex]
+        self.curTango = self._tangoList.tracks[self._currentIndex]
         self._isMilongaPlaying = True
         self._updateSideScreen()
         self._startMilongaTimeStamp = time.time()
@@ -179,7 +193,7 @@ class MilongaManagerMixin:
         self.updatePlayingCursor()
 
         if rowIndex <= self.destModel.rowCount(QModelIndex()):
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             if self.curTango.type == 4:
                 time.sleep(0.5)
             if self.sideWindow.isFullScreen() and rowIndex == self.destModel.rowCount(QModelIndex()):

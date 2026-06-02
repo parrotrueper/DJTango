@@ -16,15 +16,15 @@ DEFAULT_HOME = os.environ.get('DJ_HOME_PATH', str(Path.home() / '.djtango'))
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         prog='djtango',
-        description='DJ Tango CLI: manage tango music libraries without Qt.',
+        description='DJ Track CLI: manage track music libraries without Qt.',
     )
     parser.add_argument('--home', default=DEFAULT_HOME, help='DJ home directory for the database')
     subparsers = parser.add_subparsers(dest='command', required=True)
 
-    subparsers.add_parser('init-db', help='Create the DJ Tango database in the home directory.')
+    subparsers.add_parser('init-db', help='Create the DJ Track database in the home directory.')
 
     scan_parser = subparsers.add_parser('scan', help='Scan a directory and insert supported audio files into the database.')
-    scan_parser.add_argument('path', help='Path to scan for tango audio files')
+    scan_parser.add_argument('path', help='Path to scan for track audio files')
 
     list_parser = subparsers.add_parser('list', help='List all songs in the database.')
     list_parser.add_argument('--limit', type=int, default=0, help='Limit the number of rows printed')
@@ -51,26 +51,26 @@ def scan_path(args):
 
     scanner = dirSong(cpath=args.path, fill=False, djData=data)
     scanner.fillListOfFile()
-    print(f'Scanned {args.path} and inserted {len(scanner.tangos)} songs.')
+    print(f'Scanned {args.path} and inserted {len(scanner.tracks)} songs.')
 
 
 def list_songs(args):
     data = djDataConnection(args.home)
-    tangos = data.getAllTangos()
+    tracks = data.getAllTracks()
     count = 0
-    for tango in tangos:
+    for track in tracks:
         count += 1
-        print(f'{tango.ID}\t{tango.path}\t{tango.title}\t{tango.artist}\t{tango.album}\t{tango.type}\t{tango.year}')
+        print(f'{track.ID}\t{track.path}\t{track.title}\t{track.artist}\t{track.album}\t{track.type}\t{track.year}')
         if args.limit and count >= args.limit:
             break
-    print(f'Found {len(tangos)} songs.')
+    print(f'Found {len(tracks)} songs.')
 
 
 def check_new(args):
     data = djDataConnection(args.home)
-    tangos = data.getAllTangos()
+    tracks = data.getAllTracks()
     scanner = dirSong(cpath=args.path, fill=False, djData=data)
-    scanner.loadTangos(tangos)
+    scanner.loadTangos(tracks)
     new_files = scanner.checkNewFiles()
     if not new_files:
         print('No new files detected.')
@@ -82,9 +82,9 @@ def check_new(args):
 
 def check_missing(args):
     data = djDataConnection(args.home)
-    tangos = data.getAllTangos()
+    tracks = data.getAllTracks()
     scanner = dirSong(cpath=args.path, fill=False, djData=data)
-    scanner.loadTangos(tangos)
+    scanner.loadTangos(tracks)
     missing = scanner.getMissedFiles()
     if not missing:
         print('No missing files detected.')

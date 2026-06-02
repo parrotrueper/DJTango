@@ -199,7 +199,7 @@ QFrame::layout { margin: 0px }</string>
 }</string>
             </property>
             <property name="text">
-             <string>Tango Type</string>
+             <string>Track Type</string>
             </property>
             <property name="scaledContents">
              <bool>false</bool>

@@ -15,28 +15,28 @@ if len(sys.argv) < 3:
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djDataSource = djDataConnection(djhome, sys.argv[1])
 djDataDest = djDataConnection(djhome, sys.argv[2])
-print (len(djDataDest.getAllTangos()))
+print (len(djDataDest.getAllTracks()))
 
 milongas = djDataSource.getListOfMilongas()
 for milonga in milongas:
-	tangos = djDataSource.getTangoFromMilonga(milonga)
+	tracks = djDataSource.getTrackFromMilonga(milonga)
 	newtangolist = []
-	for tango in tangos:
+	for track in tracks:
 
-		searchedTangos = djDataDest.searchTango(tango)
+		searchedTangos = djDataDest.searchTrack(track)
 		#newtango = searchedTangos[0]
 		if len(searchedTangos) > 0:
 			#newtango = searchedTangos[0];
 			newtangolist.append(searchedTangos[0].ID)
-	print("I should insert in milonga "+milonga+" -> "+str(len(newtangolist))+" tangos")
+	print("I should insert in milonga "+milonga+" -> "+str(len(newtangolist))+" tracks")
 	djDataDest.saveMilonga(milonga, newtangolist)
 
 	
 
-#tangoList = dirSong('/home/hoonakker/media/tango-propres-HQ', False)
-#tangoList.loadTangos(djData.getAllTangos())
-#missed = tangoList.getMissedFiles()
-#missedFiles = tangoList.getMissedFiles(True)
+#trackList = dirSong('/home/hoonakker/media/track-propres-HQ', False)
+#trackList.loadTangos(djData.getAllTracks())
+#missed = trackList.getMissedFiles()
+#missedFiles = trackList.getMissedFiles(True)
 
 
 #for miss in missed:

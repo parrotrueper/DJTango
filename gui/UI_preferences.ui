@@ -222,7 +222,7 @@ QCheckBox::indicator:checked {
 }</string>
          </property>
          <property name="text">
-          <string>Tango type</string>
+          <string>Track type</string>
          </property>
         </widget>
        </item>
@@ -281,7 +281,7 @@ QCheckBox::indicator:checked {
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>Add a Tango type</string>
+            <string>Add a Track type</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QPushButton{
@@ -305,7 +305,7 @@ QCheckBox::indicator:checked {
      <item>
       <widget class="QPushButton" name="removeTypeButton">
        <property name="toolTip">
-        <string>Remove a Tango type</string>
+        <string>Remove a Track type</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton{
@@ -333,7 +333,7 @@ QCheckBox::indicator:checked {
 }</string>
          </property>
          <property name="text">
-          <string>Tango Color</string>
+          <string>Track Color</string>
          </property>
         </widget>
        </item>

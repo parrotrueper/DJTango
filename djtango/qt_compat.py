@@ -14,6 +14,7 @@ try:
         QModelIndex,
         QAbstractTableModel,
         QSortFilterProxyModel,
+        QTimer,
     )
     try:
         from PySide6.QtCore import QMutex

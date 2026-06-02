@@ -186,7 +186,7 @@
 }</string>
        </property>
        <property name="text">
-        <string>Tango type:</string>
+        <string>Track type:</string>
        </property>
       </widget>
      </item>

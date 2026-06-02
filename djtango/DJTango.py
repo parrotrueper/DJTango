@@ -3,6 +3,7 @@
 import os
 import sys
 import pdb
+import signal
 
 if getattr(sys, "frozen", False):
     ROOT = getattr(sys, "_MEIPASS", os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -12,7 +13,7 @@ else:
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 from djtango.dirsong import dirSong
 from djtango.data import djDataConnection
 from djtango import tableModels
@@ -35,11 +36,12 @@ from djtango.qt_compat import QAbstractTableModel
 from djtango.qt_compat import QAbstractItemView
 from djtango.qt_compat import QFont
 from djtango.qt_compat import QFontMetrics
+from djtango.qt_compat import QTimer
 from djtango.qt_compat import QPalette
 from djtango.qt_compat import QSortFilterProxyModel
 from djtango.ui_utils import (
-    tango_type_key_from_row,
-    apply_tango_type_color,
+    track_type_key_from_row,
+    apply_track_type_color,
     get_contrast_color,
     get_type_font_color,
     set_type_font_color,
@@ -85,7 +87,25 @@ from mutagen.mp3 import MP3
 from djtango.qt_compat import QMediaPlayer, QMediaContent, Qt, QtCore, QtGui, QCursor
 
 import logging
-import os, sys, time, threading, operator, re, audioread, platform
+import os
+import signal
+import sys
+import threading
+import time
+import operator
+import re
+import audioread
+import platform
+
+
+def _qt_sigint_handler(signum, frame):
+    app = QApplication.instance()
+    if app is not None:
+        app.closeAllWindows()
+        app.quit()
+    timer = threading.Timer(3.0, lambda: os._exit(0))
+    timer.daemon = True
+    timer.start()
 
 LOG_DIR = os.path.join(os.path.expanduser("~"), ".djtango")
 try:
@@ -110,7 +130,7 @@ except AttributeError:
 
 
 class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManagerMixin, LibraryScannerMixin, MilongaManagerMixin, SideDisplayMixin, SideDisplayWindowMixin, InfoDisplayMixin, InfoWindowMixin, InfoMilongaWindowMixin, TapDialogMixin, TrackDetailsDialogMixin, MilongaSelectDialogMixin, MilongaNameDialogMixin, AskDeleteDialogMixin, UISetupMixin, ConnectionsMixin, ShortcutsMixin, VisibilityControlsMixin, TrackCustomizationMixin, TrackPropertiesMixin, ProgressBarMixin, MenuActionsMixin, PreferencesMixin, PreferencesHelperMixin, QMainWindow, QObject):
-    tangoListUpdated = pyqtSignal(dirSong)
+    trackListUpdated = pyqtSignal(dirSong)
     workingOnNewfileStatus = pyqtSignal(bool)
 
     def __init__(self):
@@ -126,7 +146,7 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
 
         self.mediaSource = None
 
-        self.djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+        self.djhome = os.environ.get('DJ_HOME_PATH', os.path.join(os.path.expanduser("~"), ".djtango"))
         print('DJ_HOME_PATH: ' + self.djhome)
 
         self.addedEffects = {}
@@ -137,12 +157,10 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self.disableDirScan = os.environ.get('DJTANGO_DISABLE_DIR_SCAN', '0') == '1' or os.environ.get('QT_QPA_PLATFORM') == 'offscreen'
 
         self.curTangoEditingIndexes = []
-        self.curTangoEditing = 0  # a index telling wich is the current tango idited in properties window
+        self.curTangoEditing = 0  # an index for the current track edited in properties window
         self.volumeSetToInitial = True
 
         self.infoMilongaSentence = ''
-
-        # print(mime_types)
 
         self._isPlaying = False
         self._isPaused = False
@@ -152,16 +170,10 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self._isClicked = False  # to be sure to do nothing on changing state if it's clicked
         self._currentIndex = 0
 
-        # Initialize some other variables.
         self._filePath = ''
         self._dialog = None
 
-        # self.mediaObj = phonon.Phonon.MediaObject(self)
         self.player = QMediaPlayer()
-        # self.mediaObj.setTickInterval(250)
-        # self.audioSink = Phonon.AudioOutput(Phonon.MusicCategory, self)
-        # self.audioSink.setVolume(1)
-        # self.audioPath = Phonon.createPath(self.mediaObj, self.audioSink)
         self.firstTime = False
 
         self._setup_progress_bar()
@@ -170,13 +182,10 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
             print("it's the first time, will create the database")
             self.djData.createDatabase()
             self.firstTime = True
-            # self._tangoList.fillListOfFile()
 
-        # print (self._tangoList.tangos[1].type)
-        self.TYPE = self.djData.getTangoTypeList()
+        self.TYPE = self.djData.getTrackTypeList()
 
         # Tt = TANGO = 1, VALS = 2, MILONGA = 3, CORTINA = 4, UNKNOWN=5
-        # print (self.TYPE[1])
         prop = self.djData.getPreferences()
 
         self.audioPath = prop['path']
@@ -187,7 +196,6 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self.stepFadOut = self.durationFadOut / (self.player.notifyInterval() if hasattr(self.player, 'notifyInterval') else 100)
         self.duration = 0
 
-        # print("AUDIO PATH IN INITIALIZING DATA : "+self.audioPath)
 
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
@@ -214,23 +222,14 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
                 print('Skipping first-time user dialog in offscreen/CI mode')
             else:
                 introDialog = QMessageBox()
-                # introDialog.setPalette(palette)
                 introDialog.setStyleSheet(dialog_style())
                 introDialog.setWindowTitle("First time user ?")
-                # introDialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel);
                 introDialog.setText(
-                    "Hi, I'm DJ-Tango and it appear that is the first time you use me. \nPlease select the directory where all your Tango are stored.");
+                    "Looks like this is the first time  using DJTango. \nSelect the directory for your music library.");
                 introDialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel);
-                # introDialog.setModal(True)
                 introDialog.setDefaultButton(QMessageBox.Ok);
-                # introDialog.button(QMessageBox.Cancel).setDefault(False)
-                # for button in introDialog.StandardButtons():
-                #    button.setFocusPolicy(setFocusPolicy(QtCore.Qt.NoFocus))
-                # introDialog.
-                # res = introDialog.exec()
-                # print (res)
                 if introDialog.exec() == QMessageBox.Ok:
-                    self.audioPath = QFileDialog.getExistingDirectory(self, "Open Tango directory", os.path.expanduser('~'),
+                    self.audioPath = QFileDialog.getExistingDirectory(self, "Open Library directory", os.path.expanduser('~'),
                                                                       QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
                     self.djData.updateSongPath(self.audioPath)
                     time.sleep(0.3)
@@ -271,23 +270,20 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         if self.disableDirScan:
             progressBar = DummyProgressDialog()
         else:
-            progressBar = QProgressDialog("Scanning dir and analyzing the songs...", "Abort", 0, 100, self)
-            progressBar.setWindowTitle("Inporting Tangos in the database and set tags")
+            progressBar = QProgressDialog("Scanning dir and analyzing the tracks...", "Abort", 0, 100, self)
+            progressBar.setWindowTitle("Importing tracks into the database and setting tags")
             progressBar.setWindowModality(Qt.WindowModal);
             progressBar.setStyleSheet(progress_dialog_style())
             progressBar.reset()
 
         self._tangoList = dirSong(self.audioPath, self.firstTime, progressBar, self.djData)
         progressBar.reset()
-        # self.firstTime = False
         if not self.firstTime:
-            self._tangoList.loadTangos(self.djData.getAllTangos())
+            self._tangoList.loadTangos(self.djData.getAllTracks())
 
         self.curTango = None
         self._setup_library_scanner()
 
-        # j'ai modifié
-        # Create self._dialog instance and call
         # necessary methods to create a user interface
         self._createUI()
 
@@ -316,20 +312,24 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self.prefWindow.close()
         self.sideWindow.close()
         self._stop_library_scanner()
+        if hasattr(self, 'info_thread') and self.info_thread is not None:
+            self.info_thread.exiting = True
+            try:
+                self.info_thread.wait(1000)
+            except Exception:
+                pass
         QMainWindow.closeEvent(self, evt)
 
     @pyqtSlot(list, list)
-    def done(self, datas, tangos):
+    def done(self, datas, tracks):
 
-        # print ("IN DONE")
-        # print (len(datas))
         self.workingOnNewfileStatus.emit(True)
         # datas = newfiles[0]
-        # tangos = newfiles[1]
-        for tango in tangos:
-            self._tangoList.addTango(tango)  # add a Tango with only the path
+        # tracks = newfiles[1]
+        for track in tracks:
+            self._tangoList.addTango(track)  # add a Track with only the path
         self.sourceModel.addNewData(datas)  # update the table
-        self._showInfo(str(len(tangos)) + " song has been added")
+        self._showInfo(str(len(tracks)) + " track has been added")
         self.workingOnNewfileStatus.emit(False)
 
 
@@ -373,8 +373,13 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
     _ensure_desktop_file()
-    print("Starting DJTango...")
+    print("Starting DJTango...", flush=True)
+    signal.signal(signal.SIGINT, _qt_sigint_handler)
     app = QApplication(argv)
+    signal.signal(signal.SIGINT, _qt_sigint_handler)
+    timer = QTimer()
+    timer.timeout.connect(lambda: None)
+    timer.start(1000)
     app.setApplicationName("DJTango")
     app.setApplicationDisplayName("")
     app.setOrganizationName("djtango")
@@ -390,6 +395,11 @@ def main(argv=None):
     except Exception as err:
         logger.warning("Could not apply native OS style: %s", err)
     musicPlayer = AudioPlayerDialog()
+    app.aboutToQuit.connect(musicPlayer.close)
+    signal.signal(signal.SIGINT, lambda signum, frame: _qt_sigint_handler(signum, frame))
+    timer = QTimer()
+    timer.timeout.connect(lambda: None)
+    timer.start(1000)
     return app.exec()
 
 if __name__ == '__main__':

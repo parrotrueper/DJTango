@@ -129,7 +129,6 @@ class QRoundProgressBar(QtWidgets.QWidget):
         self.rebuildDataBrushIfNeeded()
 
         # background
-        #self.drawBackground(p, buffer.rect())
 
         # base circle
         self.drawBase(p, baseRect)

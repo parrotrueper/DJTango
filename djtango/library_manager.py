@@ -12,22 +12,22 @@ class LibraryManagerMixin:
         for index in indexes:
             curTangoID = self.sourceProxyModel.data(index, Qt.DisplayRole)
             self.djData.deleteTango(curTangoID)
-            if removeFile and os.path.isfile(self._tangoList.tangos[curTangoID].path):
-                os.remove(self._tangoList.tangos[curTangoID].path)
-            if curTangoID in self._tangoList.tangos.keys():
+            if removeFile and os.path.isfile(self._tangoList.tracks[curTangoID].path):
+                os.remove(self._tangoList.tracks[curTangoID].path)
+            if curTangoID in self._tangoList.tracks.keys():
                 self._tangoList.removeTango(curTangoID)
-                self.tangoListUpdated.emit(self._tangoList)
+                self.trackListUpdated.emit(self._tangoList)
 
-        data = [self._tangoList.tangos[key].list() for key in self._tangoList.tangos.keys()]
+        data = [self._tangoList.tracks[key].list() for key in self._tangoList.tracks.keys()]
         self.sourceModel.changeData(data)
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " song(s)")
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " track(s)")
 
     def _handelBpmTappingAction(self):
         indexes = self._dialog.milongaSource.selectionModel().selectedRows()
         self.curTangoEditing = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
         self.curLibraryRow = indexes[0].row()
         self._isClicked = True
-        self.curTango = self._tangoList.tangos[self.curTangoEditing]
+        self.curTango = self._tangoList.tracks[self.curTangoEditing]
         self._load_new_media()
         self._play_media()
         self.tapTable = []
@@ -41,10 +41,10 @@ class LibraryManagerMixin:
         if not indexes:
             return
 
-        tangoID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
-        self.curTangoEditing = tangoID
+        trackID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
+        self.curTangoEditing = trackID
         self.curLibraryRow = indexes[0].row()
-        self.curTango = self._tangoList.tangos[tangoID]
+        self.curTango = self._tangoList.tracks[trackID]
         self.curTango.extractAnyTag()
 
         bpm = self.curTango.bpmFromFile
@@ -53,7 +53,7 @@ class LibraryManagerMixin:
                 self.curTango.bpmHuman = float(bpm)
             except (TypeError, ValueError):
                 self.curTango.bpmHuman = bpm
-            self.updateTangoBPM()
+            self.updateTrackBPM()
             self._showInfo('BPM loaded from ID3 tag')
         else:
             self._showInfo('No BPM found in ID3 tag')
@@ -99,14 +99,14 @@ class LibraryManagerMixin:
             self.tapContent.labelTypeBmp.setStyleSheet("color: rgb(70,169,73)")
 
     def _handelValidatebpm(self):
-        self.updateTangoBPM()
+        self.updateTrackBPM()
         self.tapWindow.close()
 
     def _handelCancelbpm(self):
         self.tapWindow.close()
 
     def _handelTapingNext(self):
-        self.updateTangoBPM()
+        self.updateTrackBPM()
         self.tapTable = []
         self.delta = []
         self.tapContent.lcdNumber.display(0.0)
@@ -117,13 +117,13 @@ class LibraryManagerMixin:
             self.curTangoEditing = self.sourceProxyModel.data(index, Qt.DisplayRole)
             self._dialog.milongaSource.selectRow(self.curLibraryRow)
             self._isClicked = True
-            self.curTango = self._tangoList.tangos[self.curTangoEditing]
+            self.curTango = self._tangoList.tracks[self.curTangoEditing]
             self._load_new_media()
             self._play_media()
             self.initialiszeBmpInfo()
 
     def _handelTapingPrevious(self):
-        self.updateTangoBPM()
+        self.updateTrackBPM()
         self.tapTable = []
         self.delta = []
         self.tapContent.lcdNumber.display(0.0)
@@ -134,19 +134,19 @@ class LibraryManagerMixin:
             self.curTangoEditing = self.sourceProxyModel.data(index, Qt.DisplayRole)
             self._dialog.milongaSource.selectRow(self.curLibraryRow)
             self._isClicked = True
-            self.curTango = self._tangoList.tangos[self.curTangoEditing]
+            self.curTango = self._tangoList.tracks[self.curTangoEditing]
             self._load_new_media()
             self._play_media()
             self.initialiszeBmpInfo()
 
-    def updateTangoBPM(self):
+    def updateTrackBPM(self):
         indexes = self._dialog.milongaSource.selectionModel().selectedRows()
-        tangoID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
-        data = self._tangoList.tangos[tangoID].list()
+        trackID = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
+        data = self._tangoList.tracks[trackID].list()
         for count, cdata in enumerate(data):
             index = self.sourceProxyModel.index(indexes[0].row(), count)
             self.sourceProxyModel.setData(index, cdata, Qt.EditRole)
-        self.djData.updateBPM(self._tangoList.tangos[tangoID])
+        self.djData.updateBPM(self._tangoList.tracks[trackID])
 
     def popupLibrary(self, pos):
         menu = QMenu()
@@ -156,8 +156,8 @@ class LibraryManagerMixin:
         deleteAction2 = menu.addAction("Remove selected (without deleting file")
         writeTagAction = menu.addAction("Write the tags")
         mp3infos = menu.addAction("Show mp3 infos")
-        tapbpm = menu.addAction("Set the bpm by taping the tempo of the song")
-        updateTangoDurations = menu.addAction("update the Tango duration")
+        tapbpm = menu.addAction("Set the bpm by tapping the tempo of the track")
+        updateTangoDurations = menu.addAction("update the Track duration")
         action = menu.exec(self._dialog.milongaSource.viewport().mapToGlobal(pos))
         if action == detailsAction:
             self.handelOpenPropWidow()
@@ -168,16 +168,16 @@ class LibraryManagerMixin:
         elif action == audacityAction:
             indexes = self._dialog.milongaSource.selectionModel().selectedRows()
             self.curTangoEditing = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
-            os.system("audacity \"" + str(self._tangoList.tangos[self.curTangoEditing].path) + "\" &")
+            os.system("audacity \"" + str(self._tangoList.tracks[self.curTangoEditing].path) + "\" &")
         elif action == writeTagAction:
             indexes = self._dialog.milongaSource.selectionModel().selectedRows()
             for index in indexes:
                 curTangoID = self.sourceProxyModel.data(index, Qt.DisplayRole)
-                self._tangoList.tangos[curTangoID].writeTags(self.TYPE)
+                self._tangoList.tracks[curTangoID].writeTags(self.TYPE)
         elif action == mp3infos:
             indexes = self._dialog.milongaSource.selectionModel().selectedRows()
             self.curTangoEditing = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
-            os.system("mp3info2 \"" + str(self._tangoList.tangos[self.curTangoEditing].path) + "\" &")
+            os.system("mp3info2 \"" + str(self._tangoList.tracks[self.curTangoEditing].path) + "\" &")
         elif action == tapbpm:
             self._handelBpmTappingAction()
         elif action == updateTangoDurations:
@@ -185,22 +185,22 @@ class LibraryManagerMixin:
 
     def get_list_of_artist(self, album, genre):
         artists = {}
-        for key in self._tangoList.tangos.keys():
-            if not album == '' and not self._tangoList.tangos[key].album.lower() == album.lower():
+        for key in self._tangoList.tracks.keys():
+            if not album == '' and not self._tangoList.tracks[key].album.lower() == album.lower():
                 continue
-            if self._tangoList.tangos[key].artist not in artists:
-                artists[self._tangoList.tangos[key].artist] = 1
+            if self._tangoList.tracks[key].artist not in artists:
+                artists[self._tangoList.tracks[key].artist] = 1
             else:
-                artists[self._tangoList.tangos[key].artist] += 1
+                artists[self._tangoList.tracks[key].artist] += 1
         return artists
 
     def get_list_of_album(self, artist, genre):
         albums = {}
-        for key in self._tangoList.tangos.keys():
-            if self._tangoList.tangos[key].album not in albums:
-                albums[self._tangoList.tangos[key].album] = 1
+        for key in self._tangoList.tracks.keys():
+            if self._tangoList.tracks[key].album not in albums:
+                albums[self._tangoList.tracks[key].album] = 1
             else:
-                albums[self._tangoList.tangos[key].album] += 1
+                albums[self._tangoList.tracks[key].album] += 1
         return albums
 
     def set_list_of_type(self):
@@ -248,7 +248,7 @@ class LibraryManagerMixin:
             linefilter = '.*'
 
         self.sourceProxyModel.setlFilterValues(artist, album, genre, linefilter)
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " song(s)")
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " track(s)")
 
     def _clear_filter(self):
         index_artist = self._dialog.comboBoxArtist.currentIndex()
@@ -268,4 +268,4 @@ class LibraryManagerMixin:
         if manual_update:
             self._handel_filter_change()
 
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " song(s)")
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + " track(s)")

@@ -3,7 +3,6 @@
 from djtango.qt_compat import QAbstractTableModel
 from djtango.qt_compat import QSortFilterProxyModel
 from djtango.qt_compat import Qt
-#from PyQt4.QtCore import QString
 from djtango.qt_compat import QColor
 from djtango.qt_compat import QDataStream, QIODevice, QVariant
 import operator, re
@@ -22,7 +21,21 @@ def get_type_font_color(type_entry):
         return QColor(type_entry[6], type_entry[7], type_entry[8], type_entry[9])
     return None
 
-#from PyQt4.QtGui import *
+
+def normalize_type_key(type_key, TYPE):
+    if type_key in TYPE:
+        return type_key
+    if isinstance(type_key, str):
+        if type_key.isdigit():
+            numeric = int(type_key)
+            if numeric in TYPE:
+                return numeric
+        lowered = type_key.lower()
+        for key, value in TYPE.items():
+            if len(value) > 1 and isinstance(value[1], str) and value[1].lower() == lowered:
+                return key
+    return type_key
+
 
 class library(QAbstractTableModel):
     def __init__(self, parent, mylist, header, TYPE, *args):
@@ -41,30 +54,38 @@ class library(QAbstractTableModel):
         if not index.isValid():
             return None
         elif role == Qt.BackgroundRole:
-            R = self.TYPE[self.mylist[index.row()][5]][2]
-            G = self.TYPE[self.mylist[index.row()][5]][3]
-            B = self.TYPE[self.mylist[index.row()][5]][4]
-            T = self.TYPE[self.mylist[index.row()][5]][5]
-            return QColor(R, G, B, T)
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                R = self.TYPE[type_key][2]
+                G = self.TYPE[type_key][3]
+                B = self.TYPE[type_key][4]
+                T = self.TYPE[type_key][5]
+                return QColor(R, G, B, T)
+            return None
         elif role == Qt.ForegroundRole:
-            type_entry = self.TYPE[self.mylist[index.row()][5]]
-            font_color = get_type_font_color(type_entry)
-            if font_color is not None:
-                return font_color
-            R = type_entry[2]
-            G = type_entry[3]
-            B = type_entry[4]
-            T = type_entry[5]
-            return get_contrast_color(QColor(R, G, B, T))
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                type_entry = self.TYPE[type_key]
+                font_color = get_type_font_color(type_entry)
+                if font_color is not None:
+                    return font_color
+                R = type_entry[2]
+                G = type_entry[3]
+                B = type_entry[4]
+                T = type_entry[5]
+                return get_contrast_color(QColor(R, G, B, T))
+            return None
         elif role != Qt.DisplayRole:
             return None
 
         if index.column() == 4:
-            return self.TYPE[self.mylist[index.row()][5]][1].title()
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                return self.TYPE[type_key][1].title()
+            return "Unknown"
         else:
             return self.mylist[index.row()][index.column()]
     def headerData(self, col, orientation, role):
-    	#print (self.header[col])
     	if orientation == Qt.Horizontal and role == Qt.DisplayRole:
     		return self.header[col]
     	if role==Qt.BackgroundRole:
@@ -83,27 +104,22 @@ class library(QAbstractTableModel):
     #this can be very time consuming
     def changeData(self, datain):
 
-        #self.emit(SIGNAL("LayoutAboutToBeChanged()"))
         self.layoutAboutToBeChanged.emit()
         self.mylist = datain
 
         self.layoutChanged.emit()
         if self.rowCount(0) > 0 and self.columnCount(0) > 0:
             self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
-        #self.emit(SIGNAL("DataChanged(QModelIndex,QModelIndex)"), self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
 
     
 
 
     def setData(self, index, value, role):
-    	#print ("I will try to change the data")
         if index.isValid() and role == Qt.EditRole:
             self.mylist[index.row()][index.column()] = value
             self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
-            #self.emit(SIGNAL("DataChanged(QModelIndex,QModelIndex)"), index, index)
             return True
         return False
-		#def setData()   
 
 
 #=======================================================================
@@ -133,20 +149,19 @@ class milongaSource(QAbstractTableModel):
         if not index.isValid():
             return None
         elif role==Qt.BackgroundRole:
-            #print("Background")
-            #print(self.TYPE)
-            #print(self.mylist[index.row()][5])
-            if self.mylist[index.row()][5] in self.TYPE:
-                R = self.TYPE[self.mylist[index.row()][5]][2]
-                G = self.TYPE[self.mylist[index.row()][5]][3]
-                B = self.TYPE[self.mylist[index.row()][5]][4]
-                T = self.TYPE[self.mylist[index.row()][5]][5]
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                R = self.TYPE[type_key][2]
+                G = self.TYPE[type_key][3]
+                B = self.TYPE[type_key][4]
+                T = self.TYPE[type_key][5]
                 return(QColor(R,G,B,T))
             else:
                 return None
         elif role==Qt.ForegroundRole:
-            if self.mylist[index.row()][5] in self.TYPE:
-                type_entry = self.TYPE[self.mylist[index.row()][5]]
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                type_entry = self.TYPE[type_key]
                 font_color = get_type_font_color(type_entry)
                 if font_color is not None:
                     return font_color
@@ -160,11 +175,9 @@ class milongaSource(QAbstractTableModel):
             return None
         
         if index.column() == 5:#genre column
-            #print("genre")
-            #print (self.TYPE)
-            #print (self.mylist[index.row()][5])
-            if self.mylist[index.row()][5] in self.TYPE:
-                return self.TYPE[self.mylist[index.row()][5]][1].title()
+            type_key = normalize_type_key(self.mylist[index.row()][5], self.TYPE)
+            if type_key in self.TYPE:
+                return self.TYPE[type_key][1].title()
             else:
                 return "Unknown"
         elif index.column() == 1:
@@ -173,16 +186,16 @@ class milongaSource(QAbstractTableModel):
             else:
                 return '>>>'
         elif index.column() == 8:#time column
-            return utils.msecToms(self.mylist[index.row()][index.column()])
-        #elif index.column() == 6:
-        #    return int(self.mylist[index.row()][index.column()])
+            time_value = self.mylist[index.row()][index.column()]
+            if isinstance(time_value, (int, float)) and time_value < 1000:
+                time_value = time_value * 1000
+            return utils.msecToms(time_value)
         elif index.column() == 7: #bpm column
             return ('%.2f' % float(self.mylist[index.row()][index.column()]))
         else:
             return self.mylist[index.row()][index.column()]
 
     def headerData(self, col, orientation, role):
-        #print (self.header[col])
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         if role==Qt.BackgroundRole:
@@ -192,11 +205,9 @@ class milongaSource(QAbstractTableModel):
     def sort(self, col, order):
         self.layoutAboutToBeChanged.emit()
         self.mylist = sorted(self.mylist, key=operator.itemgetter(col))
-        #self.
         if order == Qt.AscendingOrder:
             self.mylist.reverse()
         self.layoutChanged.emit()
-        #pass
     def randomize(self):
 
         self.layoutAboutToBeChanged.emit()
@@ -204,15 +215,10 @@ class milongaSource(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def changeData(self, datain):
-        print ("I'm changing the data")
-
         self.layoutAboutToBeChanged.emit()
-        print("after layoutAboutToBeChanged emited");
         self.mylist = datain
         self.layoutChanged.emit()
-        print("after layoutChanged emited");
         self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
-        print("after dataChanged emited");
 
     #will add some data at the end of the table, updating the model at this point
     def addNewData(self, datas):
@@ -222,13 +228,8 @@ class milongaSource(QAbstractTableModel):
             self.mylist.append(data)
         self.layoutChanged.emit()
         self.dataChanged.emit(self.createIndex(self.rowCount(0)-len(datas), self.columnCount(0)-len(datas)), self.createIndex(self.rowCount(0), self.columnCount(0)))
-        #print("will add new data at the end of the table")
-        #index = self.createIndex(self.rowCount(0),0)
-        #for row in newdatas:
-        #    print(row)
         
     def setData(self, index, value, role):
-        #print ("I will try to change the data with value: "+str(value))
 
         if index.isValid() and role == Qt.EditRole:
             self.mylist[index.row()][index.column()] = value
@@ -241,40 +242,14 @@ class milongaSource(QAbstractTableModel):
     def removeRows(self, row, count, parent):
         
         self.beginRemoveRows(parent, row, row+count-1);
-        print ("will remove row(s) starting from"+str(row)+"and removing "+str(count)+" row(s)")
-
-        #before = self.mylist[:row]
-        #after = self.mylist[row+count:]
-        #print (before)
-        #print (after)
-        #print ("before : "+str(len(before)))
-        #print ("after : "+str(len(after)))
-        
-        #if len(before) == 0:
-        #    self.mylist = after[:]
-        #elif len(after) == 0:
-        #    self.mylist = before[:]
-        #else: 
-        #    self.mylist = before[:]
-        #    self.mylist.extend(after)
-
-        # attention, il ne fait pas supprimer la ligne, mais il faut chercher l'index et supprimer uniquement
-        # la bonne ligne dans mylist
-        print(len(self.mylist))
-        #del self.mylist[row]
-        print(len(self.mylist))
-        #self.mylist = self.mylist.remove()
-
-        #print (self.mylist)
-        #
-        #
         self.endRemoveRows()
-        #self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
         return True
 
-   
-
-    #def 
+#=======================================================================
+#
+#
+#
+#========================================================================
 
 #=======================================================================
 #
@@ -293,9 +268,9 @@ class milongaDest(QAbstractTableModel):
         
     def invert(self, TYPE):
         ret={}
-        for key in TYPE.keys():
-            #print(TYPE[key])
-            ret[TYPE[key][1].title()] = TYPE[key]
+        for key, value in TYPE.items():
+            # map title-cased genre labels back to numeric type keys
+            ret[value[1].title()] = key
         return ret
     def rowCount(self, parent):
         return len(self.mylist)
@@ -333,38 +308,24 @@ class milongaDest(QAbstractTableModel):
             else:
                 return '>>>'
         elif index.column() == 8:#time column
-            #print ("time: "+str())
-            #print(self.mylist[index.row()][5])
             if (self.mylist[index.row()][5] == 4):
                 return "-"
-            else:
-                return utils.msecToms(self.mylist[index.row()][index.column()])
+            time_value = self.mylist[index.row()][index.column()]
+            if isinstance(time_value, (int, float)) and time_value < 1000:
+                time_value = time_value * 1000
+            return utils.msecToms(time_value)
         elif index.column() == 7: #bpm column
-            #print("bpm:"+str(self.mylist[index.row()][index.column()])+"|")
             return ('%.2f' % float(self.mylist[index.row()][index.column()]))
         else:
-            #print(self.mylist[index.row()][index.column()])
             return self.mylist[index.row()][index.column()]
 
     def headerData(self, col, orientation, role):
-        #print (self.header[col])
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         if role==Qt.BackgroundRole:
             return QColor(0,160,176,100)
         return None
 
-    #def sort(self, col, order):
-    #    """sort table by given column number col"""
-    #    self.emit(SIGNAL("layoutAboutToBeChanged()"))
-    #    print (Qt.InitialSortOrderRole)
-    #    print (order)
-    #    self.mylist = sorted(self.mylist, key=operator.itemgetter(col))
-    #    #self.
-    #    if order == Qt.AscendingOrder:
-    #        self.mylist.reverse()
-    #    self.emit(SIGNAL("layoutChanged()"))
-    #    #pass
     def changeData(self, datain):
         self.layoutAboutToBeChanged.emit()
         self.mylist = datain
@@ -374,31 +335,21 @@ class milongaDest(QAbstractTableModel):
         self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
 
     def setData(self, index, value, role):
-        #print("row: "+str(index.row())+" column: "+str(index.column()))
-        #print("longeur de mylist: "+str(len(self.mylist[index.row()])))
         if index.isValid() and role == Qt.EditRole:
             self.mylist[index.row()][index.column()] = value
-            #self.emit(SIGNAL("DataChanged(QModelIndex,QModelIndex)"), index, index)
             self.dataChanged.emit(index, index)
-            #print (self.mylist)
             return True
         return False
-    #def updatePlaying(self, row, column):
-    #    self.mylist[row][col] = value
     def flags(self, index):
         return Qt.ItemIsEditable | Qt.ItemIsDragEnabled | Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled 
-        #return Qt.ItemIsDropEnabled | Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
 
     def dropMimeData(self, data, action, row, column, parent):
-        #print("action: "+str(action))
 
         self.layoutAboutToBeChanged.emit()
         if action == Qt.IgnoreAction:
-            print ("ignoring")
             return True
 
         if not data.hasFormat("application/x-qabstractitemmodeldatalist"):
-            print ("False Format")
             return False
 
 
@@ -415,7 +366,6 @@ class milongaDest(QAbstractTableModel):
         encodedData = data.data("application/x-qabstractitemmodeldatalist")
         data_items = self.decode_data(encodedData)
 
-        #print ("number of line = " + str(int(len(data_items)/self.columnCount(parent))))
         lineNB = int(len(data_items)/self.columnCount(parent))
 
 
@@ -423,10 +373,6 @@ class milongaDest(QAbstractTableModel):
         if action == Qt.MoveAction:
             self.moveRow(self.startingRow,beginRow, parent)
         else:
-            #print("ça viens de la source")
-            #print("size: "+str(self.rowCount(self)))
-            #print ("beginRow: "+str(beginRow))
-            #if not beginRow+1 == self.rowCount(self):
             beginRow +=1
             if beginRow <= self.rowCount(self): curRow = 0
             else: curRow = -1
@@ -442,31 +388,24 @@ class milongaDest(QAbstractTableModel):
                     rowItem[data['row']] = data['row']
 
 
-            #print("curRow: "+str(curRow))
             for key in sorted(rowItem.keys()):
                 rowItem[key] = curRow
                 curRow+=1
-                print ("key: "+str(key)+" item: "+str(rowItem[key]))
 
 
             for data in data_items:
-                #if data[0] == '':
-                #    print (data[0])
-
-                if data['column'] == 5 and data[0] in self.invertTYPE.keys():
-                    data[0] = self.invertTYPE[data[0]][0]
+                if data['column'] == 5:
+                    normalized = normalize_type_key(data[0], self.TYPE)
+                    if normalized in self.TYPE:
+                        data[0] = normalized
                 if data['column'] == 1:
                     data[0] = 0
 
-                #print("want to add column: "+str(data['column']))
-                #print("total column allowed: "+str(self.columnCount(parent)))
                 idx = self.index(beginRow+rowItem[data['row']], data['column'], parent);
-                #print("row to instert: "+str(idx.row()))
                 self.setData(idx, data[0], Qt.EditRole);
                 
                 col+=1
     
-            #self.reset()
             self.layoutChanged.emit()
             self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
         return True
@@ -475,13 +414,10 @@ class milongaDest(QAbstractTableModel):
         return Qt.MoveAction | Qt.CopyAction
 
     def pressed(self, index):
-        #print ("mousse pressed")
-        #print (index.row())
         self.startingRow = index.row()
 
     def moveRow(self, start, end, parent):
         tmp = self.mylist[start]
-        #print (self.rowCount(parent))
         if end == self.rowCount(parent):
             self.insertRow(end,parent)
             self.mylist[end] = tmp[:]    
@@ -512,14 +448,9 @@ class milongaDest(QAbstractTableModel):
     def removeRows(self, row, count, parent):
         
         self.beginRemoveRows(parent, row, count);
-        print ("will remove row "+str(row))
 
         before = self.mylist[:row]
         after = self.mylist[row+count:]
-        #print (before)
-        #print (after)
-        #print ("before : "+str(len(before)))
-        #print ("after : "+str(len(after)))
         
         if len(before) == 0:
             self.mylist = after[:]
@@ -529,10 +460,8 @@ class milongaDest(QAbstractTableModel):
             self.mylist = before[:]
             self.mylist.extend(after)
 
-        #print (self.mylist)
         #
         self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self.rowCount(0), self.columnCount(0)))
-        #self.endRemoveRows()
         return True
     
 
@@ -565,7 +494,6 @@ class sourceFilterProxyModel(QSortFilterProxyModel):
         self.allRegExp = re.compile('.*', re.IGNORECASE)
         self.linefilter = '.*'
 
-        #print (self.artistRegExp)
 
     def filterAcceptsRow(self, sourceRow, parent):
         ret = True
@@ -573,7 +501,6 @@ class sourceFilterProxyModel(QSortFilterProxyModel):
         indexAlbum = self.sourceModel().index(sourceRow, 4, parent)
         indexGenre = self.sourceModel().index(sourceRow, 5, parent)
 
-        #print(self.sourceModel().data(indexArtist))
 
         resArtist = self.artistRegExp.match(self.sourceModel().data(indexArtist))
         resAlbum = self.albumRegExp.match(self.sourceModel().data(indexAlbum))
@@ -606,27 +533,8 @@ class sourceFilterProxyModel(QSortFilterProxyModel):
         self.allRegExp = re.compile('.*'+linefilter+'.*', re.IGNORECASE)
         self.linefilter = linefilter
 
-        #print ("filter is : "+str(linefilter))
 
         self.setFilterKeyColumn(0)  
 
-        #print(self.artistRegExp)
-        #self.setFilterRegExp()
     def sort(self, col, order):
         self.sourceModel().sort(col, order)
-        #print ("sorting")
-        """sort table by given column number col"""
-        """
-        self.emit(SIGNAL("layoutAboutToBeChanged()"))
-        print (Qt.InitialSortOrderRole)
-        print(Qt.AscendingOrder)
-        print (order)
-        
-        self.mylist = sorted(self.mylist, key=operator.itemgetter(col))
-        #self.
-        if not order == Qt.AscendingOrder:
-            self.mylist.reverse()
-        self.emit(SIGNAL("layoutChanged()"))
-        #pass
-        """
-        

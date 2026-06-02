@@ -29,22 +29,22 @@ def clear():
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 
 data = djDataConnection(djhome)
-tangos = data.getAllTangos()
+tracks = data.getAllTracks()
 sizeBackSpace = 1000;
 
 startworkat = 5600
-tangoCount = 0
+trackCount = 0
 cont = 1
 size = 3
 #count = 0
-for tango in tangos:
-	tangoCount+=1
+for track in tracks:
+	trackCount+=1
 	#count+=1
 	#sys.stdout.flush()
 
 	#printing infos
 	backspace(sizeBackSpace)
-	percent = tangoCount*100/len(tangos)
+	percent = trackCount*100/len(tracks)
 	start = '   ['+"%.0f" % percent+'% '
 	for i in range(0,cont):
 		start+='.'
@@ -53,40 +53,40 @@ for tango in tangos:
 	start+='] - '
 	cont+=1
 	if cont >size: cont = 1;
-	toPrint = start+str(tango.ID) + " - "+tango.path 
+	toPrint = start+str(track.ID) + " - "+track.path 
 	print(toPrint, end='\r', flush=True) 
 	sizeBackSpace = len (toPrint)
 
 
-	file_extension = os.path.splitext(tango.path)[1][1:]
-	if tango.ID >= startworkat:
+	file_extension = os.path.splitext(track.path)[1][1:]
+	if track.ID >= startworkat:
 		try:
-			song = AudioSegment.from_file(tango.path, file_extension.lower())
+			song = AudioSegment.from_file(track.path, file_extension.lower())
 			silences = silence.detect_silence_start_end(song, 500, -56)
 			if (len(silences) > 1):
 				starttime = silences[0][1]
 				stoptime = silences[len(silences)-1][0]
-				tango.tstart = starttime
-				tango.tend = stoptime
+				track.tstart = starttime
+				track.tend = stoptime
 			elif len(silences) == 1:
 				if (silences[0][0] == 0):
-					tango.tstart = silences[0][1]
-					tango.tend = len(song)
+					track.tstart = silences[0][1]
+					track.tend = len(song)
 				elif silences[0][0] > len(song)*3/4:
-					tango.tstart = 0
-					tango.tend = silences[0][0]
+					track.tstart = 0
+					track.tend = silences[0][0]
 			elif len(silences) == 0:
-				tango.tstart = 0
-				tango.tend = len(song)
+				track.tstart = 0
+				track.tend = len(song)
 			else:
-				tango.tstart = 0
-				tango.tend = 0
+				track.tstart = 0
+				track.tend = 0
 		
-			tango.duration = len(song)
+			track.duration = len(song)
 
-			data.updateTango(tango)
+			data.updateTrack(track)
 		except FileNotFoundError:
-			print (start+"We can not find the file of "+str(tango.ID));
+			print (start+"We can not find the file of "+str(track.ID));
 			backspace(sizeBackSpace)
 			print(toPrint)
 		except KeyboardInterrupt:
@@ -98,6 +98,6 @@ for tango in tangos:
 			clear()
 			backspace(sizeBackSpace)
 			print(toPrint)
-			print(start+"Can't Decode "+str(tango.ID)+" "+tango.path)
+			print(start+"Can't Decode "+str(track.ID)+" "+track.path)
 			
 			pass

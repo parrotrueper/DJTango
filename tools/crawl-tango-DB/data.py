@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
-#from tangosong import TangoSong
+#from tracksong import TrackSong
 
 class DBtangoConnexion:
 	def __init__(self):
@@ -12,7 +12,7 @@ class DBtangoConnexion:
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
 		# create a table
-		cursor.execute("""CREATE TABLE tangos
+		cursor.execute("""CREATE TABLE tracks
 			(ID INTEGER PRIMARY KEY ASC, 
 			title text,
 			norm_title text,
@@ -42,22 +42,22 @@ class DBtangoConnexion:
 		if self.existTango(song):
 			return
 
-		sql = "INSERT INTO tangos (year, month, day,artist, norm_artist, title, norm_title, singer, genre, composer, author) VALUES(?,?,?,?,?,?,?,?,?,?,?)"
+		sql = "INSERT INTO tracks (year, month, day,artist, norm_artist, title, norm_title, singer, genre, composer, author) VALUES(?,?,?,?,?,?,?,?,?,?,?)"
 		cursor.execute(sql, song)
 
 		
 		conn.commit()
 		conn.close()		
 
-	def existTango(self, tango):
+	def existTango(self, track):
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
-		#print (tango)
-		sql = "SELECT * FROM tangos WHERE year =? and month=? and day=? and artist =? and norm_artist=? and title =? and norm_title=? and singer =? and genre =? and composer =? and author =?"
+		#print (track)
+		sql = "SELECT * FROM tracks WHERE year =? and month=? and day=? and artist =? and norm_artist=? and title =? and norm_title=? and singer =? and genre =? and composer =? and author =?"
 		#print (sql)
-		#print (tango.path)
+		#print (track.path)
 
-		cursor.execute(sql, tango)
+		cursor.execute(sql, track)
 		rows = cursor.fetchall()
 
 		conn.commit()
@@ -72,52 +72,52 @@ class DBtangoConnexion:
 
 	
 
-	def insertTango(self, tango):
+	def insertTrack(self, track):
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
 
-		#don't insert a tango who already exist
-		if self.existTango(tango):
+		#don't insert a track who already exist
+		if self.existTango(track):
 			return
 
 		if not self.typeList:
-			sql = "SELECT * FROM tangoType"
+			sql = "SELECT * FROM trackType"
 			cursor.execute(sql)
 			rows = cursor.fetchall()
 			for row in rows:
 				self.typeList[row[1]] = row[0]
 
-		if str(tango.type).lower() in self.typeList:
-			tango.type = self.typeList[str(tango.type).lower()]
+		if str(track.type).lower() in self.typeList:
+			track.type = self.typeList[str(track.type).lower()]
 		else:
-			tango.type = self.typeList['unknown']
-		sql = "INSERT INTO tangos (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
-		cursor.execute(sql, tango.listDB())
-		print ("inserting "+str(tango.path))
+			track.type = self.typeList['unknown']
+		sql = "INSERT INTO tracks (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
+		cursor.execute(sql, track.listDB())
+		print ("inserting "+str(track.path))
 
 		conn.commit()
 		conn.close()
 
-	#def insertManyTango(self, tangoList):
+	#def insertManyTango(self, trackList):
 	#	conn = sqlite3.connect(self.path)
 	#	cursor = conn.cursor()	
-	#	sql = "INSERT INTO tangos (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
+	#	sql = "INSERT INTO tracks (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
 	
-	def getAllTangos(self):
+	def getAllTracks(self):
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()	
-		#sql = "SELECT tangos.ID, tangos.path, tangos.title, tangos.artist, tangos.album, tangoType.type, tangos.year \
-		#FROM tangos, tangoType\
+		#sql = "SELECT tracks.ID, tracks.path, tracks.title, tracks.artist, tracks.album, trackType.type, tracks.year \
+		#FROM tracks, trackType\
 
-		#WHERE tangos.genre = tangoType.ID"
-		sql = "SELECT * from tangos";
+		#WHERE tracks.genre = trackType.ID"
+		sql = "SELECT * from tracks";
 		cursor.execute(sql)
 		rows = cursor.fetchall()
 		conn.close()
 
-		tangoList = []
+		trackList = []
 		for row in rows:
-			ctango = TangoSong(row[1], row[0])
+			ctango = TrackSong(row[1], row[0])
 			ctango.title = row[2]
 			ctango.artist = row[3]
 			ctango.album = row[4]
@@ -129,25 +129,25 @@ class DBtangoConnexion:
 			ctango.bpmFromFile = row[8]
 			ctango.duration = row[9]
 
-			tangoList.append(ctango)
+			trackList.append(ctango)
 			#print (ctango.type)
-		return tangoList
+		return trackList
 
 
-	def getTangoFromMilonga(self, name):
+	def getTrackFromMilonga(self, name):
 		#print("in data geting milonga")
 		ID = self.getMilongaID(name)
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()	
-		sql = "SELECT * FROM tangos, Milonga_Tango WHERE tangos.ID = Milonga_Tango.idTango AND Milonga_Tango.IdMilonga = "+str(ID)
+		sql = "SELECT * FROM tracks, Milonga_Tango WHERE tracks.ID = Milonga_Tango.idTango AND Milonga_Tango.IdMilonga = "+str(ID)
 		cursor.execute(sql)
 		rows = cursor.fetchall()
 		conn.close()
 
-		tangoList = []
+		trackList = []
 		for row in rows:
 			#print(row)
-			ctango = TangoSong(row[1], row[0])
+			ctango = TrackSong(row[1], row[0])
 			ctango.title = row[2]
 			ctango.artist = row[3]
 			ctango.album = row[4]
@@ -159,14 +159,14 @@ class DBtangoConnexion:
 			ctango.bpmFromFile = row[8]
 			#print("duration in database: "+str(row[9]))
 			ctango.duration = row[9]
-			tangoList.append(ctango)
+			trackList.append(ctango)
 			#print (ctango.type)
-		return tangoList
+		return trackList
 
-	def getTangoFromListID(self, listID):
+	def getTrackFromListID(self, listID):
 		s = ','
 		listIDstring = s.join(["'"+str(ID)+"'" for ID in listID])
-		sql = "SELECT * FROM tangos WHERE ID IN ("+listIDstring+")"
+		sql = "SELECT * FROM tracks WHERE ID IN ("+listIDstring+")"
 		#print (sql)
 
 		conn = sqlite3.connect(self.path)
@@ -175,10 +175,10 @@ class DBtangoConnexion:
 		rows = cursor.fetchall()
 		conn.close()
 
-		tangoList = []
+		trackList = []
 		for row in rows:
 			#print(row)
-			ctango = TangoSong(row[1], row[0])
+			ctango = TrackSong(row[1], row[0])
 			ctango.title = row[2]
 			ctango.artist = row[3]
 			ctango.album = row[4]
@@ -190,17 +190,17 @@ class DBtangoConnexion:
 			ctango.bpmFromFile = row[8]
 			#print("duration in database: "+str(row[9]))
 			ctango.duration = row[9]
-			tangoList.append(ctango)
+			trackList.append(ctango)
 			#print (ctango.type)
-		return tangoList
+		return trackList
 
 
 
-	def getTangoTypeList(self):
+	def getTrackTypeList(self):
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()	
 		typeList={}
-		sql = "SELECT * FROM tangoType"
+		sql = "SELECT * FROM trackType"
 		cursor.execute(sql)
 		rows = cursor.fetchall()
 		conn.close()
@@ -209,13 +209,13 @@ class DBtangoConnexion:
 			#rint (row)
 		return typeList
 
-	def updateTango(self, tango):
-		#print("will update tango")
+	def updateTrack(self, track):
+		#print("will update track")
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()	
 		
 		sql = """
-		UPDATE tangos 
+		UPDATE tracks 
 		SET title = ?,
 		artist = ?,
 		album = ?,
@@ -225,8 +225,8 @@ class DBtangoConnexion:
 		bpmFromFile = ?,
 		duration = ?
 		WHERE ID = ? """
-		#print (tango.listUpdateDB())
-		cursor.execute(sql, tango.listUpdateDB())
+		#print (track.listUpdateDB())
+		cursor.execute(sql, track.listUpdateDB())
 
 		conn.commit()
 		conn.close()
@@ -237,24 +237,24 @@ class DBtangoConnexion:
 		
 		print("deleting tange ID "+str(ID))
 		sql = """
-		DELETE FROM tangos
+		DELETE FROM tracks
 		WHERE ID = ? """
-		#print (tango.listUpdateDB())
+		#print (track.listUpdateDB())
 		cursor.execute(sql, [ID,])
 
 		conn.commit()
 		conn.close()
 
-	def updateBPM(self, tango):
+	def updateBPM(self, track):
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()	
 		
 		sql = """
-		UPDATE tangos 
+		UPDATE tracks 
 		SET bpmHuman = ?
 		WHERE ID = ? """
 		#print (sql)
-		cursor.execute(sql, (tango.bpmHuman, tango.ID))
+		cursor.execute(sql, (track.bpmHuman, track.ID))
 
 		conn.commit()
 		conn.close()
@@ -287,11 +287,11 @@ class DBtangoConnexion:
 		#print(TYPE.length)
 
 
-		sql = """DELETE FROM tangoType"""
+		sql = """DELETE FROM trackType"""
 		cursor.execute(sql)
 
-		#"INSERT INTO tangos (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
-		sql = "INSERT INTO tangoType (ID, type, R, G, B, T) VALUES(?,?,?,?,?,?)"
+		#"INSERT INTO tracks (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
+		sql = "INSERT INTO trackType (ID, type, R, G, B, T) VALUES(?,?,?,?,?,?)"
 		for nb in TYPE:
 			print (TYPE[nb][0])
 			cursor.execute(sql, TYPE[nb])
@@ -384,7 +384,7 @@ class DBtangoConnexion:
 		conn.close()	
 		return True
 
-	def saveMilonga(self, name, tangoList):	
+	def saveMilonga(self, name, trackList):	
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
 		milongaID = self.getMilongaID(name)
@@ -398,9 +398,9 @@ class DBtangoConnexion:
 		#print(ID)
 
 		count = 1
-		for tangoId in tangoList:
+		for trackId in trackList:
 			sql = "INSERT INTO Milonga_Tango (IdMilonga, IdTango, Ord) VALUES(?,?,?)"
-			cursor.execute(sql, (ID, tangoId, count))
+			cursor.execute(sql, (ID, trackId, count))
 			count+=1
 
 		conn.commit()

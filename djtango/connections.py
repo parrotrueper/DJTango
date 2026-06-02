@@ -12,6 +12,7 @@ class ConnectionsMixin:
 
         self._dialog.actionImport_file.triggered.connect(self.open_files_dialog)
         self._dialog.actionImport_directory.triggered.connect(self.open_file_dialog)
+        self._dialog.actionLibraryContents.triggered.connect(self.open_library_contents_dialog)
 
         self._dialog.actionDisplay_side_screen.setChecked(False)
         self._dialog.actionDisplay_side_screen.triggered.connect(self._handelDisplaySideScreen)

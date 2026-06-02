@@ -55,6 +55,9 @@ class Ui_trackAppearance(object):
         self.selectFontColorButton = QtWidgets.QPushButton(self.groupBoxPreview)
         self.selectFontColorButton.setObjectName("selectFontColorButton")
         self.buttonsLayout.addWidget(self.selectFontColorButton)
+        self.selectFontButton = QtWidgets.QPushButton(self.groupBoxPreview)
+        self.selectFontButton.setObjectName("selectFontButton")
+        self.buttonsLayout.addWidget(self.selectFontButton)
         self.previewLayout.addLayout(self.buttonsLayout)
 
         self.verticalLayout.addWidget(self.groupBoxPreview)
@@ -62,6 +65,9 @@ class Ui_trackAppearance(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(trackAppearance)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.applyButton = QtWidgets.QPushButton(trackAppearance)
+        self.applyButton.setObjectName("applyButton")
+        self.buttonBox.addButton(self.applyButton, QtWidgets.QDialogButtonBox.ApplyRole)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -71,7 +77,7 @@ class Ui_trackAppearance(object):
     def retranslateUi(self, trackAppearance):
         _translate = QtCore.QCoreApplication.translate
         trackAppearance.setWindowTitle(_translate("trackAppearance", "Track Appearance"))
-        self.header.setText(_translate("trackAppearance", "Select a track type and customize its background and font colors."))
+        self.header.setText(_translate("trackAppearance", "Select a track type and customize its background color, font color, and font style."))
         self.editTypeField.setPlaceholderText(_translate("trackAppearance", "New track type"))
         self.addTypeButton.setText(_translate("trackAppearance", "Add type"))
         self.removeTypeButton.setText(_translate("trackAppearance", "Remove type"))
@@ -79,3 +85,5 @@ class Ui_trackAppearance(object):
         self.previewLabel.setText(_translate("trackAppearance", "Track preview text"))
         self.selectColorButton.setText(_translate("trackAppearance", "Choose color"))
         self.selectFontColorButton.setText(_translate("trackAppearance", "Font colour"))
+        self.selectFontButton.setText(_translate("trackAppearance", "Choose font"))
+        self.applyButton.setText(_translate("trackAppearance", "Apply"))

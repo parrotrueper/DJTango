@@ -1,8 +1,8 @@
-# DJ Tango User Guide
+# DJ Track User Guide
 
 ## Overview
 
-DJ Tango is a Python-based tool for managing tango music libraries and DJing. 
+DJ Track is a Python-based tool for managing track music libraries and DJing. 
 
 It includes:
 
@@ -18,15 +18,15 @@ At the moment, the project is designed to run from a Python virtual environment.
 
 ### GUI mode
 
-- Browse tango songs
+- Browse track songs
 - Play tracks
 - Scan directories for audio files
-- Manage tango metadata and playlists
+- Manage track metadata and playlists
 
 ### CLI mode
 
-- Create or initialize the DJ Tango database
-- Scan a directory and insert supported tango files
+- Create or initialize the DJ Track database
+- Scan a directory and insert supported track files
 - List songs already stored in the database
 - Detect new files not yet in the database
 - Detect missing database entries for files removed from disk
@@ -48,8 +48,8 @@ Note: the base installation uses the project package metadata from `pyproject.to
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/flccrakers/dj-tango.git
-cd dj-tango
+git clone https://github.com/flccrakers/dj-track.git
+cd dj-track
 ```
 
 2. Create the virtual environment and install the project:
@@ -85,7 +85,7 @@ Use the GUI launcher script:
 This script checks for `.venv` and the Qt bindings, then starts `djtango/DJTango.py`.
 
 ### First run behavior
-The first time DJ Tango runs, it will detect that no database exists and will create one in the DJ home directory.
+The first time DJ Track runs, it will detect that no database exists and will create one in the DJ home directory.
 
 By default, the home directory is:
 
@@ -122,9 +122,9 @@ source .venv/bin/activate
 ### Available commands
 
 - `init-db`
-  - Creates the DJ Tango database in the configured home directory
+  - Creates the DJ Track database in the configured home directory
 - `scan <path>`
-  - Scans the given directory for supported tango audio files and inserts them into the database
+  - Scans the given directory for supported track audio files and inserts them into the database
 - `list`
   - Lists all songs stored in the database
 - `check-new <path>`
@@ -140,10 +140,10 @@ Initialize the database:
 ./run-tdj-cli.sh init-db
 ```
 
-Scan a directory of tango files:
+Scan a directory of track files:
 
 ```bash
-./run-tdj-cli.sh scan /path/to/tango/music
+./run-tdj-cli.sh scan /path/to/track/music
 ```
 
 List songs in the database:
@@ -155,23 +155,23 @@ List songs in the database:
 Check for new files not yet indexed:
 
 ```bash
-./run-tdj-cli.sh check-new /path/to/tango/music
+./run-tdj-cli.sh check-new /path/to/track/music
 ```
 
 Check for missing database entries:
 
 ```bash
-./run-tdj-cli.sh check-missing /path/to/tango/music
+./run-tdj-cli.sh check-missing /path/to/track/music
 ```
 
 ---
 
 ## Database storage
 
-By default, DJ Tango stores its database files under `~/.djtango`:
+By default, DJ Track stores its database files under `~/.djtango`:
 
 - `~/.djtango/djtango.db` — main song database
-- `~/.djtango/el-recodo.db` — secondary tango metadata database
+- `~/.djtango/el-recodo.db` — secondary track metadata database
 
 The CLI and GUI both use the same home directory by default. To change that, set `DJ_HOME_PATH` before launching the app.
 
@@ -252,7 +252,7 @@ To force a Docker image rebuild for CI tests:
 
 - The CLI is best for batch library management and scanning without a GUI dependency.
 - The GUI is best for playback and interactive song selection.
-- Keep your audio files organized in a stable directory tree so DJ Tango can keep paths and database entries matched.
+- Keep your audio files organized in a stable directory tree so DJ Track can keep paths and database entries matched.
 - If you install the project in editable mode with `./setup-env.sh`, code changes in the repository will be available immediately without reinstalling.
 
 ---
@@ -260,8 +260,8 @@ To force a Docker image rebuild for CI tests:
 ## Quick start summary
 
 ```bash
-git clone https://github.com/flccrakers/dj-tango.git
-cd dj-tango
+git clone https://github.com/flccrakers/dj-track.git
+cd dj-track
 ./setup-env.sh
 source .venv/bin/activate
 .venv/bin/python -m pip install PySide6
@@ -272,6 +272,6 @@ Or use the CLI:
 
 ```bash
 ./run-tdj-cli.sh init-db
-./run-tdj-cli.sh scan /path/to/tangos
+./run-tdj-cli.sh scan /path/to/tracks
 ./run-tdj-cli.sh list --limit 50
 ```

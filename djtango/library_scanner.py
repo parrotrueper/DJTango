@@ -1,7 +1,7 @@
 import logging
 from djtango.dirscanningthread import dirScan
 from djtango.qt_compat import QThread
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +40,11 @@ class LibraryScannerMixin:
             newfiles = self._tangoList.checkNewFiles()
             if newfiles:
                 for path in newfiles:
-                    self.djData.insertTango(TangoSong(path, 0, True))
+                    self.djData.insertTrack(TrackSong(path, 0, True))
 
-                self._tangoList.loadTangos(self.djData.getAllTangos())
-                data = [tango.list() for tango in self._tangoList.tangos.values()]
+                self._tangoList.loadTangos(self.djData.getAllTracks())
+                data = [track.list() for track in self._tangoList.tracks.values()]
                 self.sourceModel.changeData(data)
-                self._showInfo(str(len(newfiles)) + " song has been added")
+                self._showInfo(str(len(newfiles)) + " track has been added")
 
             self.scanningDir = False

@@ -3,7 +3,7 @@ import logging
 from djtango.gui_helpers import TrackAppearanceDialog
 from djtango.qt_compat import QColor, QColorDialog, QDialog, Qt
 from djtango.ui_theme import button_style
-from djtango.ui_utils import apply_tango_type_color, get_contrast_color
+from djtango.ui_utils import apply_track_type_color, get_contrast_color
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +36,13 @@ class TrackCustomizationMixin:
         self._applyTrackButtonPreview()
         item = self.prefContent.listWidgetTangoType.currentRow()
         try:
-            apply_tango_type_color(self.TYPE, item, color)
+            apply_track_type_color(self.TYPE, item, color)
         except ValueError as err:
             logger.warning('Color selection failed: %s', err)
             self._showInfo(str(err))
         except KeyError as err:
             logger.error('Color selection failed: %s', err)
-            self._showInfo('Selected tango type is invalid')
+            self._showInfo('Selected track type is invalid')
 
     def _selectTangoFontColor(self):
         color = self.colorDialog.currentColor()
@@ -103,7 +103,7 @@ class TrackCustomizationMixin:
 
         key = item + 1
         if key not in self.TYPE:
-            logger.error('_selectTangoChange invalid tango type key: %s', key)
+            logger.error('_selectTangoChange invalid track type key: %s', key)
             return
 
         R = self.TYPE[key][2]

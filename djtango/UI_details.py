@@ -240,11 +240,11 @@ class Ui_details(object):
 
     def retranslateUi(self, details):
         _translate = QtCore.QCoreApplication.translate
-        details.setWindowTitle(_translate("details", "Song Properties"))
+        details.setWindowTitle(_translate("details", "Track Properties"))
         self.labelPropTitle.setText(_translate("details", "Title:"))
         self.labelPropArtist.setText(_translate("details", "Artist:"))
         self.labelPropAlbum.setText(_translate("details", "Album:"))
-        self.labelPropGenre.setText(_translate("details", "Tango type:"))
+        self.labelPropGenre.setText(_translate("details", "Track type:"))
         self.labelPropYear.setText(_translate("details", "Year:"))
         self.checkBoxPlayMusic.setText(_translate("details", "Play music when clicking next or previous"))
         self.previousButton.setText(_translate("details", "Previous"))

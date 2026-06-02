@@ -2,7 +2,7 @@
 # -*- coding:Utf-8 -*
 
 from djtango.data import djDataConnection
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 import os, time, sys, re
 from colors import *
 import bs4
@@ -13,7 +13,7 @@ import unicodedata
 #listOfTango = []
 djhome = os.path.join(os.path.expanduser("~"), ".djtango")
 djData = djDataConnection(djhome)
-TYPE = djData.getTangoTypeList()
+TYPE = djData.getTrackTypeList()
 
 def remove_accents(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -44,7 +44,7 @@ def getNumeFromType(val):
 	#for i in range (1, len(TYPE)):
 	#	print(TYPE[i]);
 
-def getProgress(progress, size, total, tango):
+def getProgress(progress, size, total, track):
 	factor = progress/total
 	endRange = round(size*factor)
 	#print (factor)
@@ -54,7 +54,7 @@ def getProgress(progress, size, total, tango):
 	for i in range(0,size-endRange):
 		start+='_'
 	start+=']'
-	start+=' - '+tango.title+' - '+tango.artist+' ('+str(tango.year)+')'
+	start+=' - '+track.title+' - '+track.artist+' ('+str(track.year)+')'
 	start+='                                                                  '
 	sys.stdout.write(BLUE)
 	print(start, end='\r', flush=True)
@@ -62,7 +62,7 @@ def getProgress(progress, size, total, tango):
 	if factor == 1: print()
 
 
-def getStatistics(tangos):
+def getStatistics(tracks):
 	
 	print('counting ...')
 	altCor = 0
@@ -72,22 +72,22 @@ def getStatistics(tangos):
 	count = 0
 	cnt = 0
 	size = 25
-	total = len(tangos)
-	for tango in tangos:
+	total = len(tracks)
+	for track in tracks:
 		cnt+=1;
-		getProgress(cnt, size, total, tango)
-		if tango.type == 4 or tango.type>5:
+		getProgress(cnt, size, total, track)
+		if track.type == 4 or track.type>5:
 			altCor+=1
 		else:
-			if tango.treated == 1:
+			if track.treated == 1:
 				matched+=1
 			else:
-				rows = djData.existTangoInTangoDatabase(tango)#if exist in el-recodo database
-				if len(rows) == 0: #If we can't find this tango in el-recodo database
+				rows = djData.existTangoInTangoDatabase(track)#if exist in el-recodo database
+				if len(rows) == 0: #If we can't find this track in el-recodo database
 					noMatching+=1
 				elif len(rows) == 1 :
 					matched+=1
-				elif tango.year < 10 or tango.year>1990:
+				elif track.year < 10 or track.year>1990:
 					multiChoice+=1
 				else:
 					matched+=1
@@ -138,33 +138,33 @@ def getChoiceSelection(e):
 def getLink():
 	return input('Copy paste the link: ')
 
-def askForNewField(tango):
+def askForNewField(track):
 	print('will change some fields')
 	acceptedFields = ['year','artist','title','singer','type','composer','author','album']
-	#print(vars(tango))
+	#print(vars(track))
 	for field in acceptedFields:
 		if field == 'type':
-			value = input(field+ ' ['+str(getNumeFromType(getattr(tango, field)))+']: ')
+			value = input(field+ ' ['+str(getNumeFromType(getattr(track, field)))+']: ')
 		else:
-			value = input(field+ ' ['+str(getattr(tango, field))+']: ')
+			value = input(field+ ' ['+str(getattr(track, field))+']: ')
 		if value != '':
 			if field == 'type': value = getTypeFromName(value)
 			#print (value)
-			setattr(tango, field, value)
+			setattr(track, field, value)
 
-	#for key in vars(tango):
+	#for key in vars(track):
 	#	if key in acceptedFields:
-	#		#print (key+ ' ['+str(getattr(tango, key))+']: ')
-	#		value = input(key+ ' ['+str(getattr(tango, key))+']: ')
+	#		#print (key+ ' ['+str(getattr(track, key))+']: ')
+	#		value = input(key+ ' ['+str(getattr(track, key))+']: ')
 	#		if value != '':
 	#			#print (value)
-	#			setattr(tango, key, value)
-	return tango
+	#			setattr(track, key, value)
+	return track
 
-def playAndSearchTango(tango):
-	cmdvlc = 'vlc -q "'+tango.path+'" &'
-	cmdFirefox = ('firefox "https://www.el-recodo.com/music?T='+tango.title+'&G=&O='+tango.artist+'&C=&Dmin=&Dmax=&Cr=&Ar=&L=&lang=fr" &')
-	cmdTangoDjAt = ('firefox "https://www.tango-dj.at/database/index.htm?titlesearch='+tango.title+'&albumsearch=&yearsearch=&orquestrasearch='+tango.artist+'&advsearch=Search"')
+def playAndSearchTango(track):
+	cmdvlc = 'vlc -q "'+track.path+'" &'
+	cmdFirefox = ('firefox "https://www.el-recodo.com/music?T='+track.title+'&G=&O='+track.artist+'&C=&Dmin=&Dmax=&Cr=&Ar=&L=&lang=fr" &')
+	cmdTangoDjAt = ('firefox "https://www.track-dj.at/database/index.htm?titlesearch='+track.title+'&albumsearch=&yearsearch=&orquestrasearch='+track.artist+'&advsearch=Search"')
 	os.system('killall vlc')
 	os.system('wmctrl -a firefox')
 	os.system('wmctrl -a nightly')
@@ -214,12 +214,12 @@ def getSongsFromPageFromTangoDj(page, url):
 				song.append('None')
 			
 			genre = 'Unnkown'
-			if tds[5].next.find('Tango')>-1:
-				genre = 'Tango'
+			if tds[5].next.find('Track')>-1:
+				genre = 'Track'
 			if tds[5].next.find('Milonga')>-1:
 				genre = 'Milonga'
 			if tds[5].next.find('Nuevo')>-1:
-				genre = 'Tango Nuevo'
+				genre = 'Track Nuevo'
 			if tds[5].next.find('Vals')>-1:
 				genre = 'Vals'
 
@@ -294,47 +294,47 @@ def getSongsFromPageFromElRecodo(page, url):
 	#exit(0);
 	return songs;
 
-def updateTango2(tango, song):
+def updateTrack2(track, song):
 	if song is not None:
-		tango.year = song[0]
-		tango.artist = song[3]
-		tango.title = song[5]
-		tango.singer = song[7]
-		#tango.type = getTypeFromName(song[8])
-		tango.composer = song[9]
-		tango.author = song[10]
+		track.year = song[0]
+		track.artist = song[3]
+		track.title = song[5]
+		track.singer = song[7]
+		#track.type = getTypeFromName(song[8])
+		track.composer = song[9]
+		track.author = song[10]
 		#print(song[11])
-		if tango.album == 'Unnkown':
-			tango.album = song[11]
-		tango.treated = 1
-		#print(tango.listUpdateDB())
-		djData.updateTango(tango)
+		if track.album == 'Unnkown':
+			track.album = song[11]
+		track.treated = 1
+		#print(track.listUpdateDB())
+		djData.updateTrack(track)
 		os.system('clear')
 
-def updateTango(tango, row):
-	if tango.treated == 0:
+def updateTrack(track, row):
+	if track.treated == 0:
 		for i in range (0, len(row)):
 			if(row[i] == '?' or row[i] == '' or row[i] == ' '):
 				row[i] = 'Unnkown'
-			tango.year = row[7]
-			tango.singer = row[10]
-			tango.composer = row[11]
-			tango.author = row[12]
-			tango.treated = 1
-			#djData.updateTango(tango)
-			if tango.type == 5:
-				tango.type = getTypeFromName(row[6])
+			track.year = row[7]
+			track.singer = row[10]
+			track.composer = row[11]
+			track.author = row[12]
+			track.treated = 1
+			#djData.updateTrack(track)
+			if track.type == 5:
+				track.type = getTypeFromName(row[6])
 
-			djData.updateTango(tango)
+			djData.updateTrack(track)
 
-def verifyFromLink(tango, shouldAskCorrection, toprint):
-	title = remove_accents(tango.title.replace(' ', '+'))
+def verifyFromLink(track, shouldAskCorrection, toprint):
+	title = remove_accents(track.title.replace(' ', '+'))
 	#print (title)
-	artist = remove_accents(tango.artist.replace(' ', '+'))
+	artist = remove_accents(track.artist.replace(' ', '+'))
 	#print (artist)
 	#exit(0)
 	linkElRecodo = 'https://www.el-recodo.com/music?T='+title+'&G=&O='+artist+'&C=&Dmin=&Dmax=&Cr=&Ar=&L=&lang=fr'
-	linkTangoDjAt = 'https://www.tango-dj.at/database/index.htm?titlesearch='+title+'&albumsearch=&yearsearch=&orquestrasearch='+artist+'&advsearch=Search'
+	linkTangoDjAt = 'https://www.track-dj.at/database/index.htm?titlesearch='+title+'&albumsearch=&yearsearch=&orquestrasearch='+artist+'&advsearch=Search'
 	#print (linkElRecodo)
 	#print (linkTangoDjAt)
 	songElRecodo = []
@@ -361,27 +361,27 @@ def verifyFromLink(tango, shouldAskCorrection, toprint):
 
 
 	if (len(songElRecodo) == 1):
-		updateTango2(tango, songElRecodo[0])
+		updateTrack2(track, songElRecodo[0])
 	elif (len(songTangoDjAt) == 1):
-		updateTango2(tango, songTangoDjAt[0])
+		updateTrack2(track, songTangoDjAt[0])
 	elif len(songElRecodo) > 1 and shouldAskCorrection:
-		playAndSearchTango(tango)
-		print(tango.listUpdateDB())
+		playAndSearchTango(track)
+		print(track.listUpdateDB())
 		for i in range (0, len(songElRecodo)):
 			print(str(i+1)+' - '+str(songElRecodo[i] ))
 		val = int(input('Which one is the one: '))
 		song = songElRecodo[val-1]
-		updateTango2(tango, song)
+		updateTrack2(track, song)
 	elif len(songTangoDjAt) > 1 and shouldAskCorrection:
-		playAndSearchTango(tango)
-		print(tango.listUpdateDB())
+		playAndSearchTango(track)
+		print(track.listUpdateDB())
 		#print('we are in songTangoDjAt loop')
 		#print('size of songTangoDjAt: '+str(len(songTangoDjAt)))
 		for i in range (0, len(songTangoDjAt)):
 			print(str(i+1)+' - '+str(songTangoDjAt[i] ))
 		val = int(input('Which one is the one: '))
 		song = songTangoDjAt[val-1]
-		updateTango2(tango, song)
+		updateTrack2(track, song)
 
 
 	#print(len(songTangoDjAt))
@@ -407,7 +407,7 @@ else:
 	shouldAskCorrection = False
 
 #print (shouldAskCorrection)
-listOfTango = djData.getAllTangos()
+listOfTango = djData.getAllTracks()
 noMatching = 0
 matched = 0
 multiChoice = 0
@@ -427,33 +427,33 @@ if shouldAskCorrection:
 print('analyzing')
 cnt = 0
 size = 25
-for tango in listOfTango:
-	#print (tango.list())
+for track in listOfTango:
+	#print (track.list())
 	cnt+=1;
-	getProgress(cnt, size, len(listOfTango), tango)
+	getProgress(cnt, size, len(listOfTango), track)
 	
 	#if cnt > 4: cnt = 0
 	toprint = "\n"+'treated: '+str(treatedUnique)+' , remaining: '+str(stats[0]-noMatching-treatedUnique)
-	if tango.list()[5]<4 and tango.treated == 0 and verifyFromLink(tango, shouldAskCorrection, toprint):
+	if track.list()[5]<4 and track.treated == 0 and verifyFromLink(track, shouldAskCorrection, toprint):
 		treatedUnique+=1
 		matched+=1
-	elif tango.list()[5]<4 and tango.treated == 0 :
+	elif track.list()[5]<4 and track.treated == 0 :
 		totcount+=1
-		rows = djData.existTangoInTangoDatabase(tango)#if exist in el-recodo database
+		rows = djData.existTangoInTangoDatabase(track)#if exist in el-recodo database
 		#print(rows)
-		if len(rows) == 0: #If we can't find this tango in el-recodo database
+		if len(rows) == 0: #If we can't find this track in el-recodo database
 
 			#print('will clear')
 			
-			if tango.treated ==0 and shouldAskCorrection :
+			if track.treated ==0 and shouldAskCorrection :
 				print()
 				sys.stdout.write(RED)
 				print(toprint)
 				sys.stdout.write(RESET)
 			
 			
-				print(tango.listUpdateDB())
-				playAndSearchTango(tango)			
+				print(track.listUpdateDB())
+				playAndSearchTango(track)			
 				print()
 				print (str(0)+' - Pass to the next, but will continue to show it')
 				print (str(1)+' - Pass to the next, but will consider it as treated')
@@ -470,15 +470,15 @@ for tango in listOfTango:
 					print('do nothing')
 					noMatching+=1
 				elif val == 1:
-					tango.treated = 1
+					track.treated = 1
 					treatedUnique+=1
-					djData.updateTango(tango)
+					djData.updateTrack(track)
 				elif val == 2:
-					tango = askForNewField(tango)
-					print(tango.listUpdateDB())
+					track = askForNewField(track)
+					print(track.listUpdateDB())
 					treatedUnique+=1
-					tango.treated = 1
-					djData.updateTango(tango)
+					track.treated = 1
+					djData.updateTrack(track)
 				elif val == 3:
 					link = getLink()
 					fp = urllib.request.urlopen(link)
@@ -486,8 +486,8 @@ for tango in listOfTango:
 					if (link.find('el-recodo')>-1):
 						#print('I will get the data from el-recodo')
 						songs = getSongsFromPageFromElRecodo(fp.read(), link)
-					elif (link.find('tango-dj.at')>-1):
-						#print('I will get the data from tango-dj')
+					elif (link.find('track-dj.at')>-1):
+						#print('I will get the data from track-dj')
 						songs = getSongsFromPageFromTangoDj(fp.read(), link)
 
 					#print(songs)
@@ -503,20 +503,20 @@ for tango in listOfTango:
 						val = int(input('Which one is the one: '))
 						song = songs[val-1]
 
-					updateTango2(tango, song)
+					updateTrack2(track, song)
 					print('will clear')
 					os.system( 'clear' )
-				#noMatched.append(tango)
+				#noMatched.append(track)
 
 			else:
 				noMatching+=1
-		elif len(rows) == 1: #if only one tango is corresponding to el-recodo database (better case)
+		elif len(rows) == 1: #if only one track is corresponding to el-recodo database (better case)
 			matched+=1
 			row = list(rows[0])
-			updateTango(tango, row)
+			updateTrack(track, row)
 
 
-		elif tango.treated == 0 and tango.year<10: #if we have more than one tango
+		elif track.treated == 0 and track.year<10: #if we have more than one track
 			if shouldAskCorrection:
 				sys.stdout.write(RED)
 				print("\n"+'treated: '+str(treatedMultiChoice)+' , remaining: '+str(stats[2]-treatedMultiChoice))
@@ -532,7 +532,7 @@ for tango in listOfTango:
 				print (str(23)+' - Wrong annotation to be corrected later (will add TO_BE_CORRECTED to title and artist)')
 				#print ("multiple choice, we will to have to treat this correctly");
 			
-				playAndSearchTango(tango)		
+				playAndSearchTango(track)		
 				print()
 				time.sleep(5)
 				val = getChoiceSelection('Which one correspond ?')
@@ -547,27 +547,27 @@ for tango in listOfTango:
 						if(row[i] == '?' or row[i] == '' or row[i] == ' '):
 							#print(row[i])
 							row[i] = 'Unnkown'
-						tango.year = row[7]
-						tango.singer = row[10]
-						tango.composer = row[11]
-						tango.author = row[12]
-					if tango.type == 5:
-						tango.type = getTypeFromName(row[6])
-					djData.updateTango(tango)
+						track.year = row[7]
+						track.singer = row[10]
+						track.composer = row[11]
+						track.author = row[12]
+					if track.type == 5:
+						track.type = getTypeFromName(row[6])
+					djData.updateTrack(track)
 				elif val == 22:
-					tango = askForNewField(tango)
-					print(tango.listUpdateDB())
-					djData.updateTango(tango)
+					track = askForNewField(track)
+					print(track.listUpdateDB())
+					djData.updateTrack(track)
 				elif val ==23:
-					tango.treated = 1
-					tango.artist = tango.artist+'_TO_BE_CORRECTED'
-					tango.title = tango.title+'_TO_BE_CORRECTED'
-					#print(tango.listUpdateDB())
-					djData.updateTango(tango)
+					track.treated = 1
+					track.artist = track.artist+'_TO_BE_CORRECTED'
+					track.title = track.title+'_TO_BE_CORRECTED'
+					#print(track.listUpdateDB())
+					djData.updateTrack(track)
 					#exit(0)
 				else:
-					tango.treated = 1 # in this case, we will not ask for this tango, until the value is <10 again
-					djData.updateTango(tango)
+					track.treated = 1 # in this case, we will not ask for this track, until the value is <10 again
+					djData.updateTrack(track)
 				treatedMultiChoice+=1
 				multiChoice-=1
 				matched+=1
@@ -576,14 +576,14 @@ for tango in listOfTango:
 				os.system( 'clear' )
 
 			multiChoice+=1
-		else: #more than one choice, but these tangos are matched
-			#print (tango.listUpdateDB())
-			tango.treated = 1
-			djData.updateTango(tango)
+		else: #more than one choice, but these tracks are matched
+			#print (track.listUpdateDB())
+			track.treated = 1
+			djData.updateTrack(track)
 			matched+=1
-	elif tango.type==4 or tango.type>5:
+	elif track.type==4 or track.type>5:
 		altCort+=1
-	elif tango.treated >0:
+	elif track.treated >0:
 		matched+=1
 	
 
@@ -595,14 +595,14 @@ for tango in listOfTango:
 
 #count = 0
 #fichier = open("./tobecorrected.csv", "w")
-#for tango in noMatched:
-#	tList = tango.list()
+#for track in noMatched:
+#	tList = track.list()
 	#if tList[5] <4 and not (tList[3].lower() == 'miguel calo'):
 	
 #	if tList[5] <4 :
 #		count+=1
-		#row  = tango.listUpdateDB()
-		#print(tango.listUpdateDB())
+		#row  = track.listUpdateDB()
+		#print(track.listUpdateDB())
 		#cmdFirefox = ('firefox "https://www.el-recodo.com/music?T='+row[0]+'&G=&O='+row[1]+'&C=&Dmin=&Dmax=&Cr=&Ar=&L=&lang=fr" &')
 		#print (cmdFirefox)
 		#print ('{0:10}  {1:30}  {2:30}  {3:2}'.format(str(tList[0]), tList[2].lower(), tList[3].lower(), tList[5]))

@@ -121,7 +121,7 @@
 }</string>
          </property>
          <property name="text">
-          <string>Tango type</string>
+          <string>Track type</string>
          </property>
         </widget>
        </item>
@@ -180,7 +180,7 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>Add a Tango type</string>
+            <string>Add a Track type</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QPushButton{
@@ -204,7 +204,7 @@
      <item>
       <widget class="QPushButton" name="removeTypeButton_2">
        <property name="toolTip">
-        <string>Remove a Tango type</string>
+        <string>Remove a Track type</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton{
@@ -232,7 +232,7 @@
 }</string>
          </property>
          <property name="text">
-          <string>Tango Color</string>
+          <string>Track Color</string>
          </property>
         </widget>
        </item>

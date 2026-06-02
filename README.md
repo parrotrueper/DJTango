@@ -1,8 +1,8 @@
 # DJTango
 
-Software for tango DJs.
+Software for track DJs.
 
-Originally forked from https://github.com/flccrakers/dj-tango 
+Originally forked from https://github.com/flccrakers/dj-track 
 
 This project is a very different beast from the original source.
 
@@ -63,6 +63,13 @@ For GUI and multimedia support, the container build installs:
   
 ```shell
 ./setup-env.sh
+```
+
+If you are using `uv`, the project can also be bootstrapped from the repository root:
+
+```shell
+uv .venv install -e .[test,dev]
+uv .venv shell
 ```
 
 ## Testing

@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 
 from djtango.data import djDataConnection
+from djtango.tracksong import TrackSong
 
 
 def test_djdata_connection_ensure_treated_column(tmp_path):
@@ -32,7 +33,7 @@ def test_get_tango_from_list_id_empty_returns_empty(tmp_path):
 
     data = djDataConnection(str(tmp_path))
 
-    assert data.getTangoFromListID([]) == []
+    assert data.getTrackFromListID([]) == []
 
 
 def test_set_new_song_available_updates_preferences(tmp_path):
@@ -53,3 +54,21 @@ def test_set_new_song_available_updates_preferences(tmp_path):
     conn.close()
 
     assert value == 1
+
+
+def test_insert_tango_stores_duration(tmp_path):
+    data = djDataConnection(str(tmp_path))
+    data.createDatabase()
+
+    track = TrackSong(str(tmp_path / 'song.mp3'), 0, False)
+    track.duration = 123.456
+    inserted_id = data.insertTrack(track)
+
+    conn = sqlite3.connect(data.path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT duration FROM tangos WHERE ID = ?', (inserted_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    assert row is not None
+    assert float(row[0]) == 123.456

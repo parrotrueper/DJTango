@@ -29,9 +29,6 @@ class Ui_DialogAskDelete(object):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout.addWidget(self.buttonBox, 1, 1, 1, 1)
-        #self.lineEditName = QtWidgets.QLineEdit(DialogAskDelete)
-        #self.lineEditName.setObjectName("lineEditName")
-        #self.gridLayout.addWidget(self.lineEditName, 0, 1, 1, 1)
         self.labelMilongaName = QtWidgets.QLabel(DialogAskDelete)
         self.labelMilongaName.setObjectName("labelDeleteMilonga")
         self.labelMilongaName.setStyleSheet("QLabel{\n"

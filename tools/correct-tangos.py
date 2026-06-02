@@ -5,9 +5,9 @@ import os
 import time
 
 from djtango.data import djDataConnection
-from djtango.tangosong import TangoSong
+from djtango.tracksong import TrackSong
 
-inputFile = './tango-a-corriger.csv'
+inputFile = './track-a-corriger.csv'
 
 def loadcsv(file):
 	ret=[]
@@ -18,31 +18,31 @@ def loadcsv(file):
 		#print(res)
 
 	return ret
-def printRest(tangoList):
+def printRest(trackList):
 	left = 0
 	
-	for index in range(1, len(tangoList)):
-		table = tangoList[index]
+	for index in range(1, len(trackList)):
+		table = trackList[index]
 		if table[3] == "":
 			left+=1
 
-	print(str(left)+" to inspect, "+str(len(tangoList)-left)+" checked, on a total of "+str(len(tangoList)))
+	print(str(left)+" to inspect, "+str(len(trackList)-left)+" checked, on a total of "+str(len(trackList)))
 
 def saveAndExit(file):
 	outF = open(file, "w")
 	s = ';'
-	for i in range (0,len(tangoList)):
-		outF.write(s.join(tangoList[i])+"\n")
+	for i in range (0,len(trackList)):
+		outF.write(s.join(trackList[i])+"\n")
 		#outF.
 	exit(0)
 
-tangoList = loadcsv(inputFile)
-printRest(tangoList)
+trackList = loadcsv(inputFile)
+printRest(trackList)
 #first = True
 i = 1
 curIndex = []
-for index in range(1, len(tangoList)):
-	table = tangoList[index]
+for index in range(1, len(trackList)):
+	table = trackList[index]
 	if table[3] == "":
 		print(table)
 		curIndex.append(index)
@@ -65,13 +65,13 @@ for index in range(1, len(tangoList)):
 			if mdpe == 'exit':
 				saveAndExit(inputFile)
 			elif mdpe[count] == 'c':
-				print (tangoList[x])
-				tangoList[x][3] = 'corrigé'
-				print (tangoList[x])
+				print (trackList[x])
+				trackList[x][3] = 'corrigé'
+				print (trackList[x])
 			elif mdpe[count] == 'n':
-				print (tangoList[x])
-				tangoList[x][3] = "N’existe pas chez El Recodo" 
-				print (tangoList[x])
+				print (trackList[x])
+				trackList[x][3] = "N’existe pas chez El Recodo" 
+				print (trackList[x])
 
 			print("\n###########\n")		
 			count+=1

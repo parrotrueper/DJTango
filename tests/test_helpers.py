@@ -1,7 +1,7 @@
 import pytest
 
 from djtango.qt_compat import QColor, QModelIndex, Qt
-from djtango.DJTango import apply_tango_type_color, get_contrast_color, tango_type_key_from_row
+from djtango.DJTango import apply_track_type_color, get_contrast_color, track_type_key_from_row
 from djtango.tableModels import milongaSource
 
 
@@ -26,20 +26,20 @@ class DummyColor:
 
 
 def test_tango_type_key_from_row_valid():
-    assert tango_type_key_from_row(0) == 1
-    assert tango_type_key_from_row(2) == 3
+    assert track_type_key_from_row(0) == 1
+    assert track_type_key_from_row(2) == 3
 
 
 def test_tango_type_key_from_row_no_selection():
     with pytest.raises(ValueError):
-        tango_type_key_from_row(-1)
+        track_type_key_from_row(-1)
 
 
 def test_apply_tango_type_color_updates_type():
     TYPE = {1: ('unknown', 'Unknown', 1, 2, 3, 255)}
     new_color = DummyColor(100, 150, 200, 180)
 
-    result = apply_tango_type_color(TYPE, 0, new_color)
+    result = apply_track_type_color(TYPE, 0, new_color)
 
     assert result == (TYPE[1][0], TYPE[1][1], 100, 150, 200, 180)
     assert TYPE[1] == result
@@ -50,7 +50,7 @@ def test_apply_tango_type_color_invalid_row():
     new_color = DummyColor(100, 150, 200, 180)
 
     with pytest.raises(KeyError):
-        apply_tango_type_color(TYPE, 1, new_color)
+        apply_track_type_color(TYPE, 1, new_color)
 
 
 def test_table_model_foreground_role_uses_saved_font_color():

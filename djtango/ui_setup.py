@@ -22,7 +22,7 @@ class UISetupMixin:
         self.pauseIcon = QIcon('./djtango/img/pause-button.png')
 
         libraryHeader = ['#', ' ', 'Title', 'Artist', 'Album', 'Genre', 'Year', 'BPM', 'Time']
-        libraryData = [tango.list() for tango in self._tangoList.tangos.values()]
+        libraryData = [track.list() for track in self._tangoList.tracks.values()]
 
         self.sourceModel = tableModels.milongaSource(self, libraryData, libraryHeader, self.TYPE)
         self.sourceProxyModel = tableModels.sourceFilterProxyModel(self)
@@ -34,7 +34,7 @@ class UISetupMixin:
         self._dialog.milongaDest.setModel(self.destModel)
         self._dialog.milongaDest.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' song(s)')
+        self._dialog.labelsongNB_source.setText(str(self.sourceProxyModel.rowCount(QModelIndex())) + ' track(s)')
 
         self._setup_tap_window()
         self._setup_track_details_window()

@@ -12,6 +12,7 @@ dependencies = [
   "PySide6",
   "pydub",
   "audioread",
+  "mutagen",
 ]
 
 license = { text = "MIT License" }
@@ -27,6 +28,27 @@ test = [
   "nose",
   "pytest",
 ]
+dev = [
+  "uv",
+  "ruff",
+  "mypy",
+  "lizard",
+]
+
+[tool.ruff]
+line-length = 88
+exclude = [".venv", "build", "dist", "dj_tango.egg-info", "__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "C", "UP", "Q"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_configs = true
+strict_optional = true
+exclude = "(^\\.venv|build|dist|dj_tango\\.egg-info)"
 
 [project.scripts]
 djtango = "tools.djtango_cli:main"
@@ -37,4 +59,7 @@ Download = "https://example.com/dj-tango/download"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["djtango", "tools", "mutagen", "tests"]
+include = ["djtango", "tools", "tests"]
+
+[tool.setuptools.package-data]
+"djtango" = ["qml/*"]

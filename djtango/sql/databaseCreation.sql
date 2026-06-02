@@ -29,6 +29,9 @@ CREATE TABLE "preferences" (
 	`normalize`	INTEGER DEFAULT 0,
 	`newSongAvailable`	INTEGER DEFAULT 0
 );
+CREATE TABLE excludedPaths (
+	`path`	TEXT PRIMARY KEY
+);
 CREATE TABLE `people` (
 	`ID`	INTEGER,
 	`firstname`	TEXT,

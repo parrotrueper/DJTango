@@ -18,11 +18,11 @@ class SelectionHandlerMixin:
         if len(indexes) == 1:
             self._currentIndex = self.sourceProxyModel.data(indexes[0], Qt.DisplayRole)
             self.curLibraryRow = indexes[0].row()
-            self.curTango = self._tangoList.tangos[self._currentIndex]
+            self.curTango = self._tangoList.tracks[self._currentIndex]
             self._updateSideScreen()
             self.update_tango_infos(self.curTango)
             if self.propWindow.isVisible():
-                self.updateTangoProp()
+                self.updateTrackProp()
         elif len(indexes) == 0:
             self.curTango = None
             self._updateSideScreen()
