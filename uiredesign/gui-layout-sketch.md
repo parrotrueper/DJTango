@@ -52,14 +52,12 @@ play displays when nothing is playing, pause displays when playing
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Main Content Area
+## Search area
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Search / filter chips / WIP context selector                                                                │
-│                                                                                                             │
-│  [Search field]   [Library] [Playlists] [Library 2] [Live] [WIP]   [WIP context dropdown]                   │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  [Search box] [toggle to apply search filters] [by artist-dropdown][by album-dropdown][by type-dropdown][scope-dropdown]│
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### WIP / Live split panels

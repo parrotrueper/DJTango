@@ -21,6 +21,9 @@ ApplicationWindow {
     property int selectedLibraryIndex: -1
     property int selectedLibraryId: -1
     property int selectedPlaylistIndex: -1
+    property int trackInfoSectionHeight: 56
+    property int trackInfoSectionMinHeight: 40
+    property int trackInfoSectionMaxHeight: Math.round(height * 0.35)
     property alias theme: themeObject
     property int smallIconButtonWidth: 52
     property int smallIconButtonHeight: 24
@@ -341,8 +344,11 @@ ApplicationWindow {
             spacing: 12
 
             Rectangle {
-                width: parent.width
-                height: 56
+                clip: true
+                Layout.fillWidth: true
+                Layout.preferredHeight: trackInfoSectionHeight
+                height: trackInfoSectionHeight
+                implicitHeight: trackInfoSectionHeight
                 radius: theme.cornerRadius
                 color: theme.surface
                 border.color: theme.accent
@@ -352,33 +358,93 @@ ApplicationWindow {
                     anchors.fill: parent
                     anchors.margins: 12
                     spacing: 12
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                     Image {
                         source: selectedTrackTitle === "" && !isPlaying ? "icons/music_off_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/speaker_group_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                        width: 20
-                        height: 20
+                        width: 48
+                        height: 48
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     ColumnLayout {
-                        Layout.fillWidth: true
                         spacing: 2
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.fillWidth: true
 
                         Label {
                             text: selectedTrackTitle !== "" ? selectedTrackTitle : (isPlaying ? "Playing now" : "No track selected")
                             color: theme.text
-                            font.pixelSize: 14
+                            font.pixelSize: 24
                             font.bold: true
                             elide: Text.ElideRight
+                            horizontalAlignment: Text.AlignHCenter
+                            Layout.fillWidth: true
                         }
 
                         Label {
                             text: selectedTrackTitle !== "" ? selectedTrackArtist : (isPlaying ? "Playback active" : "Select a track to show info")
                             color: theme.mutedText
-                            font.pixelSize: 12
+                            font.pixelSize: 18
                             elide: Text.ElideRight
+                            horizontalAlignment: Text.AlignHCenter
+                            Layout.fillWidth: true
                         }
+
+                        Label {
+                            text: "Track info height: " + trackInfoSectionHeight
+                            color: theme.accent
+                            font.pixelSize: 11
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 18
+                radius: theme.cornerRadius
+                color: theme.surface
+                border.color: theme.accent
+                border.width: 1
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+
+                    Rectangle {
+                        width: 80
+                        height: 4
+                        color: theme.accent
+                        radius: 2
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.SizeVerCursor
+                    acceptedButtons: Qt.LeftButton
+                    preventStealing: true
+                    hoverEnabled: true
+                    property real dragStartY: 0
+                    property real dragStartHeight: trackInfoSectionHeight
+                    onPressed: function(mouse) {
+                        dragStartY = mouse.y
+                        dragStartHeight = trackInfoSectionHeight
+                    }
+                    onPositionChanged: function(mouse) {
+                        if (!pressedButtons) return
+                        var delta = mouse.y - dragStartY
+                        trackInfoSectionHeight = Math.max(trackInfoSectionMinHeight, Math.min(trackInfoSectionMaxHeight, dragStartHeight + delta))
                     }
                 }
             }
@@ -463,13 +529,6 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
-
-                Label {
-                    text: selectedTrackTitle !== "" ? "Selected: " + selectedTrackTitle + " — " + selectedTrackArtist : "No track selected"
-                    color: theme.text
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                }
 
                 Switch {
                     id: modeSwitch
