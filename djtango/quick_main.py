@@ -33,6 +33,7 @@ def create_app(argv=None):
     backend = QmlBackend()
     engine.rootContext().setContextProperty("backend", backend)
     qml_file = QML_FILE
+    engine.addImportPath(os.path.dirname(qml_file))
     engine.load(QUrl.fromLocalFile(qml_file))
     if not engine.rootObjects():
         raise RuntimeError(f"Failed to load QML file: {qml_file}")

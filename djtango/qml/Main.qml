@@ -9,7 +9,6 @@ ApplicationWindow {
     title: "DJTango"
     color: theme.background
 
-    property alias theme: theme
     property var backendObject: null
     property string searchText: ""
     property string searchScope: "Library"
@@ -23,14 +22,27 @@ ApplicationWindow {
     property int selectedLibraryId: -1
     property int selectedPlaylistIndex: -1
 
-    Theme {
+    /* Theme object and shared UI colors */
+    QtObject {
         id: theme
+        property string primary: "#a0344d"
+        property string secondary: "#2a2a2a"
+        property string accent: "#00ffff"
+        property string surface: "#2a2a2a"
+        property string background: "#161616"
+        property string text: "#ffffff"
+        property string menuText: "#000000"
+        property string mutedText: "#d3d3d3"
+        property int cornerRadius: 8
+        property int headerHeight: 48
     }
 
+    /* App initialization and backend wiring */
     Component.onCompleted: {
         backendObject = backend
     }
 
+    /* Signal connections from the backend */
     Connections {
         target: backendObject
         function onPlaybackStateChanged(playing) {
@@ -38,6 +50,7 @@ ApplicationWindow {
         }
     }
 
+    /* Top menu bar / action header */
     Rectangle {
         id: menuBar
         height: theme.headerHeight
@@ -157,6 +170,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
 
+            /* Live output status and session state */
             RowLayout {
                 spacing: 8
                 Layout.alignment: Qt.AlignVCenter
@@ -262,6 +276,7 @@ ApplicationWindow {
         }
     }
 
+    /* Main content area below the menu bar */
     Rectangle {
         anchors.fill: parent
         anchors.topMargin: theme.headerHeight
@@ -273,6 +288,7 @@ ApplicationWindow {
             anchors.margins: 12
             spacing: 12
 
+            /* Search field and quick actions */
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
@@ -302,6 +318,7 @@ ApplicationWindow {
                 }
             }
 
+            /* Search scope selection buttons */
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
@@ -347,6 +364,7 @@ ApplicationWindow {
                 }
             }
 
+            /* Selected track info and view mode toggles */
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
@@ -381,11 +399,13 @@ ApplicationWindow {
                 }
             }
 
+            /* Main panel split: WIP library panel and Live playlist panel */
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 12
 
+                /* WIP / Library panel */
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 600
@@ -476,6 +496,7 @@ ApplicationWindow {
                     }
                 }
 
+                /* Live playlist panel */
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 520
@@ -608,6 +629,7 @@ ApplicationWindow {
         }
     }
 
+    /* Footer / status bar */
     footer: Rectangle {
         height: 40
         width: parent.width
