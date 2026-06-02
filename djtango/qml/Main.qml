@@ -21,10 +21,11 @@ ApplicationWindow {
     property int selectedLibraryIndex: -1
     property int selectedLibraryId: -1
     property int selectedPlaylistIndex: -1
+    property alias theme: themeObject
 
     /* Theme object and shared UI colors */
     QtObject {
-        id: theme
+        id: themeObject
         property string primary: "#a0344d"
         property string secondary: "#2a2a2a"
         property string accent: "#00ffff"
@@ -42,6 +43,43 @@ ApplicationWindow {
         backendObject = backend
     }
 
+    Rectangle {
+        id: titleBar
+        width: parent.width
+        height: 48
+        color: theme.secondary
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 12
+            spacing: 12
+
+            Label {
+                text: backendObject ? backendObject.appTitle() + " v" + backendObject.appVersion() : "DJTango"
+                color: theme.text
+                font.pixelSize: 16
+                Layout.alignment: Qt.AlignVCenter
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                spacing: 12
+                Layout.alignment: Qt.AlignVCenter
+
+                Label {
+                    text: backendObject ? backendObject.liveOutputName() : "Output"
+                    color: theme.text
+                    font.pixelSize: 12
+                }
+                Label {
+                    text: backendObject ? backendObject.liveVolume() + "%" : "100%"
+                    color: theme.text
+                    font.pixelSize: 12
+                }
+            }
+        }
+    }
+
     /* Signal connections from the backend */
     Connections {
         target: backendObject
@@ -53,6 +91,7 @@ ApplicationWindow {
     /* Top menu bar / action header */
     Rectangle {
         id: menuBar
+        anchors.top: titleBar.bottom
         height: theme.headerHeight
         width: parent.width
         color: "#dedddac1"
@@ -278,9 +317,10 @@ ApplicationWindow {
 
     /* Main content area below the menu bar */
     Rectangle {
-        anchors.fill: parent
-        anchors.topMargin: theme.headerHeight
-        anchors.bottomMargin: 40
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: menuBar.bottom
+        anchors.bottom: parent.bottom
         color: theme.background
 
         ColumnLayout {

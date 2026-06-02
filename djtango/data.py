@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3, os
+import logging
+import os
+import sqlite3
 
 from djtango import utils
 from djtango.tracksong import TrackSong
+
+logger = logging.getLogger(__name__)
 
 
 class djDataConnection:

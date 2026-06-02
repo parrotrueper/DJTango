@@ -28,10 +28,13 @@ def create_app(argv=None):
 
     from djtango.qml_backend import QmlBackend
 
-    app = QApplication(argv or [])
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(argv or [])
     engine = QQmlApplicationEngine()
     backend = QmlBackend()
     engine.rootContext().setContextProperty("backend", backend)
+    engine._backend = backend
     qml_file = QML_FILE
     engine.addImportPath(os.path.dirname(qml_file))
     engine.load(QUrl.fromLocalFile(qml_file))
@@ -42,6 +45,8 @@ def create_app(argv=None):
     timer = QTimer()
     timer.timeout.connect(lambda: None)
     timer.start(1000)
+    app._event_timer = timer
+    app._qml_engine = engine
 
     return app, engine
 
