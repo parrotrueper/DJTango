@@ -2,7 +2,7 @@
 
 Use this document as the editable reference for the new QML redesign. Update sections as the layout evolves.
 
-## Top Header
+## Top Border
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -43,6 +43,15 @@ Skip forward - icons/skip_next_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg
 
 play displays when nothing is playing, pause displays when playing
 
+## Now Playing - Track Info
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+|                                             Track Title                                                     | 
+|                                             Artist                                                          | 
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
 ## Main Content Area
 
 ```
@@ -57,7 +66,7 @@ play displays when nothing is playing, pause displays when playing
 
 ```
 ┌─────────────────────────────┬───────────────────────────────────────────────────────────────────────────────┐
-│ WIP panel                  │ Live panel                                                                     │
+│ WIP panel                   │ Live panel                                                                     │
 │                             │                                                                               │
 │  - library list             │  - live playlist                                                              │
 │  - playlist browser         │  - currently playing / queued tracks                                          │

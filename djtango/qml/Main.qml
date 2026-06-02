@@ -22,6 +22,9 @@ ApplicationWindow {
     property int selectedLibraryId: -1
     property int selectedPlaylistIndex: -1
     property alias theme: themeObject
+    property int smallIconButtonWidth: 52
+    property int smallIconButtonHeight: 24
+    property int smallIconSize: 24
 
     /* Theme object and shared UI colors */
     QtObject {
@@ -34,6 +37,7 @@ ApplicationWindow {
         property string text: "#ffffff"
         property string menuText: "#000000"
         property string mutedText: "#d3d3d3"
+        property string borders: "#777777"
         property int cornerRadius: 8
         property int headerHeight: 48
     }
@@ -43,42 +47,6 @@ ApplicationWindow {
         backendObject = backend
     }
 
-    Rectangle {
-        id: titleBar
-        width: parent.width
-        height: 48
-        color: theme.secondary
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 12
-            spacing: 12
-
-            Label {
-                text: backendObject ? backendObject.appTitle() + " v" + backendObject.appVersion() : "DJTango"
-                color: theme.text
-                font.pixelSize: 16
-                Layout.alignment: Qt.AlignVCenter
-                Layout.fillWidth: true
-            }
-
-            RowLayout {
-                spacing: 12
-                Layout.alignment: Qt.AlignVCenter
-
-                Label {
-                    text: backendObject ? backendObject.liveOutputName() : "Output"
-                    color: theme.text
-                    font.pixelSize: 12
-                }
-                Label {
-                    text: backendObject ? backendObject.liveVolume() + "%" : "100%"
-                    color: theme.text
-                    font.pixelSize: 12
-                }
-            }
-        }
-    }
 
     /* Signal connections from the backend */
     Connections {
@@ -91,11 +59,10 @@ ApplicationWindow {
     /* Top menu bar / action header */
     Rectangle {
         id: menuBar
-        anchors.top: titleBar.bottom
         height: theme.headerHeight
         width: parent.width
-        color: "#dedddac1"
-        border.color: theme.accent
+        color: '#debcbbb9'
+        border.color: theme.borders
         border.width: 1
 
         RowLayout {
@@ -121,6 +88,7 @@ ApplicationWindow {
                             width: 18
                             height: 18
                             fillMode: Image.PreserveAspectFit
+                            smooth: true
                         }
                         Label {
                             text: libraryButton.label
@@ -145,6 +113,7 @@ ApplicationWindow {
                             width: 18
                             height: 18
                             fillMode: Image.PreserveAspectFit
+                            smooth: true
                         }
                         Label {
                             text: playlistButton.label
@@ -169,6 +138,7 @@ ApplicationWindow {
                             width: 18
                             height: 18
                             fillMode: Image.PreserveAspectFit
+                            smooth: true
                         }
                         Label {
                             text: viewButton.label
@@ -182,7 +152,7 @@ ApplicationWindow {
                 Button {
                     id: preferencesButton
                     property alias iconSource: iconImagePreferences.source
-                    property string label: "Preferences"
+                    property string label: "Settings"
                     flat: true
                     font.pixelSize: 13
                     contentItem: RowLayout {
@@ -193,6 +163,7 @@ ApplicationWindow {
                             width: 18
                             height: 18
                             fillMode: Image.PreserveAspectFit
+                            smooth: true
                         }
                         Label {
                             text: preferencesButton.label
@@ -219,6 +190,7 @@ ApplicationWindow {
                     width: 18
                     height: 18
                     fillMode: Image.PreserveAspectFit
+                    smooth: true
                 }
                 Label {
                     text: backendObject ? backendObject.liveOutputName() : "?"
@@ -248,8 +220,12 @@ ApplicationWindow {
                 }
             }
 
+            Item {
+                Layout.fillWidth: true
+            }
+
             Rectangle {
-                width: 180
+                width: 250
                 height: 8
                 radius: 4
                 color: theme.accent
@@ -259,21 +235,33 @@ ApplicationWindow {
             }
 
             RowLayout {
-                spacing: 1
-                Layout.alignment: Qt.AlignVCenter
+                spacing: 0
+                Layout.alignment: Qt.AlignRight
 
                 Button {
                     id: prevButton
                     property alias iconSource: iconImagePrev.source
                     flat: true
-                    width: 40
-                    height: 28
+                    width: smallIconButtonWidth
+                    height: smallIconButtonHeight
+                    implicitWidth: smallIconButtonWidth
+                    implicitHeight: smallIconButtonHeight
+                    Layout.minimumWidth: smallIconButtonWidth
+                    Layout.maximumWidth: smallIconButtonWidth
+                    Layout.minimumHeight: smallIconButtonHeight
+                    Layout.maximumHeight: smallIconButtonHeight
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
                     contentItem: Image {
                         id: iconImagePrev
                         anchors.centerIn: parent
-                        width: 18
-                        height: 18
+                        width: smallIconSize
+                        height: smallIconSize
                         fillMode: Image.PreserveAspectFit
+                        smooth: true
                         source: prevButton.iconSource
                     }
                     iconSource: "icons/skip_previous_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
@@ -282,14 +270,26 @@ ApplicationWindow {
                     id: playPauseButton
                     property alias iconSource: iconImagePlayPause.source
                     flat: true
-                    width: 40
-                    height: 28
+                    width: smallIconButtonWidth
+                    height: smallIconButtonHeight
+                    implicitWidth: smallIconButtonWidth
+                    implicitHeight: smallIconButtonHeight
+                    Layout.minimumWidth: smallIconButtonWidth
+                    Layout.maximumWidth: smallIconButtonWidth
+                    Layout.minimumHeight: smallIconButtonHeight
+                    Layout.maximumHeight: smallIconButtonHeight
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
                     contentItem: Image {
                         id: iconImagePlayPause
                         anchors.centerIn: parent
-                        width: 18
-                        height: 18
+                        width: smallIconSize
+                        height: smallIconSize
                         fillMode: Image.PreserveAspectFit
+                        smooth: true
                         source: playPauseButton.iconSource
                     }
                     iconSource: isPlaying ? "icons/pause_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/play_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
@@ -299,14 +299,26 @@ ApplicationWindow {
                     id: nextButton
                     property alias iconSource: iconImageNext.source
                     flat: true
-                    width: 40
-                    height: 28
+                    width: smallIconButtonWidth
+                    height: smallIconButtonHeight
+                    implicitWidth: smallIconButtonWidth
+                    implicitHeight: smallIconButtonHeight
+                    Layout.minimumWidth: smallIconButtonWidth
+                    Layout.maximumWidth: smallIconButtonWidth
+                    Layout.minimumHeight: smallIconButtonHeight
+                    Layout.maximumHeight: smallIconButtonHeight
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
                     contentItem: Image {
                         id: iconImageNext
                         anchors.centerIn: parent
-                        width: 18
-                        height: 18
+                        width: smallIconSize
+                        height: smallIconSize
                         fillMode: Image.PreserveAspectFit
+                        smooth: true
                         source: nextButton.iconSource
                     }
                     iconSource: "icons/skip_next_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
@@ -327,6 +339,49 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 12
             spacing: 12
+
+            Rectangle {
+                width: parent.width
+                height: 56
+                radius: theme.cornerRadius
+                color: theme.surface
+                border.color: theme.accent
+                border.width: 1
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 12
+
+                    Image {
+                        source: selectedTrackTitle === "" && !isPlaying ? "icons/music_off_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/speaker_group_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                        width: 20
+                        height: 20
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Label {
+                            text: selectedTrackTitle !== "" ? selectedTrackTitle : (isPlaying ? "Playing now" : "No track selected")
+                            color: theme.text
+                            font.pixelSize: 14
+                            font.bold: true
+                            elide: Text.ElideRight
+                        }
+
+                        Label {
+                            text: selectedTrackTitle !== "" ? selectedTrackArtist : (isPlaying ? "Playback active" : "Select a track to show info")
+                            color: theme.mutedText
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+            }
 
             /* Search field and quick actions */
             RowLayout {
