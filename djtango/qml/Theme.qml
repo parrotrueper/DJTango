@@ -10,6 +10,7 @@ QtObject {
     property string text: "#ffffff"
     property string menuText: "#000000"
     property string mutedText: "#d3d3d3"
+    property string row_highlight: '#13cece'
     property int cornerRadius: 8
     property int headerHeight: 48
 }

@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtCore import QAbstractListModel, Qt, QModelIndex
+from PySide6.QtCore import QAbstractListModel, Qt, QModelIndex, Property
 from djtango.qt_compat import QObject, pyqtSignal, pyqtSlot
 from djtango.data import djDataConnection
 from djtango.tracksong import TrackSong
@@ -103,8 +103,8 @@ class QmlBackend(QObject):
             self.djData.createDatabase()
 
         self.track_type_names = self._load_track_type_names()
-        self.libraryModel = TrackListModel(self)
-        self.playlistModel = TrackListModel(self)
+        self._libraryModel = TrackListModel(self)
+        self._playlistModel = TrackListModel(self)
         self._isPlaying = False
         self._wipContext = "Library"
         self.loadLibrary()
@@ -134,6 +134,14 @@ class QmlBackend(QObject):
             'path': track.path or '',
         }
 
+    @Property(QObject, notify=libraryChanged)
+    def libraryModel(self):
+        return self._libraryModel
+
+    @Property(QObject, notify=playlistChanged)
+    def playlistModel(self):
+        return self._playlistModel
+
     @pyqtSlot(result=bool)
     def loadLibrary(self):
         try:
@@ -143,7 +151,7 @@ class QmlBackend(QObject):
             tracks = self.djData.getAllTracks()
 
         self.track_type_names = self._load_track_type_names()
-        self.libraryModel.setTracks([self._track_to_dict(track) for track in tracks])
+        self._libraryModel.setTracks([self._track_to_dict(track) for track in tracks])
         self.libraryChanged.emit()
         return True
 
@@ -156,7 +164,7 @@ class QmlBackend(QObject):
         inserted_id = self.djData.insertTrack(track)
         if inserted_id:
             track.ID = inserted_id
-            self.libraryModel.addTrack(self._track_to_dict(track))
+            self._libraryModel.addTrack(self._track_to_dict(track))
             self.libraryChanged.emit()
             return True
 
@@ -165,16 +173,16 @@ class QmlBackend(QObject):
 
     @pyqtSlot(int, result=bool)
     def addTrackToPlaylist(self, track_id):
-        for track in self.libraryModel.asList():
+        for track in self._libraryModel.asList():
             if int(track.get('id', 0)) == int(track_id):
-                self.playlistModel.addTrack(track)
+                self._playlistModel.addTrack(track)
                 self.playlistChanged.emit()
                 return True
         return False
 
     @pyqtSlot(int, result=bool)
     def removeTrackFromPlaylist(self, row):
-        if self.playlistModel.removeTrack(row):
+        if self._playlistModel.removeTrack(row):
             self.playlistChanged.emit()
             return True
         return False
@@ -183,7 +191,7 @@ class QmlBackend(QObject):
     def savePlaylist(self, name):
         if not name:
             return False
-        track_ids = [int(track.get('id', 0)) for track in self.playlistModel.asList() if track.get('id')]
+        track_ids = [int(track.get('id', 0)) for track in self._playlistModel.asList() if track.get('id')]
         if not track_ids:
             return False
         self.djData.saveMilonga(name, track_ids)
@@ -196,7 +204,7 @@ class QmlBackend(QObject):
         tracks = self.djData.getTrackFromMilonga(name)
         if not tracks:
             return False
-        self.playlistModel.setTracks([self._track_to_dict(track) for track in tracks])
+        self._playlistModel.setTracks([self._track_to_dict(track) for track in tracks])
         self.playlistChanged.emit()
         return True
 

@@ -33,6 +33,12 @@ ApplicationWindow {
     property int trackInfoSectionMinHeight: 40
     property int trackInfoSectionMaxHeight: Math.round(height * 0.35)
     property alias theme: themeObject
+    property int libraryColWidthNumber: 32
+    property int libraryColWidthTitle: 320
+    property int libraryColWidthArtist: 180
+    property int libraryColWidthGenre: 130
+    property int libraryColWidthYear: 60
+    property int libraryColWidthDuration: 80
     property int smallIconButtonWidth: 52
     property int smallIconButtonHeight: 24
     property int smallIconSize: 24
@@ -56,6 +62,9 @@ ApplicationWindow {
     /* App initialization and backend wiring */
     Component.onCompleted: {
         backendObject = backend
+        if (backendObject) {
+            backendObject.loadLibrary()
+        }
     }
 
 
@@ -695,6 +704,157 @@ ApplicationWindow {
                             font.pixelSize: 18
                         }
 
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.margins: 8
+                            spacing: 4
+
+                            Label {
+                                text: "#"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthNumber
+                            }
+
+                            Rectangle {
+                                width: 8
+                                height: parent.height
+                                color: "#000000"
+                                border.width: 1
+                                border.color: "#000000"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.SizeHorCursor
+                                    property int dragStartX: 0
+                                    onEntered: hovered = true
+                                    onExited: hovered = false
+                                    onPressed: dragStartX = mouse.x
+                                    onPositionChanged: if (pressedButtons) {
+                                        var delta = mouse.x - dragStartX
+                                        libraryColWidthTitle = Math.max(120, libraryColWidthTitle + delta)
+                                        dragStartX = mouse.x
+                                    }
+                                }
+                            }
+
+                            Label {
+                                text: "Title"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthTitle
+                                Layout.fillWidth: true
+                            }
+
+                            Rectangle {
+                                width: 8
+                                height: parent.height
+                                color: "#000000"
+                                border.width: 1
+                                border.color: "#000000"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.SizeHorCursor
+                                    property int dragStartX: 0
+                                    onPressed: dragStartX = mouse.x
+                                    onPositionChanged: if (pressedButtons) {
+                                        var delta = mouse.x - dragStartX
+                                        libraryColWidthArtist = Math.max(100, libraryColWidthArtist + delta)
+                                        dragStartX = mouse.x
+                                    }
+                                }
+                            }
+
+                            Label {
+                                text: "Artist"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthArtist
+                            }
+
+                            Rectangle {
+                                width: 8
+                                height: parent.height
+                                color: "#000000"
+                                border.width: 1
+                                border.color: "#000000"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.SizeHorCursor
+                                    property int dragStartX: 0
+                                    onPressed: dragStartX = mouse.x
+                                    onPositionChanged: if (pressedButtons) {
+                                        var delta = mouse.x - dragStartX
+                                        libraryColWidthGenre = Math.max(100, libraryColWidthGenre + delta)
+                                        dragStartX = mouse.x
+                                    }
+                                }
+                            }
+
+                            Label {
+                                text: "Genre"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthGenre
+                            }
+
+                            Rectangle {
+                                width: 8
+                                height: parent.height
+                                color: "#000000"
+                                border.width: 1
+                                border.color: "#000000"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.SizeHorCursor
+                                    property int dragStartX: 0
+                                    onPressed: dragStartX = mouse.x
+                                    onPositionChanged: if (pressedButtons) {
+                                        var delta = mouse.x - dragStartX
+                                        libraryColWidthYear = Math.max(40, libraryColWidthYear + delta)
+                                        dragStartX = mouse.x
+                                    }
+                                }
+                            }
+
+                            Label {
+                                text: "Year"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthYear
+                            }
+
+                            Rectangle {
+                                width: 8
+                                height: parent.height
+                                color: "#000000"
+                                border.width: 1
+                                border.color: "#000000"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.SizeHorCursor
+                                    property int dragStartX: 0
+                                    onPressed: dragStartX = mouse.x
+                                    onPositionChanged: if (pressedButtons) {
+                                        var delta = mouse.x - dragStartX
+                                        libraryColWidthDuration = Math.max(60, libraryColWidthDuration + delta)
+                                        dragStartX = mouse.x
+                                    }
+                                }
+                            }
+
+                            Label {
+                                text: "Duration"
+                                color: theme.mutedText
+                                font.pixelSize: 10
+                                Layout.preferredWidth: libraryColWidthDuration
+                            }
+                        }
+
                         ListView {
                             id: libraryView
                             model: backendObject ? backendObject.libraryModel : null
@@ -702,7 +862,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             delegate: Rectangle {
-                                width: parent.width
+                                width: libraryView.width
                                 height: 42
                                 color: libraryView.currentIndex === index ? theme.accent : (index % 2 === 0 ? theme.background : theme.surface)
                                 visible: searchText === "" || title.toLowerCase().indexOf(searchText.toLowerCase()) !== -1 || artist.toLowerCase().indexOf(searchText.toLowerCase()) !== -1 || album.toLowerCase().indexOf(searchText.toLowerCase()) !== -1
@@ -724,17 +884,55 @@ ApplicationWindow {
                                     spacing: 12
 
                                     Label {
+                                        text: (index + 1).toString()
+                                        color: theme.text
+                                        font.pixelSize: 11
+                                        Layout.preferredWidth: libraryColWidthNumber
+                                    }
+
+                                    Label {
                                         text: title
                                         color: theme.text
                                         elide: Text.ElideRight
+                                        Layout.preferredWidth: libraryColWidthTitle
                                         Layout.fillWidth: true
                                     }
 
                                     Label {
                                         text: artist
                                         color: theme.mutedText
+                                        font.pixelSize: 11
+                                        horizontalAlignment: Text.AlignLeft
+                                        Layout.preferredWidth: libraryColWidthArtist
+                                    }
+
+                                    Label {
+                                        text: genre
+                                        color: theme.mutedText
+                                        font.pixelSize: 11
+                                        horizontalAlignment: Text.AlignLeft
+                                        Layout.preferredWidth: libraryColWidthGenre
+                                    }
+
+                                    Label {
+                                        text: year > 0 ? year.toString() : ""
+                                        color: theme.mutedText
+                                        font.pixelSize: 11
+                                        horizontalAlignment: Text.AlignCenter
+                                        Layout.preferredWidth: libraryColWidthYear
+                                    }
+
+                                    Label {
+                                        text: {
+                                            var totalSeconds = Math.round(duration)
+                                            var minutes = Math.floor(totalSeconds / 60)
+                                            var seconds = totalSeconds % 60
+                                            return minutes + ":" + (seconds < 10 ? "0" + seconds : seconds)
+                                        }
+                                        color: theme.mutedText
+                                        font.pixelSize: 11
                                         horizontalAlignment: Text.AlignRight
-                                        Layout.preferredWidth: 220
+                                        Layout.preferredWidth: libraryColWidthDuration
                                     }
                                 }
                             }
