@@ -12,6 +12,14 @@ ApplicationWindow {
     property var backendObject: null
     property string searchText: ""
     property string searchScope: "Library"
+    property bool searchFiltersEnabled: true
+    property string selectedArtistFilter: "All artists"
+    property string selectedAlbumFilter: "All albums"
+    property string selectedGenreFilter: "All genres"
+    property var searchArtistOptions: ["All artists", "All artists"]
+    property var searchAlbumOptions: ["All albums", "All albums"]
+    property var searchGenreOptions: ["All genres", "All genres"]
+    property var searchScopeOptions: ["Library", "Playlists", "Library 2", "Live", "WIP"]
     property bool isPlaying: false
     property bool isLiveSession: false
     property string viewMode: "both"
@@ -126,6 +134,36 @@ ApplicationWindow {
                         }
                     }
                     iconSource: "icons/queue_music_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                    onClicked: playlistMenu.open()
+                }
+
+                Menu {
+                    id: playlistMenu
+                    title: "Playlist"
+                    MenuItem {
+                        text: "Add to playlist"
+                        enabled: selectedLibraryId >= 0
+                        onTriggered: backendObject && backendObject.addTrackToPlaylist(selectedLibraryId)
+                    }
+                    MenuItem {
+                        text: "Remove from playlist"
+                        enabled: playlistView.currentIndex >= 0
+                        onTriggered: backendObject && backendObject.removeTrackFromPlaylist(playlistView.currentIndex)
+                    }
+                    MenuSeparator {}
+                    MenuItem {
+                        text: "Save playlist"
+                        enabled: saveNameField.text !== ""
+                        onTriggered: {
+                            backendObject && backendObject.savePlaylist(saveNameField.text)
+                            if (backendObject) playlistSelector.model = backendObject.getSavedPlaylists()
+                        }
+                    }
+                    MenuItem {
+                        text: "Load playlist"
+                        enabled: playlistSelector.currentIndex >= 0
+                        onTriggered: backendObject && backendObject.loadPlaylist(playlistSelector.currentText)
+                    }
                 }
                 Button {
                     id: viewButton
@@ -151,6 +189,24 @@ ApplicationWindow {
                         }
                     }
                     iconSource: "icons/visibility_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                    onClicked: viewMenu.open()
+                }
+
+                Menu {
+                    id: viewMenu
+                    title: "View"
+                    MenuItem {
+                        text: "Library"
+                        onTriggered: viewMode = "library"
+                    }
+                    MenuItem {
+                        text: "Playlist"
+                        onTriggered: viewMode = "playlist"
+                    }
+                    MenuItem {
+                        text: "Both"
+                        onTriggered: viewMode = "both"
+                    }
                 }
                 Button {
                     id: preferencesButton
@@ -449,107 +505,165 @@ ApplicationWindow {
                 }
             }
 
-            /* Search field and quick actions */
-            RowLayout {
+            /* Search field and filter controls */
+            Rectangle {
                 Layout.fillWidth: true
-                spacing: 8
+                Layout.preferredHeight: 56
+                height: 56
+                radius: theme.cornerRadius
+                color: "#0C2847"
+                border.color: theme.accent
+                border.width: 1
 
-                TextField {
-                    id: searchField
-                    Layout.fillWidth: true
-                    placeholderText: "Search library by title, artist, or album"
-                    text: ""
-                    onTextChanged: searchText = text
-                    background: Rectangle {
-                        color: theme.surface
-                        radius: theme.cornerRadius
-                        border.color: theme.accent
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 2
+                    spacing: 0
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32
+                        spacing: 6
+                        Layout.alignment: Qt.AlignVCenter
+
+                        TextField {
+                            id: searchField
+                            Layout.preferredWidth: 205
+                            implicitHeight: 26
+                            Layout.preferredHeight: 26
+                            placeholderText: "Search library by title, artist, album, genre, path..."
+                            text: ""
+                            onTextChanged: searchText = text
+                            background: Rectangle {
+                                color: "#0E3A61"
+                                radius: theme.cornerRadius
+                                border.color: theme.accent
+                                border.width: 1
+                            }
+                            font.pixelSize: 10
+                            color: theme.text
+                        }
+
+                        Button {
+                            id: searchButton
+                            property alias iconSource: iconImageSearch.source
+                            flat: true
+                            Layout.preferredWidth: 36
+                            Layout.preferredHeight: 28
+                            implicitWidth: 36
+                            implicitHeight: 28
+                            padding: 0
+                            leftPadding: 0
+                            rightPadding: 0
+                            topPadding: 0
+                            bottomPadding: 0
+                            contentItem: Image {
+                                id: iconImageSearch
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                source: searchButton.iconSource
+                            }
+                            iconSource: "icons/search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                            onClicked: searchText = searchField.text
+                        }
+
+                        Button {
+                            id: filterButton
+                            property alias iconSource: iconImageFilter.source
+                            flat: true
+                            Layout.preferredWidth: 36
+                            Layout.preferredHeight: 28
+                            implicitWidth: 36
+                            implicitHeight: 28
+                            padding: 0
+                            leftPadding: 0
+                            rightPadding: 0
+                            topPadding: 0
+                            bottomPadding: 0
+                            contentItem: Image {
+                                id: iconImageFilter
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                source: filterButton.iconSource
+                            }
+                            checkable: true
+                            checked: searchFiltersEnabled
+                            iconSource: "icons/search_gear_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                            onClicked: searchFiltersEnabled = !searchFiltersEnabled
+                        }
+
+                        ComboBox {
+                            id: artistFilterCombo
+                            Layout.preferredWidth: 120
+                            implicitHeight: 24
+                            Layout.preferredHeight: 24
+                            font.pixelSize: 10
+                            model: searchArtistOptions
+                            currentIndex: searchArtistOptions.indexOf(selectedArtistFilter)
+                            onCurrentTextChanged: selectedArtistFilter = currentText
+                            enabled: searchFiltersEnabled
+                        }
+
+                        ComboBox {
+                            id: albumFilterCombo
+                            Layout.preferredWidth: 120
+                            implicitHeight: 24
+                            Layout.preferredHeight: 24
+                            font.pixelSize: 10
+                            model: searchAlbumOptions
+                            currentIndex: searchAlbumOptions.indexOf(selectedAlbumFilter)
+                            onCurrentTextChanged: selectedAlbumFilter = currentText
+                            enabled: searchFiltersEnabled
+                        }
+
+                        ComboBox {
+                            id: genreFilterCombo
+                            Layout.preferredWidth: 120
+                            implicitHeight: 24
+                            Layout.preferredHeight: 24
+                            font.pixelSize: 10
+                            model: searchGenreOptions
+                            currentIndex: searchGenreOptions.indexOf(selectedGenreFilter)
+                            onCurrentTextChanged: selectedGenreFilter = currentText
+                            enabled: searchFiltersEnabled
+                        }
+
+                        ComboBox {
+                            id: scopeCombo
+                            Layout.preferredWidth: 110
+                            implicitHeight: 24
+                            Layout.preferredHeight: 24
+                            font.pixelSize: 10
+                            model: searchScopeOptions
+                            currentIndex: searchScopeOptions.indexOf(searchScope)
+                            onCurrentTextChanged: searchScope = currentText
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        TextField {
+                            id: saveNameField
+                            placeholderText: "Playlist name"
+                            Layout.preferredWidth: 220
+                            implicitHeight: 26
+                            background: Rectangle {
+                                color: "#0E3A61"
+                                radius: theme.cornerRadius
+                                border.color: theme.accent
+                                border.width: 1
+                            }
+                            font.pixelSize: 10
+                            color: theme.text
+                        }
                     }
-                }
-
-                Button {
-                    text: isPlaying ? "Pause" : "Play"
-                    enabled: true
-                    onClicked: backendObject && backendObject.togglePlayPause()
-                }
-
-                Button {
-                    text: "Refresh"
-                    onClicked: backendObject && backendObject.loadLibrary()
-                }
-            }
-
-            /* Search scope selection buttons */
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Label {
-                    text: "Search scope:"
-                    color: theme.text
-                }
-
-                Button {
-                    text: "Library"
-                    checkable: true
-                    checked: searchScope === "Library"
-                    onClicked: searchScope = "Library"
-                }
-
-                Button {
-                    text: "Playlists"
-                    checkable: true
-                    checked: searchScope === "Playlists"
-                    onClicked: searchScope = "Playlists"
-                }
-
-                Button {
-                    text: "Library 2"
-                    checkable: true
-                    checked: searchScope === "Library 2"
-                    onClicked: searchScope = "Library 2"
-                }
-
-                Button {
-                    text: "Live"
-                    checkable: true
-                    checked: searchScope === "Live"
-                    onClicked: searchScope = "Live"
-                }
-
-                Button {
-                    text: "WIP"
-                    checkable: true
-                    checked: searchScope === "WIP"
-                    onClicked: searchScope = "WIP"
-                }
-            }
-
-            /* Selected track info and view mode toggles */
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 12
-
-                Switch {
-                    id: modeSwitch
-                    checked: isLiveSession
-                    text: isLiveSession ? "Live session" : "WIP mode"
-                    onCheckedChanged: isLiveSession = checked
-                }
-
-                Button {
-                    text: "Library"
-                    onClicked: viewMode = "library"
-                }
-
-                Button {
-                    text: "Playlist"
-                    onClicked: viewMode = "playlist"
-                }
-
-                Button {
-                    text: "Both"
-                    onClicked: viewMode = "both"
                 }
             }
 
@@ -574,28 +688,6 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 12
                         spacing: 8
-
-                        RowLayout {
-                            spacing: 8
-                            Layout.fillWidth: true
-
-                            Label {
-                                text: "WIP Context:"
-                                color: theme.text
-                                font.pixelSize: 16
-                            }
-
-                            ComboBox {
-                                id: wipContextCombo
-                                model: backendObject ? backendObject.getWipContexts() : ["Library", "Library 2", "Last playlist"]
-                                currentIndex: backendObject ? backendObject.getWipContexts().indexOf(wipContext) : 0
-                                onCurrentTextChanged: {
-                                    wipContext = currentText
-                                    if (backendObject) backendObject.selectWipContext(currentText)
-                                }
-                                Layout.fillWidth: true
-                            }
-                        }
 
                         Label {
                             text: "Library"
@@ -716,65 +808,16 @@ ApplicationWindow {
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
-
-                            Button {
-                                text: "Add to playlist"
-                                enabled: selectedLibraryId >= 0
-                                onClicked: {
-                                    if (selectedLibraryId >= 0) {
-                                        backendObject && backendObject.addTrackToPlaylist(selectedLibraryId)
-                                    }
-                                }
-                            }
-
-                            Button {
-                                text: "Remove from playlist"
-                                enabled: playlistView.currentIndex >= 0
-                                onClicked: backendObject && backendObject.removeTrackFromPlaylist(playlistView.currentIndex)
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            TextField {
-                                id: saveNameField
-                                placeholderText: "Playlist name"
-                                Layout.fillWidth: true
-                                background: Rectangle {
-                                    color: theme.background
-                                    radius: theme.cornerRadius
-                                    border.color: theme.accent
-                                }
-                            }
-
-                            Button {
-                                text: "Save"
-                                enabled: saveNameField.text !== ""
-                                onClicked: {
-                                    backendObject && backendObject.savePlaylist(saveNameField.text)
-                                    if (backendObject) playlistSelector.model = backendObject.getSavedPlaylists()
-                                }
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
+                            Layout.preferredHeight: 0
+                            height: 0
+                            visible: false
 
                             ComboBox {
                                 id: playlistSelector
+                                visible: false
                                 Layout.fillWidth: true
                                 model: backendObject ? backendObject.getSavedPlaylists() : []
                                 currentIndex: -1
-                            }
-
-                            Button {
-                                text: "Load"
-                                enabled: playlistSelector.currentIndex >= 0
-                                onClicked: backendObject && backendObject.loadPlaylist(playlistSelector.currentText)
                             }
                         }
                     }
