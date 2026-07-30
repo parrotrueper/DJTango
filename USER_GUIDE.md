@@ -6,9 +6,9 @@ DJ Track is a Python-based tool for managing track music libraries and DJing.
 
 It includes:
 
-- A GUI mode for interactive browsing and playback (`djtango/DJTango.py`)
-- A CLI mode for database initialization, scanning, and library inspection (`tools/djtango_cli.py`)
-- A SQLite-backed local database stored in `~/.djtango`
+- A GUI mode for interactive browsing and playback (`ttvttm/ttvttm.py`)
+- A CLI mode for database initialization, scanning, and library inspection (`tools/ttvttm_cli.py`)
+- A SQLite-backed local database stored in `~/.ttvttm`
 
 At the moment, the project is designed to run from a Python virtual environment.
 
@@ -82,7 +82,7 @@ Use the GUI launcher script:
 ./run-tdj.sh
 ```
 
-This script checks for `.venv` and the Qt bindings, then starts `djtango/DJTango.py`.
+This script checks for `.venv` and the Qt bindings, then starts `ttvttm/ttvttm.py`.
 
 ### First run behavior
 The first time DJ Track runs, it will detect that no database exists and will create one in the DJ home directory.
@@ -90,7 +90,7 @@ The first time DJ Track runs, it will detect that no database exists and will cr
 By default, the home directory is:
 
 ```bash
-~/.djtango
+~/.ttvttm
 ```
 
 You can override the database directory with the `DJ_HOME_PATH` environment variable:
@@ -116,7 +116,7 @@ Or invoke the installed console script from inside the virtual environment:
 ```bash
 source .venv/bin/activate
 .venv/bin/python -m pip install -e .
-.venv/bin/python -m djtango_cli --help
+.venv/bin/python -m ttvttm_cli --help
 ```
 
 ### Available commands
@@ -168,10 +168,10 @@ Check for missing database entries:
 
 ## Database storage
 
-By default, DJ Track stores its database files under `~/.djtango`:
+By default, DJ Track stores its database files under `~/.ttvttm`:
 
-- `~/.djtango/djtango.db` — main song database
-- `~/.djtango/el-recodo.db` — secondary track metadata database
+- `~/.ttvttm/ttvttm.db` — main song database
+- `~/.ttvttm/el-recodo.db` — secondary track metadata database
 
 The CLI and GUI both use the same home directory by default. To change that, set `DJ_HOME_PATH` before launching the app.
 
@@ -201,7 +201,7 @@ The GUI can be started in offscreen mode for testing. Set:
 
 ```bash
 export QT_QPA_PLATFORM=offscreen
-export DJTANGO_DISABLE_DIR_SCAN=1
+export TTVTTM_DISABLE_DIR_SCAN=1
 ```
 
 Then run the GUI startup path in a test environment.
@@ -232,13 +232,13 @@ To force a Docker image rebuild for CI tests:
 ## Project structure
 
 - `tools/`
-  - `djtango_cli.py` — CLI application entrypoint
-- `djtango/`
-  - `DJTango.py` — GUI application entrypoint
+  - `ttvttm_cli.py` — CLI application entrypoint
+- `ttvttm/`
+  - `ttvttm.py` — GUI application entrypoint
   - `data.py` — database connection and CRUD operations
   - `run-tdj.sh` — GUI launcher script
   - `run-tdj-cli.sh` — CLI launcher script
-- `djtango/`
+- `ttvttm/`
   - `data.py` — database connection and CRUD operations
   - `dirscanningthread.py` — directory scanner thread used by the GUI
   - `qt_compat.py` — Qt compatibility shim for PySide6/PyQt5
@@ -260,18 +260,17 @@ To force a Docker image rebuild for CI tests:
 ## Quick start summary
 
 ```bash
-git clone https://github.com/flccrakers/dj-track.git
-cd dj-track
+git clone https://github.com/parrotrueper/ttvttm.git
 ./setup-env.sh
 source .venv/bin/activate
 .venv/bin/python -m pip install PySide6
-./run-tdj.sh
+./run-ttvttm.sh
 ```
 
 Or use the CLI:
 
 ```bash
-./run-tdj-cli.sh init-db
-./run-tdj-cli.sh scan /path/to/tracks
-./run-tdj-cli.sh list --limit 50
+./run-ttvttm-cli.sh init-db
+./run-ttvttm-cli.sh scan /path/to/tracks
+./run-ttvttm-cli.sh list --limit 50
 ```

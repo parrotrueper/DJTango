@@ -1,4 +1,4 @@
-# DJTango QML UI Layout Sketch
+# ttvttm QML UI Layout Sketch
 
 Use this document as the editable reference for the new QML redesign. Update sections as the layout evolves.
 
@@ -6,7 +6,7 @@ Use this document as the editable reference for the new QML redesign. Update sec
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                        DJTango  v0.1.0                                    [ - ] [ □ ] [ X ] │
+│                                        ttvttm  v0.1.0                                    [ - ] [ □ ] [ X ] │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 

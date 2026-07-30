@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 # -*- coding:Utf-8 -*-
 
-from djtango.data import djDataConnection
-from djtango.dirsong import dirSong
-import string, os
+import os
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+from ttvttm.data import djDataConnection
+from ttvttm.dirsong import dirSong
+
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 djData = djDataConnection(djhome)
 
-trackList = dirSong('/home/hoonakker/media/track-propres-HQ', False)
+trackList = dirSong("/home/hoonakker/media/track-propres-HQ", False)
 trackList.loadTangos(djData.getAllTracks())
 missed = trackList.getMissedFiles()
 missedFiles = trackList.getMissedFiles(True)

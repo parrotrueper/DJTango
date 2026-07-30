@@ -1,7 +1,10 @@
 services:
   sut:
-    image: djtango-dev
+    build:
+      context: ..
+      dockerfile: ci/Dockerfile
+    image: ttvttm-dev
     working_dir: /workspace
-    command: ["bash", "-lc", "bash ./ci/install-deps.sh && ./dev-check.sh"]
+    command: ["bash", "-lc", "./ci/dev-check.sh"]
     volumes:
       - ../:/workspace

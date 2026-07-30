@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 
 import sqlite3
+
 #from tracksong import TrackSong
 
 class DBtangoConnexion:
 	def __init__(self):
-		self.path = 'tangodatabase.db'
+		self.path = "tangodatabase.db"
 		self.typeList = {}
 
 	def createDatabase(self):
@@ -37,7 +37,7 @@ class DBtangoConnexion:
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
 		song = list(song)
-		song[0] = song[0].split('-')[0]
+		song[0] = song[0].split("-")[0]
 		
 		if self.existTango(song):
 			return
@@ -90,7 +90,7 @@ class DBtangoConnexion:
 		if str(track.type).lower() in self.typeList:
 			track.type = self.typeList[str(track.type).lower()]
 		else:
-			track.type = self.typeList['unknown']
+			track.type = self.typeList["unknown"]
 		sql = "INSERT INTO tracks (path, title, artist, album, genre, year) VALUES(?,?,?,?,?,?)"
 		cursor.execute(sql, track.listDB())
 		print ("inserting "+str(track.path))
@@ -110,7 +110,7 @@ class DBtangoConnexion:
 		#FROM tracks, trackType\
 
 		#WHERE tracks.genre = trackType.ID"
-		sql = "SELECT * from tracks";
+		sql = "SELECT * from tracks"
 		cursor.execute(sql)
 		rows = cursor.fetchall()
 		conn.close()
@@ -164,7 +164,7 @@ class DBtangoConnexion:
 		return trackList
 
 	def getTrackFromListID(self, listID):
-		s = ','
+		s = ","
 		listIDstring = s.join(["'"+str(ID)+"'" for ID in listID])
 		sql = "SELECT * FROM tracks WHERE ID IN ("+listIDstring+")"
 		#print (sql)
@@ -323,10 +323,10 @@ class DBtangoConnexion:
 		rows = cursor.fetchall()
 		conn.close()
 		for row in rows:
-			ret['path'] = row[0]
-			ret['cortinaDuration'] = row[1]
-			ret['fadoutTime'] = row[2]
-			ret['writeTag'] = row[3]
+			ret["path"] = row[0]
+			ret["cortinaDuration"] = row[1]
+			ret["fadoutTime"] = row[2]
+			ret["writeTag"] = row[3]
 			
 		return ret
 
@@ -362,15 +362,15 @@ class DBtangoConnexion:
 			ret.append(row[1])
 		return ret
 
-	def deleteMilonga (self, milongaID=0, name=''):
+	def deleteMilonga (self, milongaID=0, name=""):
 
-		if milongaID == 0 and name == '':
+		if milongaID == 0 and name == "":
 			return False
 
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
 
-		if milongaID == 0 and not name == '':
+		if milongaID == 0 and not name == "":
 			milongaID = self.getMilongaID(name)
 		#if milongaID > 0:
 

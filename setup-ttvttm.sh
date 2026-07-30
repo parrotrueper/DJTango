@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# shellcheck source=/dev/null
+. ci/functions.sh
+
+
+PYTHON_CMD=$(command -v python3 || command -v python || true)
+if [[ -z "$PYTHON_CMD" ]]; then
+  fatal 1 "python3 or python is required but not installed. Please install Python 3." >&2
+fi
+
+if [ -d ".venv" ]; then
+  if [ ! -f ".venv/bin/activate" ] || ! .venv/bin/python -c 'import sys' >/dev/null 2>&1; then
+    info "Removing invalid or broken existing .venv"
+    run rm -rf .venv
+  fi
+fi
+
+if [ ! -d ".venv" ]; then
+  run "$PYTHON_CMD" -m venv .venv
+fi
+
+if [ ! -f ".venv/bin/activate" ] || ! .venv/bin/python -c 'import sys' >/dev/null 2>&1; then
+  info "Recreating broken .venv with $PYTHON_CMD"
+  run rm -rf .venv
+  run "$PYTHON_CMD" -m venv .venv
+fi
+
+if [ ! -f ".venv/bin/activate" ]; then
+  fatal 1 ".venv was not created correctly. Remove it and retry." >&2
+fi
+
+VENV_PYTHON=".venv/bin/python"
+if [[ ! -x "$VENV_PYTHON" ]]; then
+  if [[ -x ".venv/bin/python3" ]]; then
+    VENV_PYTHON=".venv/bin/python3"
+  fi
+fi
+
+if [[ ! -x "$VENV_PYTHON" ]] || ! "$VENV_PYTHON" -c 'import sys' >/dev/null 2>&1; then
+  fatal 1 "ERROR: no valid Python executable found in .venv/bin" >&2
+fi
+
+if ! "$VENV_PYTHON" -m pip --version >/dev/null 2>&1; then
+  info "Bootstrapping pip into virtual environment"
+  "$VENV_PYTHON" -m ensurepip --upgrade
+fi
+
+if [ ! -f ".venv/bin/activate" ]; then
+  fatal 1 ".venv was not created correctly. Remove it and retry." >&2
+fi
+
+# Activate the virtual environment for installation
+# shellcheck source=/dev/null
+. .venv/bin/activate
+
+VENV_PYTHON=".venv/bin/python3"
+if [[ ! -x "$VENV_PYTHON" ]]; then
+  VENV_PYTHON=".venv/bin/python"
+fi
+
+if [[ ! -x "$VENV_PYTHON" ]]; then
+  fatal 1 "ERROR: no Python executable found in .venv/bin" >&2
+fi
+
+if ! "$VENV_PYTHON" -m pip --version >/dev/null 2>&1; then
+  info "Bootstrapping pip into virtual environment"
+  "$VENV_PYTHON" -m ensurepip --upgrade
+fi
+
+"$VENV_PYTHON" -m pip install --upgrade pip setuptools wheel
+"$VENV_PYTHON" -m pip install -e .[test,dev]
+
+info "Virtual environment created and project installed in .venv."
+info "Activate it with: source .venv/bin/activate"
+info "Run the new QML GUI with: ./run-ttvttm.sh"

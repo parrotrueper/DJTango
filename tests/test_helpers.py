@@ -1,8 +1,13 @@
 import pytest
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 
-from djtango.qt_compat import QColor, QModelIndex, Qt
-from djtango.DJTango import apply_track_type_color, get_contrast_color, track_type_key_from_row
-from djtango.tableModels import milongaSource
+from ttvttm.tableModels import milongaSource
+from ttvttm.TTVTTM import (
+    apply_track_type_color,
+    get_contrast_color,
+    track_type_key_from_row,
+)
 
 
 class DummyColor:
@@ -36,7 +41,7 @@ def test_tango_type_key_from_row_no_selection():
 
 
 def test_apply_tango_type_color_updates_type():
-    TYPE = {1: ('unknown', 'Unknown', 1, 2, 3, 255)}
+    TYPE = {1: ("unknown", "Unknown", 1, 2, 3, 255)}
     new_color = DummyColor(100, 150, 200, 180)
 
     result = apply_track_type_color(TYPE, 0, new_color)
@@ -46,7 +51,7 @@ def test_apply_tango_type_color_updates_type():
 
 
 def test_apply_tango_type_color_invalid_row():
-    TYPE = {1: ('unknown', 'Unknown', 1, 2, 3, 255)}
+    TYPE = {1: ("unknown", "Unknown", 1, 2, 3, 255)}
     new_color = DummyColor(100, 150, 200, 180)
 
     with pytest.raises(KeyError):
@@ -55,11 +60,11 @@ def test_apply_tango_type_color_invalid_row():
 
 def test_table_model_foreground_role_uses_saved_font_color():
     TYPE = {
-        3: ('milonga', 'Milonga', 10, 20, 30, 40, 1, 2, 3, 255)
+        3: ("milonga", "Milonga", 10, 20, 30, 40, 1, 2, 3, 255)
     }
 
     model = milongaSource(None, [[None, None, None, None, None, 3]],
-                         ['c0', 'c1', 'c2', 'c3', 'c4', 'c5'], TYPE)
+                         ["c0", "c1", "c2", "c3", "c4", "c5"], TYPE)
     index = model.createIndex(0, 0)
     color = model.data(index, Qt.ForegroundRole)
 

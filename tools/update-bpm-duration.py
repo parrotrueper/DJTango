@@ -2,16 +2,15 @@
 # -*- coding:Utf-8 -*-
 
 
-from djtango.data import djDataConnection
+import os
+
 from pydub import AudioSegment
 
-from mutagen.easyid3 import EasyID3
-from mutagen.mp3 import MP3
+from ttvttm.data import djDataConnection
 
-import os, sys, time, threading, operator, re
 #import gi
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 djData = djDataConnection(djhome)
 trackList = djData.getAllTracks()
 

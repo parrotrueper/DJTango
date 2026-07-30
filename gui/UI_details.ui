@@ -82,7 +82,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>img/logo-djtango.svg</normaloff>img/logo-djtango.svg</iconset>
+    <normaloff>img/ttvttm.png</normaloff>img/ttvttm.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

@@ -1,23 +1,23 @@
 #!/usr/bin/python3
 # -*- coding:Utf-8 -*
 
-from djtango.data import djDataConnection
-from djtango.tracksong import TrackSong
 import os
 
+from ttvttm.data import djDataConnection
+
 #listOfTango = []
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 djData = djDataConnection(djhome)
 TYPE = djData.getTrackTypeList()
 
 
 def getFormatedNb(nb):
 	if (nb<1000):
-		nb = ' '+str(nb)
+		nb = " "+str(nb)
 	elif (nb<100):
-		nb = '  '+str(nb)
+		nb = "  "+str(nb)
 	elif (nb<10):
-		nb = '   '+str(nb)
+		nb = "   "+str(nb)
 	else:
 		nb = str(nb)
 
@@ -57,8 +57,8 @@ for track in listOfTango:
 		#if track.year >=0:
 			for i in range (0, len(row)):
 			#print(row[i])
-				if(row[i] == '?' or row[i] == '' or row[i] == ' '):
-					row[i] = 'Unnkown'
+				if(row[i] == "?" or row[i] == "" or row[i] == " "):
+					row[i] = "Unnkown"
 			
 			#print(track.listUpdateDB())
 			#print ("will update date, composer, singer")
@@ -117,7 +117,7 @@ print("#alt. cort.:\t"+altCor)
 print("#noMatch:\t"+str(count))
 print("#Corrected:\t"+str(matched))
 print("#MultiChoice:\t"+multiChoice)
-print('----------------------------------')
+print("----------------------------------")
 print("TOTAL: \t\t"+total)
 
 #print ("\n"+str(noMatching-count)+" alternatif or cortina "+ str(count)+" noMaching and "+str(matched)+" matched on "+str(noMatching+matched))

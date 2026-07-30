@@ -1,20 +1,21 @@
 # -*- coding:Utf-8 -*-
 import unicodedata
-acceptedFileExt={'.mp3', '.flac', '.wav', '.aiff', '.ogg'}
+
+acceptedFileExt={".mp3", ".flac", ".wav", ".aiff", ".ogg"}
 
 
 def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    nfkd_form = unicodedata.normalize("NFKD", input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def remvoveSlash(input_str):
-	output = input_str.replace('/', '-')
+	output = input_str.replace("/", "-")
 	return output
 
 def removeOddCaracters(input_str):
 	output = remvoveSlash(input_str)
-	output = output.replace(':', '')
-	output = output.replace('.', '')
+	output = output.replace(":", "")
+	output = output.replace(".", "")
 	return output
 def msecToms(msec):
 	#print ("msec: "+str(msec))

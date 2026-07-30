@@ -3,11 +3,11 @@
 
 # If we detect that singer, author or composer are null, we put Unknown
 #
-from djtango.data import djDataConnection
-import string, os
+import os
 
+from ttvttm.data import djDataConnection
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
 djData = djDataConnection(djhome)
 
@@ -19,11 +19,11 @@ start = 0
 for track in Tracks:
 	if track.ID > start:
 		if not track.singer:
-			track.singer = 'Unknown'
+			track.singer = "Unknown"
 		if not track.author:
-			track.author = 'Unknown'
+			track.author = "Unknown"
 		if not track.composer:
-			track.composer = 'Unknown'
+			track.composer = "Unknown"
 		
 
 

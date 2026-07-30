@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-platform visual style, while reusing existing backend logic for library, playlist, playback, and preferences.
+Build a new GUI layer for ttvttm using Qt Quick / QML with a consistent cross-platform visual style, while reusing existing backend logic for library, playlist, playback, and preferences.
 
 ## Why Qt Quick
 
@@ -22,13 +22,13 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
 
 2. **Python backend**
    - Keep existing backend modules intact:
-     - `djtango/data.py`
-     - `djtango/dirsong.py`
-     - `djtango/tracksong.py`
-     - `djtango/tableModels.py`
-     - `djtango/audio_playback.py`
-     - `djtango/library_manager.py`
-     - `djtango/milonga_manager.py`
+     - `ttvttm/data.py`
+     - `ttvttm/dirsong.py`
+     - `ttvttm/tracksong.py`
+     - `ttvttm/tableModels.py`
+     - `ttvttm/audio_playback.py`
+     - `ttvttm/library_manager.py`
+     - `ttvttm/milonga_manager.py`
    - Expose selected backend objects and methods to QML using `PySide6.QtQml` or `QtCore.QObject` wrappers.
    - Keep business logic separate from the new UI.
 
@@ -39,7 +39,7 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
    - Use SVG or PNG icons consistently across buttons and menu actions.
 
    ### Visual style specification
-   - Top border: centered `DJTango` application title with version/branch status, light or neutral background with strong contrast text.
+   - Top border: centered `ttvttm` application title with version/branch status, light or neutral background with strong contrast text.
    - Menu bar: compact horizontal menu area with grouped actions and a distinct, slightly elevated background.
    - Info area: centered driver/volume/mono indicators with status accent colors; low visual noise.
    - Playback controls: right-aligned row with icon buttons, progress bar, live session toggle, and a consistent button size/style.
@@ -68,7 +68,7 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
 1. Create scaffolding
    - Add `qml/` directory.
    - Add `qml/Main.qml`, `qml/Theme.qml`, and an application wrapper.
-   - Add a new Python startup module for Qt Quick, e.g. `djtango/quick_main.py`.
+   - Add a new Python startup module for Qt Quick, e.g. `ttvttm/quick_main.py`.
 
 2. Expose backend models
    - Implement `QObject` wrappers for library and playlist data.
@@ -94,13 +94,13 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
 ## Current implementation status
 
 - Step 1: Create scaffolding — completed.
-  - `djtango/qml/Main.qml` and `djtango/qml/Theme.qml` exist.
-  - `djtango/quick_main.py` loads the QML file with `QQmlApplicationEngine`.
+  - `ttvttm/qml/Main.qml` and `ttvttm/qml/Theme.qml` exist.
+  - `ttvttm/quick_main.py` loads the QML file with `QQmlApplicationEngine`.
   - A unit test `tests/test_quick_gui.py` verifies the QML root loads and theme properties are present.
 
 - Step 2: Expose backend models — completed.
-  - Added `djtango/qml_backend.py` with a `QmlBackend` QObject wrapper and `TrackListModel`.
-  - Exposed `backend` to QML via `djtango/quick_main.py` using `engine.rootContext().setContextProperty("backend", backend)`.
+  - Added `ttvttm/qml_backend.py` with a `QmlBackend` QObject wrapper and `TrackListModel`.
+  - Exposed `backend` to QML via `ttvttm/quick_main.py` using `engine.rootContext().setContextProperty("backend", backend)`.
   - Implemented load library, add track, play, pause, playlist add/remove, and save/load playlist methods.
 
 - Step 3: Build the first screen — partial.
@@ -125,11 +125,11 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
   - Full layout polish, advanced preferences, and time-based playback stats are still pending.
 
 - Run-ready note:
-  - `run-djt.sh` is expected to be usable once Step 1 and Step 2 are complete and the QML startup path is stable.
+  - `run-ttvttm.sh` is expected to be usable once Step 1 and Step 2 are complete and the QML startup path is stable.
   - Current progress through Step 4 means the new QML app can be launched, but it is still in a partial/intermediate state.
 
 - Integration note:
-  - The QML startup module is present, but the main package entrypoint still uses the legacy widget UI (`djtango/__main__.py` remains unchanged).
+  - The QML startup module is present, but the main package entrypoint still uses the legacy widget UI (`ttvttm/__main__.py` remains unchanged).
 
 ## Alignment with `gui-redesign.md`
 
@@ -147,7 +147,7 @@ Build a new GUI layer for DJTango using Qt Quick / QML with a consistent cross-p
 
 ## Migration strategy
 
-- Keep `djtango/UI_djtango.py` and existing widget UI files as a fallback during development.
+- Keep `ttvttm/UI_ttvttm.py` and existing widget UI files as a fallback during development.
 - Build the new Qt Quick layer in parallel.
 - Replace the widget-based launch path only once the new UI is stable.
 - Use the existing backend for behavior validation.

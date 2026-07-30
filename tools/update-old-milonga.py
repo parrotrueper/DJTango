@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding:Utf-8 -*-
 
-from djtango.data import djDataConnection
-from djtango.dirsong import dirSong
-import string, os, sys
+import os
+import sys
 
+from ttvttm.data import djDataConnection
 
 #print ('Number of arguments:', len(sys.argv), 'arguments.')
 #print ('Argument List:', str(sys.argv))
@@ -12,7 +12,7 @@ if len(sys.argv) < 3:
 	print ("USAGE: "+sys.argv[0]+ "source-database destination-database")
 
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 djDataSource = djDataConnection(djhome, sys.argv[1])
 djDataDest = djDataConnection(djhome, sys.argv[2])
 print (len(djDataDest.getAllTracks()))

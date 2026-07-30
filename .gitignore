@@ -2,12 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.ruff_cache/
 # Virtual environments
 .venv/
 venv/
 venv1/
-
+build/
 # IDE/editor
 .idea/
 .vscode/
@@ -27,3 +27,5 @@ dist/
 
 # CI artifacts
 ci/artifacts/
+
+ci/test-local

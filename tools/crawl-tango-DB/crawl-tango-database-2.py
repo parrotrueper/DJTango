@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-import bs4
-import urllib
 import re
-from bs4 import BeautifulSoup
-from pprint import pprint
-from data import DBtangoConnexion
+import urllib
+
+import bs4
 import utils
+from bs4 import BeautifulSoup
+from data import DBtangoConnexion
 
 
 def getSongsFromPage(page, url):
@@ -14,8 +14,8 @@ def getSongsFromPage(page, url):
 	myul = soup.find("ul", {"class": "pagination"})
 	print()
 	print(url)
-	pageNb = 0;
-	songs =[];
+	pageNb = 0
+	songs =[]
 	if myul != None:
 		mylis = myul.findAll("li")
 		if "ENREGISTREMENTS" in mylis[len(mylis)-2].a.next : 
@@ -24,19 +24,19 @@ def getSongsFromPage(page, url):
 			#print (mylis[len(mylis)-2].a)
 			pageNb = int(mylis[len(mylis)-2].a.next)
 
-		print('pageNB: '+str(pageNb))
+		print("pageNB: "+str(pageNb))
 		curPage = 1
 		while curPage <= pageNb:
 			print("reading page " +str(curPage))
-			mytrs = soup.findAll('tr', {"class": "small"})
+			mytrs = soup.findAll("tr", {"class": "small"})
 			for tr in mytrs:
 				song = []
 				tds = tr.findAll("td")
 				#print(str(tds[4].a.next)+' | '+str(tds[5].next))
 				song = [
 				tds[1].a.next,
-				int(tds[1].a.span.next.split('-')[1]),#month
-				int(tds[1].a.span.next.split('-')[2]),#day
+				int(tds[1].a.span.next.split("-")[1]),#month
+				int(tds[1].a.span.next.split("-")[2]),#day
 				tds[2].a.next,
 				utils.remove_accents(tds[2].a.next).lower(),
 				tds[3].a.next,
@@ -46,21 +46,21 @@ def getSongsFromPage(page, url):
 				tds[6].a.next]
 
 				if isinstance(tds[4].a.next, bs4.element.Tag):
-					song[7] =''
+					song[7] =""
 				if not isinstance(tds[7].a.next, bs4.element.Tag):
 					song.append(tds[7].a.next)
 				else:
- 					song.append('?')
+ 					song.append("?")
 				
 				for i, curVal in enumerate(song):
 					if isinstance(curVal, bs4.element.Tag):
-						song[i] = ''
+						song[i] = ""
 				#print(song)
 
 				songs.append(song)
 
 			curPage+=1
-			url = orchestra = re.sub(r'P=\d+','P='+str(curPage), url)
+			url = orchestra = re.sub(r"P=\d+","P="+str(curPage), url)
 			print(url)
 			fp = urllib.request.urlopen(url)
 			soup = BeautifulSoup(fp.read(), "lxml")
@@ -69,7 +69,7 @@ def getSongsFromPage(page, url):
 	else:
 		print("Pas d'enregistrement pour "+url)
 	#exit(0);
-	return songs;
+	return songs
 
 def getListOfOrchestra(page):
 	soup = BeautifulSoup(page, "lxml")
@@ -80,14 +80,14 @@ def getListOfOrchestra(page):
 			#print (td.a['href'])
 			
 
-			query = td.a['href'].split('?')[1]
+			query = td.a["href"].split("?")[1]
 			#query = td.a['href']
 			params = urllib.parse.parse_qs(query)
 			for i in params:
 				#print (params[i][0])
 				params[i] =params[i][0]
-				params[i] = params[i].encode('Utf-8')
-			params['P'] = '1'.encode('Utf-8')
+				params[i] = params[i].encode("Utf-8")
+			params["P"] = b"1"
 			#print(urllib.parse.urlencode(params))
 			fullUrl = "https://www.el-recodo.com/music?"+urllib.parse.urlencode(params)
 			#ó %C3%B3
@@ -104,7 +104,7 @@ def getListOfOrchestra(page):
 #
 # MAIN
 
-rootPage = "https://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr#";
+rootPage = "https://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr#"
 
 fp = urllib.request.urlopen(rootPage)
 #<a href="music?O=Adolfo CARABELLI&amp;tri=&amp;P=0&amp;lang=fr">Adolfo CARABELLI <span class="label label-default">58</span></a>
@@ -112,12 +112,12 @@ dbData = DBtangoConnexion()
 dbData.createDatabase()
 songs=[]
 orchestraList = getListOfOrchestra(fp.read())
-banned = ['http://www.el-recodo.com/#',
-'http://www.el-recodo.com/music?page=O&tri=&P=1&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=0&P=0&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=Q&P=0&lang=fr',
-'http://www.el-recodo.com/music?id=&lang=fr']
+banned = ["http://www.el-recodo.com/#",
+"http://www.el-recodo.com/music?page=O&tri=&P=1&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=0&P=0&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=Q&P=0&lang=fr",
+"http://www.el-recodo.com/music?id=&lang=fr"]
 
 
 for orchestra in orchestraList:
@@ -135,7 +135,7 @@ for orchestra in orchestraList:
 		#params = { "SendXML": "<company><User><Username>username</Username><Password>passweord</Password></User><Content Type=sms>.." }
 		#orchestra = orchestra % (urllib.parse.urlencode(params))
 		fp = urllib.request.urlopen(orchestra)
-	except IOError:
+	except OSError:
 		print ("problem with the orchestra !!!!")
 		fp = None
 	if fp:

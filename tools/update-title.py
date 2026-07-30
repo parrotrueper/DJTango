@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 # -*- coding:Utf-8 -*-
 
-from djtango.data import djDataConnection
-import string, os
+import os
+import string
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+from ttvttm.data import djDataConnection
+
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
 djData = djDataConnection(djhome)
 

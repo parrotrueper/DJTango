@@ -1,17 +1,16 @@
-from __future__ import division
 
-from math import log, ceil, floor
 import os
 import re
-from subprocess import Popen, PIPE
 import sys
+from math import ceil, log
+from subprocess import PIPE, Popen
 from tempfile import TemporaryFile
 from warnings import warn
 
 try:
     import audioop
 except ImportError:
-    import pyaudioop as audioop
+    pass
 
 
 if sys.version_info >= (3, 0):
@@ -51,7 +50,7 @@ def get_min_max_value(bit_depth):
     return ARRAY_RANGES[bit_depth]
 
 
-def _fd_or_path_or_tempfile(fd, mode='w+b', tempfile=True):
+def _fd_or_path_or_tempfile(fd, mode="w+b", tempfile=True):
     if fd is None and tempfile:
         fd = TemporaryFile(mode=mode)
 
@@ -86,7 +85,7 @@ def ratio_to_db(ratio, val2=None, using_amplitude=True):
     
     # special case for multiply-by-zero (convert to silence)
     if ratio == 0:
-        return -float('inf')
+        return -float("inf")
 
     if using_amplitude:
         return 20 * log(ratio, 10)
@@ -197,7 +196,6 @@ def mediainfo(filepath):
     """Return dictionary with media info(codec, duration, size, bitrate...) from filepath
     """
 
-    from .audio_segment import AudioSegment
 
     prober = get_prober_name()
     command_args = [
@@ -207,7 +205,7 @@ def mediainfo(filepath):
         filepath
     ]
 
-    command = [prober, '-of', 'old'] + command_args
+    command = [prober, "-of", "old"] + command_args
     res = Popen(command, stdout=PIPE)
     output = res.communicate()[0].decode("utf-8")
 
@@ -218,7 +216,7 @@ def mediainfo(filepath):
     rgx = re.compile(r"(?:(?P<inner_dict>.*?):)?(?P<key>.*?)\=(?P<value>.*?)$")
     info = {}
 
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         output = output.replace("\r", "")
 
     for line in output.split("\n"):

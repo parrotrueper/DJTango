@@ -10,6 +10,7 @@ audio_segment.high_pass_filter() instead of the slower, less powerful versions
 provided by pydub.effects.
 """
 from scipy.signal import butter, sosfilt
+
 from .utils import register_pydub_effect
 
 
@@ -38,7 +39,7 @@ def _mk_butter_filter(freq, type, order):
         except TypeError:
             freqs = freq / nyq
 
-        sos = butter(order, freqs, btype=type, output='sos')
+        sos = butter(order, freqs, btype=type, output="sos")
         y = sosfilt(sos, seg.get_array_of_samples())
 
         return seg._spawn(y.astype(seg.array_type))
@@ -48,17 +49,17 @@ def _mk_butter_filter(freq, type, order):
 
 @register_pydub_effect
 def band_pass_filter(seg, low_cutoff_freq, high_cutoff_freq, order=5):
-    filter_fn = _mk_butter_filter([low_cutoff_freq, high_cutoff_freq], 'band', order=order)
+    filter_fn = _mk_butter_filter([low_cutoff_freq, high_cutoff_freq], "band", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 
 
 @register_pydub_effect
 def high_pass_filter(seg, cutoff_freq, order=5):
-    filter_fn = _mk_butter_filter(cutoff_freq, 'highpass', order=order)
+    filter_fn = _mk_butter_filter(cutoff_freq, "highpass", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 
 
 @register_pydub_effect
 def low_pass_filter(seg, cutoff_freq, order=5):
-    filter_fn = _mk_butter_filter(cutoff_freq, 'lowpass', order=order)
+    filter_fn = _mk_butter_filter(cutoff_freq, "lowpass", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)

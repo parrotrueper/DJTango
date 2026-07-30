@@ -97,7 +97,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../../../../.designer/backup/img/logo-djtango.png</normaloff>../../../../../.designer/backup/img/logo-djtango.png</iconset>
+    <normaloff>img/ttvttm.png</normaloff>img/ttvttm.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">

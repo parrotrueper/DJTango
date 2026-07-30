@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dj-tango"
+name = "ttvttm"
 version = "0.1.0"
-description = "The ultimate tools for DJing Milongas (Tango bal)"
+description = "Music Player for Tango"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
@@ -37,7 +37,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-exclude = [".venv", "build", "dist", "dj_tango.egg-info", "__pycache__"]
+exclude = [".venv", "build", "dist", "ttvttm.egg-info", "__pycache__", "tools", "uiredesign"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "C", "UP", "Q"]
@@ -48,18 +48,18 @@ python_version = "3.12"
 ignore_missing_imports = true
 warn_unused_configs = true
 strict_optional = true
-exclude = "(^\\.venv|build|dist|dj_tango\\.egg-info)"
+exclude = "(^\\.venv|build|dist|ttvttm\\.egg-info)"
 
 [project.scripts]
-djtango = "tools.djtango_cli:main"
+ttvttm = "tools.ttvttm_cli:main"
 
 [project.urls]
-Homepage = "https://example.com/dj-tango"
-Download = "https://example.com/dj-tango/download"
+Homepage = "https://example.com/ttvttm"
+Download = "https://example.com/ttvttm/download"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["djtango", "tools", "tests"]
+include = ["ttvttm", "tools", "tests"]
 
 [tool.setuptools.package-data]
-"djtango" = ["qml/*"]
+"ttvttm" = ["qml/*"]

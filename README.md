@@ -1,10 +1,6 @@
-# DJTango
+# TTVTTM
 
-Software for track DJs.
-
-Originally forked from https://github.com/flccrakers/dj-track 
-
-This project is a very different beast from the original source.
+Music Player for Tango
 
 **Project status -- Under development**
 

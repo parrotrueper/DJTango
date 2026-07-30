@@ -59,7 +59,7 @@ fi
 if [ "$color_prompt" = yes ]; then
 	PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\]@\[\e[38;5;153m\]\h\[\e[m\] \[\e[38;5;214m\]\W\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
 
-	printf "\n\n DJTango Development Container \n\n\n"
+	printf "\n\n ttvttm Development Container \n\n\n"
 
 else
 	PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '

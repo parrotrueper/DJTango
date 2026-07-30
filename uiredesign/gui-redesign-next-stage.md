@@ -6,9 +6,9 @@ Move from the current partial QML prototype to a more complete redesign aligned 
 
 ## Current status
 
-- New QML frontend exists in `djtango/qml/Main.qml`.
-- `djtango/quick_main.py` launches the QML UI and exposes `backend` to QML.
-- `djtango/qml_backend.py` provides library and playlist models, playback toggles, playlist persistence, and app metadata.
+- New QML frontend exists in `ttvttm/qml/Main.qml`.
+- `ttvttm/quick_main.py` launches the QML UI and exposes `backend` to QML.
+- `ttvttm/qml_backend.py` provides library and playlist models, playback toggles, playlist persistence, and app metadata.
 - The UI now includes a top header with app title/version and live output state, a library panel, a playlist panel, view-mode toggles, a live session switch, search as a basic field, WIP context selection, and search scope chips.
 - Core playlist workflows are partially available: add to playlist, remove from playlist, save playlist, and load saved playlists.
 - Startup regression tests cover QML load, backend import, playback toggle, playlist actions, and app metadata.

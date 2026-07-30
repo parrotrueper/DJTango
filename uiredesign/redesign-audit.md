@@ -2,13 +2,13 @@
 
 ## Summary
 
-The current app uses a Qt-based GUI with a single main window defined by `djtango/UI_djtango.py` and wired through `djtango/ui_setup.py`.
+The current app uses a Qt-based GUI with a single main window defined by `ttvttm/UI_ttvttm.py` and wired through `ttvttm/ui_setup.py`.
 
 The redesign spec in `gui-redesign.md` is a significantly different layout and workflow. The existing implementation includes many core playback and library features, but the UI structure, view model, and menu architecture are not aligned with the new design.
 
 ## What exists today
 
-- Main app UI is built from `djtango/UI_djtango.py`.
+- Main app UI is built from `ttvttm/UI_ttvttm.py`.
 - The UI contains:
   - Library source table (`milongaSource`)
   - Live/playlist destination table (`milongaDest`)
@@ -19,12 +19,12 @@ The redesign spec in `gui-redesign.md` is a significantly different layout and w
   - Menu bar with `Library`, `Edit`, and `View` menus
   - Preferences action and Track Appearance action
 - Backend features exposed by current mixins:
-  - audio playback and pause/stop via `djtango/audio_playback.py`
-  - library scanning and file/directory import via `djtango/menu_actions.py`
-  - library filtering and playlist data model via `djtango/library_manager.py`
-  - model wiring in `djtango/ui_setup.py`
-  - UI visibility controls in `djtango/visibility_controls.py`
-  - connections between widgets and logic in `djtango/connections.py`
+  - audio playback and pause/stop via `ttvttm/audio_playback.py`
+  - library scanning and file/directory import via `ttvttm/menu_actions.py`
+  - library filtering and playlist data model via `ttvttm/library_manager.py`
+  - model wiring in `ttvttm/ui_setup.py`
+  - UI visibility controls in `ttvttm/visibility_controls.py`
+  - connections between widgets and logic in `ttvttm/connections.py`
 - Library filters are implemented and bound to UI controls.
 - Playlist source and destination models exist and can be updated with track lists.
 
@@ -52,7 +52,7 @@ The redesign spec in `gui-redesign.md` is a significantly different layout and w
 
 ## New QML redesign progress
 
-- A new Qt Quick frontend exists in `djtango/qml/Main.qml` and is launched by `djtango/quick_main.py`.
+- A new Qt Quick frontend exists in `ttvttm/qml/Main.qml` and is launched by `ttvttm/quick_main.py`.
 - The QML layer now exposes a backend context property and binds library/playlist models.
 - Basic playback, playlist add/remove, save, and load actions are wired into the QML UI.
 - View-mode toggles, live session switch state, selected-track metadata display, and top-header app metadata are now present.
@@ -75,15 +75,15 @@ The redesign spec in `gui-redesign.md` is a significantly different layout and w
 ## Observations
 
 - The current GUI is functional but not architected for the redesign.
-- There is an old unused secondary UI file `djtango/UI_djtango2.py` that appears to be a legacy prototype and should not be used.
+- There is an old unused secondary UI file `ttvttm/UI_ttvttm2.py` that appears to be a legacy prototype and should not be used.
 - Core data and playback services are reusable, so the safest path is to build a new UI layer and wire it to the existing backend logic.
-- Reusable backend modules (`djtango/data.py`, `djtango/dirsong.py`, `djtango/tracksong.py`, `djtango/tableModels.py`) have been cleaned of commented-out debug code and are ready for reuse.
+- Reusable backend modules (`ttvttm/data.py`, `ttvttm/dirsong.py`, `ttvttm/tracksong.py`, `ttvttm/tableModels.py`) have been cleaned of commented-out debug code and are ready for reuse.
 - The current main window class is tightly coupled and uses many mixins, which makes incremental UI changes harder.
 
 ## Recommendation from audit
 
 - Keep the backend logic and data models intact.
-- Create a new redesigned UI implementation instead of trying to retrofit the current `djtango/UI_djtango.py` layout.
+- Create a new redesigned UI implementation instead of trying to retrofit the current `ttvttm/UI_ttvttm.py` layout.
 - Use the audit gaps above as the target list for the new design.
 - Track progress in this file by turning missing items into milestones.
 

@@ -4,33 +4,35 @@
 # use pydub to detect the silences at the begining and the end of a song
 # and save the real begining and end of each song in the database
 
-from djtango.data import djDataConnection
-from pydub import AudioSegment
-from pydub import silence
-import pydub
+import os
 
-import unicodedata, re, os, sys
+import pydub
+from pydub import AudioSegment, silence
+
+from ttvttm.data import djDataConnection
+
+
 #p = re.compile('(\s\(2\)| \(3\)| \(4\)| \(5\))')
 def backspace(n):
     # print((b'\x08').decode(), end='')     # use \x08 char to go back
     #clear()
 
-    toPrint = ''
+    toPrint = ""
     for i in range(0,n):
-    	toPrint+=' '
-    print(toPrint, end='\r') 
+    	toPrint+=" "
+    print(toPrint, end="\r") 
 
 def clear():
 
-    os.system( 'clear' )
+    os.system( "clear" )
     print()
 
 
-djhome = os.path.join(os.path.expanduser("~"), ".djtango")
+djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
 data = djDataConnection(djhome)
 tracks = data.getAllTracks()
-sizeBackSpace = 1000;
+sizeBackSpace = 1000
 
 startworkat = 5600
 trackCount = 0
@@ -45,16 +47,16 @@ for track in tracks:
 	#printing infos
 	backspace(sizeBackSpace)
 	percent = trackCount*100/len(tracks)
-	start = '   ['+"%.0f" % percent+'% '
+	start = "   ["+"%.0f" % percent+"% "
 	for i in range(0,cont):
-		start+='.'
+		start+="."
 	for i in range(0,size-cont):
-		start+=' '
-	start+='] - '
+		start+=" "
+	start+="] - "
 	cont+=1
-	if cont >size: cont = 1;
+	if cont >size: cont = 1
 	toPrint = start+str(track.ID) + " - "+track.path 
-	print(toPrint, end='\r', flush=True) 
+	print(toPrint, end="\r", flush=True) 
 	sizeBackSpace = len (toPrint)
 
 
@@ -86,7 +88,7 @@ for track in tracks:
 
 			data.updateTrack(track)
 		except FileNotFoundError:
-			print (start+"We can not find the file of "+str(track.ID));
+			print (start+"We can not find the file of "+str(track.ID))
 			backspace(sizeBackSpace)
 			print(toPrint)
 		except KeyboardInterrupt:
@@ -94,7 +96,7 @@ for track in tracks:
 			print(toPrint)
 			print(start+"KeyboardInterrupt")
 			exit(0)
-		except pydub.exceptions.CouldntDecodeError as e:
+		except pydub.exceptions.CouldntDecodeError:
 			clear()
 			backspace(sizeBackSpace)
 			print(toPrint)

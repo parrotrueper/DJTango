@@ -4,14 +4,11 @@
 import os
 import time
 
-from djtango.data import djDataConnection
-from djtango.tracksong import TrackSong
-
-inputFile = './track-a-corriger.csv'
+inputFile = "./track-a-corriger.csv"
 
 def loadcsv(file):
 	ret=[]
-	inF = open(file, "r") #opens file with name of "test.txt"
+	inF = open(file) #opens file with name of "test.txt"
 	for line in inF :
 		res = line.strip().split(";")
 		ret.append(res)
@@ -30,7 +27,7 @@ def printRest(trackList):
 
 def saveAndExit(file):
 	outF = open(file, "w")
-	s = ';'
+	s = ";"
 	for i in range (0,len(trackList)):
 		outF.write(s.join(trackList[i])+"\n")
 		#outF.
@@ -46,7 +43,7 @@ for index in range(1, len(trackList)):
 	if table[3] == "":
 		print(table)
 		curIndex.append(index)
-		command = "firefox \"http://www.el-recodo.com/music?T="+table[1].replace(" ", '+')+"&lang=fr\" &"
+		command = 'firefox "http://www.el-recodo.com/music?T='+table[1].replace(" ", "+")+'&lang=fr" &'
 		#print (command)
 		os.system(command)
 		time.sleep(0.25)
@@ -62,13 +59,13 @@ for index in range(1, len(trackList)):
 		count = 0
 		for x in curIndex:
 				
-			if mdpe == 'exit':
+			if mdpe == "exit":
 				saveAndExit(inputFile)
-			elif mdpe[count] == 'c':
+			elif mdpe[count] == "c":
 				print (trackList[x])
-				trackList[x][3] = 'corrigé'
+				trackList[x][3] = "corrigé"
 				print (trackList[x])
-			elif mdpe[count] == 'n':
+			elif mdpe[count] == "n":
 				print (trackList[x])
 				trackList[x][3] = "N’existe pas chez El Recodo" 
 				print (trackList[x])

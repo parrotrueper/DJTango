@@ -1,6 +1,6 @@
-module DJTango
-Main 1.0 djtango/qml/Main.qml
-Theme 1.0 djtango/qml/Theme.qml
+module ttvttm
+Main 1.0 ttvttm/qml/Main.qml
+Theme 1.0 ttvttm/qml/Theme.qml
 MapView 1.0 .venv/lib/python3.12/site-packages/PySide6/Qt/qml/QtLocation/MapView.qml
 Video 1.0 .venv/lib/python3.12/site-packages/PySide6/Qt/qml/QtMultimedia/Video.qml
 LightmapperOutputWindow 1.0 .venv/lib/python3.12/site-packages/PySide6/Qt/qml/QtQuick3D/LightmapperOutputWindow.qml

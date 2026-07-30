@@ -2,11 +2,9 @@
 # -*- coding:Utf-8 -*-
 
 import urllib
+
 from bs4 import BeautifulSoup
-from pprint import pprint
 from data import DBtangoConnexion
-
-
 
 #page : template de la page
 
@@ -14,20 +12,20 @@ def getSongsFromPage(page, url):
 	soup = BeautifulSoup(page, "lxml")
 
 
-	uls = soup.find_all('ul')
+	uls = soup.find_all("ul")
 	maxNB = 1
 	for i,ul in enumerate(uls):
 		#print(ul['class'])
-		if  'pagination' in ul['class']:
+		if  "pagination" in ul["class"]:
 			#print("in pagination")
 			first = True
-			for li in ul.select('li'):
+			for li in ul.select("li"):
 				#print (li.select('a').text)
 				if first:
 					first = False
 				else:
-					for a in li.select('a'):
-						if not a.text == '':
+					for a in li.select("a"):
+						if not a.text == "":
 							if int(a.text) > int(maxNB):
 								maxNB = int(a.text)
 							#print (a.text)
@@ -42,7 +40,7 @@ def getSongsFromPage(page, url):
 			
 			url = url+"&P="+str(currentPage)
 			#print ("traitement page suivante\n"+url)
-			fp = urllib.urlopen(url.encode('ascii','ignore'))
+			fp = urllib.urlopen(url.encode("ascii","ignore"))
 			soup = BeautifulSoup(fp.read(),"lxml") 
 		
 		tables = soup.select("table") #get all tables
@@ -85,7 +83,7 @@ def getListOfOrchestra(page):
 			for td in tr.select("td"):
 				for a in td.select("a"):
 					#print("http://www.el-recodo.com/"+a.get('href')+'&p=1')
-					orchestraList.append("http://www.el-recodo.com/"+a.get('href'))
+					orchestraList.append("http://www.el-recodo.com/"+a.get("href"))
 
 	return orchestraList
 
@@ -93,7 +91,7 @@ def getListOfOrchestra(page):
 #
 # MAIN
 
-rootPage = "https://www.el-recodo.com/music?page=O&tri=&P=0&lang=fr#";
+rootPage = "https://www.el-recodo.com/music?page=O&tri=&P=0&lang=fr#"
 
 fp = urllib.urlopen(rootPage)
 dbData = DBtangoConnexion()
@@ -102,12 +100,12 @@ songs=[]
 
 
 orchestraList = getListOfOrchestra(fp.read())
-banned = ['http://www.el-recodo.com/#',
-'http://www.el-recodo.com/music?page=O&tri=&P=1&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=0&P=0&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr',
-'http://www.el-recodo.com/music?page=O&tri=Q&P=0&lang=fr',
-'http://www.el-recodo.com/music?id=&lang=fr']
+banned = ["http://www.el-recodo.com/#",
+"http://www.el-recodo.com/music?page=O&tri=&P=1&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=0&P=0&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=O&P=0&lang=fr",
+"http://www.el-recodo.com/music?page=O&tri=Q&P=0&lang=fr",
+"http://www.el-recodo.com/music?id=&lang=fr"]
 #exit(0)
 for orchestra in orchestraList:
 	
@@ -118,9 +116,9 @@ for orchestra in orchestraList:
 		print (orchestra)
 		#print ('will test')
 		try:
-			fp = urllib.urlopen(orchestra.encode('ascii','ignore'))
+			fp = urllib.urlopen(orchestra.encode("ascii","ignore"))
 		
-		except IOError:
+		except OSError:
 			print ("problem with the orchestra !!!!")
 			fp = None
 		if fp:
@@ -131,7 +129,7 @@ for orchestra in orchestraList:
 	
 
 
-'''
+"""
 #orchestra = "http://www.el-recodo.com/music?O=Francisco CANARO&lang=fr"
 orchestra = "http://www.el-recodo.com/music?O=Jorge CASAL"
 fp = urllib.urlopen(orchestra.encode('ascii','ignore'))
@@ -140,7 +138,7 @@ if fp:
 		songs.append(song)
 		dbData.instertSong(song)
 
-'''
+"""
 
 
 

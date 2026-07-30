@@ -9,7 +9,7 @@ set -euo pipefail
 # shellcheck source=/dev/null
 . ci/functions.sh
 
-RESULT_IMAGE="djtango-dev"
+RESULT_IMAGE="ttvttm-dev"
 DOCKERFILE="ci/Dockerfile"
 VERBOSE="no"
 USE_CACHE="yes"

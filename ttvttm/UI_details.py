@@ -1,0 +1,256 @@
+
+# Form implementation generated from reading ui file './gui/UI_details.ui'
+#
+# Created by: PyQt5 UI code generator 5.5.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PySide6 import QtCore, QtGui, QtWidgets
+
+
+class Ui_details:
+    def setupUi(self, details):
+        details.setObjectName("details")
+        details.setWindowModality(QtCore.Qt.WindowModal)
+        details.resize(340, 365)
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
+        details.setPalette(palette)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("img/ttvttm.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        details.setWindowIcon(icon)
+        self.verticalLayout = QtWidgets.QVBoxLayout(details)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.formLayout = QtWidgets.QFormLayout()
+        self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout.setObjectName("formLayout")
+        self.labelPropTitle = QtWidgets.QLabel(details)
+        self.labelPropTitle.setStyleSheet("QLabel{\n"
+"    color:white;\n"
+"    font-size: 18px;\n"
+"}")
+        self.labelPropTitle.setObjectName("labelPropTitle")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelPropTitle)
+        self.lineEditTitle = QtWidgets.QLineEdit(details)
+        self.lineEditTitle.setObjectName("lineEditTitle")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.lineEditTitle)
+        spacerItem = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout.setItem(1, QtWidgets.QFormLayout.LabelRole, spacerItem)
+        self.labelPropArtist = QtWidgets.QLabel(details)
+        self.labelPropArtist.setStyleSheet("QLabel{\n"
+"    color:white;\n"
+"    font-size: 18px;\n"
+"}")
+        self.labelPropArtist.setObjectName("labelPropArtist")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelPropArtist)
+        self.lineEditArtist = QtWidgets.QLineEdit(details)
+        self.lineEditArtist.setObjectName("lineEditArtist")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lineEditArtist)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout.setItem(3, QtWidgets.QFormLayout.LabelRole, spacerItem1)
+        self.labelPropAlbum = QtWidgets.QLabel(details)
+        self.labelPropAlbum.setStyleSheet("QLabel{\n"
+"    color:white;\n"
+"    font-size: 18px;\n"
+"}")
+        self.labelPropAlbum.setObjectName("labelPropAlbum")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.labelPropAlbum)
+        self.lineEditAlbum = QtWidgets.QLineEdit(details)
+        self.lineEditAlbum.setObjectName("lineEditAlbum")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.lineEditAlbum)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout.setItem(5, QtWidgets.QFormLayout.LabelRole, spacerItem2)
+        self.labelPropGenre = QtWidgets.QLabel(details)
+        self.labelPropGenre.setStyleSheet("QLabel{\n"
+"    color:white;\n"
+"    font-size: 18px;\n"
+"}")
+        self.labelPropGenre.setObjectName("labelPropGenre")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.labelPropGenre)
+        self.comboBoxTangoType = QtWidgets.QComboBox(details)
+        self.comboBoxTangoType.setObjectName("comboBoxTangoType")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.comboBoxTangoType)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout.setItem(7, QtWidgets.QFormLayout.LabelRole, spacerItem3)
+        self.labelPropYear = QtWidgets.QLabel(details)
+        self.labelPropYear.setStyleSheet("QLabel{\n"
+"    color:white;\n"
+"    font-size: 18px;\n"
+"}")
+        self.labelPropYear.setObjectName("labelPropYear")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.labelPropYear)
+        self.spinBoxYear = QtWidgets.QSpinBox(details)
+        self.spinBoxYear.setMaximum(99999)
+        self.spinBoxYear.setObjectName("spinBoxYear")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.spinBoxYear)
+        self.verticalLayout.addLayout(self.formLayout)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.textPath = QtWidgets.QTextEdit(details)
+        self.textPath.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
+        self.textPath.setObjectName("textPath")
+        self.verticalLayout_2.addWidget(self.textPath)
+        self.checkBoxPlayMusic = QtWidgets.QCheckBox(details)
+        self.checkBoxPlayMusic.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.checkBoxPlayMusic.setStyleSheet("QCheckBox{\n"
+"    color:white;\n"
+"}")
+        self.checkBoxPlayMusic.setObjectName("checkBoxPlayMusic")
+        self.verticalLayout_2.addWidget(self.checkBoxPlayMusic)
+        self.verticalLayout.addLayout(self.verticalLayout_2)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem4)
+        self.previousButton = QtWidgets.QPushButton(details)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.previousButton.sizePolicy().hasHeightForWidth())
+        self.previousButton.setSizePolicy(sizePolicy)
+        self.previousButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.previousButton.setStyleSheet("QPushButton#previousButton{\n"
+"    background-color: #2a2a2a;\n"
+"    color: white;\n"
+" }\n"
+"QPushButton:disabled {\n"
+"     color: grey;\n"
+"    background-color: red;\n"
+"}\n"
+"QPushButton:on {\n"
+"        background: red;\n"
+"}")
+        self.previousButton.setObjectName("previousButton")
+        self.horizontalLayout.addWidget(self.previousButton)
+        self.nextButton = QtWidgets.QPushButton(details)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.nextButton.sizePolicy().hasHeightForWidth())
+        self.nextButton.setSizePolicy(sizePolicy)
+        self.nextButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.nextButton.setStyleSheet("QPushButton#nextButton{\n"
+"    background-color: #2a2a2a;\n"
+"    color: white;\n"
+" }")
+        self.nextButton.setObjectName("nextButton")
+        self.horizontalLayout.addWidget(self.nextButton)
+        self.closeButton = QtWidgets.QPushButton(details)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.closeButton.sizePolicy().hasHeightForWidth())
+        self.closeButton.setSizePolicy(sizePolicy)
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Button, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ButtonText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(240, 119, 70, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Highlight, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Button, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ButtonText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(240, 119, 70, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Highlight, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Button, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
+        brush = QtGui.QBrush(QtGui.QColor(42, 42, 42))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
+        brush = QtGui.QBrush(QtGui.QColor(240, 240, 240))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Highlight, brush)
+        self.closeButton.setPalette(palette)
+        self.closeButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.closeButton.setStyleSheet("QPushButton#closeButton{\n"
+"    background-color: #2a2a2a;\n"
+"    color: white;\n"
+" }")
+        self.closeButton.setAutoDefault(False)
+        self.closeButton.setDefault(False)
+        self.closeButton.setFlat(False)
+        self.closeButton.setObjectName("closeButton")
+        self.horizontalLayout.addWidget(self.closeButton)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.retranslateUi(details)
+        QtCore.QMetaObject.connectSlotsByName(details)
+
+    def retranslateUi(self, details):
+        _translate = QtCore.QCoreApplication.translate
+        details.setWindowTitle(_translate("details", "Track Properties"))
+        self.labelPropTitle.setText(_translate("details", "Title:"))
+        self.labelPropArtist.setText(_translate("details", "Artist:"))
+        self.labelPropAlbum.setText(_translate("details", "Album:"))
+        self.labelPropGenre.setText(_translate("details", "Track type:"))
+        self.labelPropYear.setText(_translate("details", "Year:"))
+        self.checkBoxPlayMusic.setText(_translate("details", "Play music when clicking next or previous"))
+        self.previousButton.setText(_translate("details", "Previous"))
+        self.previousButton.setShortcut(_translate("details", "Up"))
+        self.nextButton.setText(_translate("details", "Next"))
+        self.nextButton.setShortcut(_translate("details", "Down"))
+        self.closeButton.setText(_translate("details", "Close"))
+        self.closeButton.setShortcut(_translate("details", "Return, Enter"))
+

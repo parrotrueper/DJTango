@@ -10,8 +10,9 @@ set -euo pipefail
 . ci/functions.sh
 
 check_top_dir
+in_pipeline=$(is_ci)
 
-IMAGE_NAME="djtango-dev"
+IMAGE_NAME="ttvttm-dev"
 NO_CACHE=""
 
 while [[ $# -gt 0 ]]; do
@@ -27,22 +28,33 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ $(is_ci) = "yes" ]]; then
+if [[ "${in_pipeline}" = "yes" ]]; then
   info "Running tests in pipeline CI environment"
 else
-  info "Running tests on local machine, in docker container"
+  # only build the image if we are not inside a docker container
+  if [[ -f /.dockerenv ]]; then
+    info "...skipping image build"
+  elif [[ "${NO_CACHE}" = "--no-cache" ]]; then
+    info "Building Docker image $IMAGE_NAME"
+    # only build when we have made changes, otherwise it is too slow to rebuild every time
+    run docker compose -f ./ci/docker-compose.test.yml build $NO_CACHE sut
+  fi
 fi
 
-info "Building Docker image $IMAGE_NAME"
-run ci/build-docker-image.sh $NO_CACHE
+# if in the pipeline or outside a docker container, run the tests in a docker container
+if [[ "${in_pipeline}" = "yes" ]] || [[ ! -f /.dockerenv ]]; then
+  info "Cleaning up any existing test containers"
+  run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans || true
 
-info "Cleaning up any existing test containers"
-run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans || true
+  info "Running the test suite"
+  run docker compose -f ./ci/docker-compose.test.yml run --rm sut
 
-info "Running the test suite inside Docker"
-run docker compose -f ./ci/docker-compose.test.yml run --rm sut
-
-info "Cleaning up test containers"
-run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans
-
+  info "Cleaning up test containers"
+  run docker compose -f ./ci/docker-compose.test.yml down --remove-orphans
+elif [[ -f /.dockerenv ]]; then
+  info "Running tests on local machine, in docker container"
+  run ./ci/dev-check.sh
+else
+  info "--- DONE ---"
+fi
 

@@ -1,8 +1,9 @@
-import __builtin__
 import math
 import struct
-from fractions import gcd
 from ctypes import create_string_buffer
+from fractions import gcd
+
+import __builtin__
 
 
 class error(Exception):

@@ -1,16 +1,17 @@
-import sys
-import math
 import array
+import math
+import sys
+
+from .exceptions import InvalidDuration
+from .silence import split_on_silence
 from .utils import (
+    audioop,
     db_to_float,
+    get_min_max_value,
+    make_chunks,
     ratio_to_db,
     register_pydub_effect,
-    make_chunks,
-    audioop,
-    get_min_max_value
 )
-from .silence import split_on_silence
-from .exceptions import TooManyMissingFrames, InvalidDuration
 
 if sys.version_info >= (3, 0):
     xrange = range
@@ -74,8 +75,7 @@ def speedup(seg, playback_speed=1.5, chunk_size=150, crossfade=25):
 
     chunks = make_chunks(seg, chunk_size + ms_to_remove_per_chunk)
     if len(chunks) < 2:
-        raise Exception("Could not speed up AudioSegment, it was too short {2:0.2f}s for the current settings:\n{0}ms chunks at {1:0.1f}x speedup".format(
-            chunk_size, playback_speed, seg.duration_seconds))
+        raise Exception(f"Could not speed up AudioSegment, it was too short {seg.duration_seconds:0.2f}s for the current settings:\n{chunk_size}ms chunks at {playback_speed:0.1f}x speedup")
 
     # we'll actually truncate a bit less than we calculated to make up for the
     # crossfade between chunks
@@ -184,7 +184,7 @@ def compress_dynamic_range(seg, threshold=-20.0, ratio=4.0, attack=5.0, release=
         
         output.append(frame)
     
-    return seg._spawn(data=b''.join(output))
+    return seg._spawn(data=b"".join(output))
 
 
 # Invert the phase of the signal.
@@ -337,5 +337,5 @@ def apply_gain_stereo(seg, left_gain=0.0, right_gain=0.0):
     output = audioop.add(left_data, right_data, seg.sample_width)
     
     return seg._spawn(data=output,
-                overrides={'channels': 2,
-                           'frame_width': 2 * seg.sample_width})
+                overrides={"channels": 2,
+                           "frame_width": 2 * seg.sample_width})

@@ -65,7 +65,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="djtango.qrc">
+        <iconset resource="ttvttm.qrc">
          <normaloff>:/img/search-icon.png</normaloff>:/img/search-icon.png</iconset>
        </property>
       </widget>
@@ -293,7 +293,7 @@ QCheckBox::indicator:checked {
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="djtango.qrc">
+            <iconset resource="ttvttm.qrc">
              <normaloff>:/img/plus-button.png</normaloff>:/img/plus-button.png</iconset>
            </property>
           </widget>
@@ -317,7 +317,7 @@ QCheckBox::indicator:checked {
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="djtango.qrc">
+        <iconset resource="ttvttm.qrc">
          <normaloff>:/img/minus-button.png</normaloff>:/img/minus-button.png</iconset>
        </property>
       </widget>
@@ -405,7 +405,7 @@ QCheckBox::indicator:checked {
   </layout>
  </widget>
  <resources>
-  <include location="djtango.qrc"/>
+  <include location="ttvttm.qrc"/>
  </resources>
  <connections>
   <connection>

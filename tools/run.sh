@@ -1,5 +1,5 @@
 #!/bin/sh
-# add as many pyuic4 convenstion that needed to create the project
-#
+# Legacy launcher stub for the ttvttm project.
+# Use the repository's run-tdj.sh or run-tdj-cli.sh scripts instead.
 
-../DJTango.py
+exec ../ttvttm/ttvttm.py "$@"

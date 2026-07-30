@@ -1,18 +1,17 @@
-FROM python:3.14-slim AS builder
+FROM python:3.14-slim AS base
 
 ARG USERNAME=troilo
 ARG USER_UID=1000
 ARG USER_GID=1000
-ARG USER_PATH="${PATH}:/usr/bin/"
+ARG USER_PATH="${PATH}:/usr/bin/:/usr/local/bin:/uv:/uvx"
 
-# If the build passes empty values for USER_UID/USER_GID, fall back to defaults.
-ENV USER_UID=${USER_UID:-1000} 
-ENV USER_GID=${USER_GID:-1000} 
-ENV PYTHONDONTWRITEBYTECODE=1 
-ENV PYTHONUNBUFFERED=1
+ENV USER_UID=${USER_UID:-1000} \
+    USER_GID=${USER_GID:-1000} \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 COPY --from=docker.io/astral/uv:latest /uv /uvx /bin/
-COPY ci/docker-bashrc /etc/bash.bashrc    
+COPY ci/docker-bashrc /etc/bash.bashrc
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
@@ -60,6 +59,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /workspace && chown "$USER_UID":"$USER_GID" /workspace
 
+FROM base AS builder
+
+WORKDIR /workspace
+COPY . /workspace
+RUN python -m pip install --upgrade pip setuptools wheel && python -m pip install -e .[test,dev]
+
+FROM base AS runtime
+
+COPY --from=builder /usr/local /usr/local
 WORKDIR /workspace
 USER ${USERNAME}
 
@@ -69,5 +77,5 @@ ENV CLICOLOR_FORCE=1
 ENV NO_AT_BRIDGE=1
 ENV GDK_DPI_SCALE=1.5
 SHELL ["/bin/bash", "-c"]
-CMD ["source /etc/bash.bashrc"]
+CMD ["bash"]
 

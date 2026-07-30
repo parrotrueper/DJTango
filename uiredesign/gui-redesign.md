@@ -12,7 +12,7 @@ UI items
 
 ## Top border
 
-* app name - centred, `DJTango`
+* app name - centred, `ttvttm`
 * version after the app name
   - if on main branch `release version number`
   - if on feature branch  `commit hash`

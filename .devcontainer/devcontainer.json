@@ -1,0 +1,20 @@
+{
+    "name": "ttvttm Dev Container",
+    "runArgs":[
+        "--device=/dev:/dev",
+        "--net=host"
+    ],
+    "build":{
+        "context": "${localWorkspaceFolder}",
+        "dockerfile": "${localWorkspaceFolder}/ci/Dockerfile"
+    },
+    "mounts":[
+        "type=bind,source=/dev,target=/dev"
+    ],
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+    "containerEnv": {
+        "BASH_ENV": "/etc/bash.bashrc"
+    },
+    "remoteUser": "troilo"
+}
