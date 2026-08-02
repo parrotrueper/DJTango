@@ -105,6 +105,16 @@ class QmlBackend(QObject):
     libraryChanged = pyqtSignal()
     playlistChanged = pyqtSignal()
     playbackStateChanged = pyqtSignal(bool)
+    playbackPositionChanged = pyqtSignal()
+    playbackDurationChanged = pyqtSignal()
+
+    @Property(int, notify=playbackPositionChanged)
+    def playbackPosition(self):
+        return self._playbackPosition
+
+    @Property(int, notify=playbackDurationChanged)
+    def playbackDuration(self):
+        return self._playbackDuration
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -120,6 +130,9 @@ class QmlBackend(QObject):
         self._audio_output = None
         self._currentTrackId = -1
         self._isPlaying = False
+        self._isLiveSession = False
+        self._playbackPosition = 0
+        self._playbackDuration = 0
         self._wipContext = "Library"
         self.loadLibrary()
 
@@ -155,6 +168,11 @@ class QmlBackend(QObject):
             self._player = QMediaPlayer()
             self._audio_output = QAudioOutput()
             self._player.setAudioOutput(self._audio_output)
+            try:
+                self._player.positionChanged.connect(self._on_position_changed)
+                self._player.durationChanged.connect(self._on_duration_changed)
+            except Exception:
+                pass
             print(f"QmlBackend initialized QMediaPlayer={type(self._player)} play_attr={hasattr(self._player,'play')} pause_attr={hasattr(self._player,'pause')} setSource_attr={hasattr(self._player,'setSource')} setAudioOutput_attr={hasattr(self._player,'setAudioOutput')}")
             return True
         except Exception as exc:
@@ -162,6 +180,20 @@ class QmlBackend(QObject):
             self._player = None
             self._audio_output = None
             return False
+
+    def _on_position_changed(self, position):
+        try:
+            self._playbackPosition = int(position)
+        except Exception:
+            self._playbackPosition = 0
+        self.playbackPositionChanged.emit()
+
+    def _on_duration_changed(self, duration):
+        try:
+            self._playbackDuration = int(duration)
+        except Exception:
+            self._playbackDuration = 0
+        self.playbackDurationChanged.emit()
 
     @Property(QObject, notify=libraryChanged)
     def libraryModel(self):
@@ -181,6 +213,10 @@ class QmlBackend(QObject):
         print(f"_load_media loading path: {abs_path}")
         try:
             self._player.setSource(QUrl.fromLocalFile(abs_path))
+            self._playbackPosition = 0
+            self._playbackDuration = 0
+            self.playbackPositionChanged.emit()
+            self.playbackDurationChanged.emit()
         except Exception as exc:
             print(f"_load_media setSource exception: {exc}")
             return False
@@ -325,6 +361,47 @@ class QmlBackend(QObject):
 
         return self.play()
 
+    @pyqtSlot(result=bool)
+    def previousTrack(self):
+        if self._currentTrackId < 0:
+            return False
+        ids = [int(track.get("id", -1)) for track in self._playlistModel.asList()]
+        try:
+            index = ids.index(self._currentTrackId)
+        except ValueError:
+            return False
+        if index <= 0:
+            return False
+        return self.playPlaylistTrack(ids[index - 1])
+
+    @pyqtSlot(result=bool)
+    def nextTrack(self):
+        if self._currentTrackId < 0:
+            return False
+        ids = [int(track.get("id", -1)) for track in self._playlistModel.asList()]
+        try:
+            index = ids.index(self._currentTrackId)
+        except ValueError:
+            return False
+        if index >= len(ids) - 1:
+            return False
+        return self.playPlaylistTrack(ids[index + 1])
+
+    @pyqtSlot(int, result=bool)
+    def seek(self, position_ms):
+        if self._player is None or not self._ensure_player():
+            return False
+        if not hasattr(self._player, "setPosition"):
+            return False
+        try:
+            self._player.setPosition(int(position_ms))
+            self._playbackPosition = int(position_ms)
+            self.playbackPositionChanged.emit()
+            return True
+        except Exception as exc:
+            print(f"seek exception: {exc}")
+            return False
+
     @pyqtSlot(result="QVariantList")
     def getSavedPlaylists(self):
         return self.djData.getListOfMilongas()
@@ -356,6 +433,21 @@ class QmlBackend(QObject):
     @pyqtSlot(result=str)
     def currentWipContext(self):
         return self._wipContext
+
+    @pyqtSlot(bool, result=bool)
+    def setLiveSession(self, enabled):
+        self._isLiveSession = bool(enabled)
+        return True
+
+    @pyqtSlot(result=int)
+    def playlistTotalDuration(self):
+        total = 0
+        for track in self._playlistModel.asList():
+            try:
+                total += int(round(float(track.get("duration", 0))))
+            except Exception:
+                continue
+        return total
 
     @pyqtSlot(result=str)
     def appTitle(self):

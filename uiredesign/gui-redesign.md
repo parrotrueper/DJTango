@@ -1,25 +1,6 @@
 # UI redesign spec
 
-UI items
-
-|                 top border                              |
-|menu items        |  info   |           playback controls|
-|                  Track info                             |
-|search box, search filter options |name      time stats  |
-| WIP panel                        |      Live panel      |
-| library list                     |    live playlist     |
-|                  bottom border                          |
-
-## Top border
-
-* app name - centred, `ttvttm`
-* version after the app name
-  - if on main branch `release version number`
-  - if on feature branch  `commit hash`
-  - if local dev `DIRTY`
-  
-## Menu items
-
+ 
 ### Edit
 
 Track related actions

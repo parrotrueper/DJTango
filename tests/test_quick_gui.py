@@ -172,6 +172,217 @@ def test_qml_backend_app_metadata(monkeypatch, tmp_path):
 
 
 @pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_qml_backend_playlist_total_duration(monkeypatch, tmp_path):
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    from ttvttm.qml_backend import QmlBackend
+
+    backend = QmlBackend()
+    backend._playlistModel.setTracks([
+        {"duration": 120},
+        {"duration": 182.6},
+        {"duration": "33"},
+    ])
+
+    assert backend.playlistModel.rowCount() == 3
+    assert backend.playlistTotalDuration() == 120 + 183 + 33
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_qml_backend_set_live_session(monkeypatch, tmp_path):
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    from ttvttm.qml_backend import QmlBackend
+
+    backend = QmlBackend()
+    assert not backend._isLiveSession
+    assert backend.setLiveSession(True)
+    assert backend._isLiveSession is True
+    assert backend.setLiveSession(False)
+    assert backend._isLiveSession is False
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_live_session_button_exists_in_qml(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+    live_button = root.findChild(QObject, "liveSessionButton")
+    assert live_button is not None
+    assert root.property("isLiveSession") is False
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_playlist_save_controls_exist_in_qml(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+
+    save_name_field = root.findChild(QObject, "saveNameField")
+    save_button = root.findChild(QObject, "playlistSaveButton")
+    playlist_selector = root.findChild(QObject, "playlistSelector")
+    load_button = root.findChild(QObject, "playlistLoadButton")
+    refresh_button = root.findChild(QObject, "playlistRefreshButton")
+
+    assert save_name_field is not None
+    assert save_button is not None
+    assert playlist_selector is not None
+    assert load_button is not None
+    assert refresh_button is not None
+
+    assert save_button.property("enabled") is False
+    assert playlist_selector.property("currentIndex") == -1
+
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_playback_controls_and_slider_exist_in_qml(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+
+    progress_bar = root.findChild(QObject, "playbackProgressBar")
+    prev_button = root.findChild(QObject, "prevButton")
+    next_button = root.findChild(QObject, "nextButton")
+    live_button = root.findChild(QObject, "liveSessionButton")
+
+    assert progress_bar is not None
+    assert prev_button is not None
+    assert next_button is not None
+    assert live_button is not None
+
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_qml_playback_time_labels_update(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+    backend = engine.rootContext().contextProperty("backend")
+    assert backend is not None
+
+    elapsed_label = root.findChild(QObject, "playbackTimeElapsed")
+    duration_label = root.findChild(QObject, "playbackTimeDuration")
+    assert elapsed_label is not None
+    assert duration_label is not None
+
+    backend._playbackPosition = 65
+    backend._playbackDuration = 245
+    backend.playbackPositionChanged.emit()
+    backend.playbackDurationChanged.emit()
+    app.processEvents()
+
+    assert elapsed_label.property("text") == "1:05"
+    assert duration_label.property("text") == "4:05"
+
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_qml_playlist_save_and_load_workflow(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+    backend = engine.rootContext().contextProperty("backend")
+    assert backend is not None
+
+    save_name_field = root.findChild(QObject, "saveNameField")
+    save_button = root.findChild(QObject, "playlistSaveButton")
+    playlist_selector = root.findChild(QObject, "playlistSelector")
+    load_button = root.findChild(QObject, "playlistLoadButton")
+
+    assert save_name_field is not None
+    assert save_button is not None
+    assert playlist_selector is not None
+    assert load_button is not None
+
+    dummy_dir = tmp_path / "music"
+    dummy_dir.mkdir()
+    dummy_track = dummy_dir / "track.wav"
+    dummy_track.write_bytes(
+        b"RIFF$\x00\x00\x00WAVEfmt "
+        + b"\x10\x00\x00\x00\x01\x00\x01\x00\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
+    )
+
+    assert backend.addTrack(str(dummy_track))
+    track_id = backend.libraryModel.asList()[0]["id"]
+    assert backend.addTrackToPlaylist(track_id)
+    assert backend.playlistModel.rowCount() == 1
+
+    assert save_button.property("enabled") is False
+    save_name_field.setProperty("text", "test-playlist")
+    app.processEvents()
+    assert save_button.property("enabled") is True
+
+    save_button.clicked.emit()
+    app.processEvents()
+
+    assert playlist_selector.property("currentIndex") == 0
+    assert load_button.property("enabled") is True
+
+    assert backend.removeTrackFromPlaylist(0)
+    assert backend.playlistModel.rowCount() == 0
+
+    playlist_selector.setProperty("currentIndex", 0)
+    app.processEvents()
+    assert playlist_selector.property("currentText") == "test-playlist"
+
+    load_button.clicked.emit()
+    app.processEvents()
+    assert backend.playlistModel.rowCount() == 1
+
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
 def test_qml_backend_wip_contexts(monkeypatch, tmp_path):
     monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
 

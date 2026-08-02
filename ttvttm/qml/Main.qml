@@ -49,6 +49,13 @@ ApplicationWindow {
     property int smallIconButtonHeight: 24
     property int smallIconSize: 24
 
+    function formatDuration(seconds) {
+        var total = Math.max(0, Math.round(seconds))
+        var minutes = Math.floor(total / 60)
+        var secs = total % 60
+        return minutes + ":" + (secs < 10 ? "0" + secs : secs)
+    }
+
     /* Theme object and shared UI colors */
     Theme {
         id: themeObject
@@ -169,43 +176,63 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            /* Live output status and session state */
-            RowLayout {
-                spacing: 8
+            Button {
+                id: liveSessionButton
+                objectName: "liveSessionButton"
+                flat: true
                 Layout.alignment: Qt.AlignVCenter
+                padding: 0
+                leftPadding: 0
+                rightPadding: 0
+                topPadding: 0
+                bottomPadding: 0
+                background: Rectangle {
+                    color: "transparent"
+                }
+                contentItem: RowLayout {
+                    spacing: 8
+                    anchors.fill: parent
+                    Layout.alignment: Qt.AlignVCenter
 
-                Image {
-                    source: "icons/speaker_group_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                    width: 18
-                    height: 18
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
+                    Image {
+                        source: "icons/speaker_group_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                        width: 18
+                        height: 18
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+                    Label {
+                        text: backendObject ? backendObject.liveOutputName() : "?"
+                        color: theme.menuText
+                        font.pixelSize: 12
+                    }
+                    Label {
+                        text: backendObject ? backendObject.liveVolume() + "%" : "80%"
+                        color: theme.menuText
+                        font.pixelSize: 12
+                    }
+                    Rectangle {
+                        width: 1
+                        height: 18
+                        color: theme.accent
+                    }
+                    Image {
+                        source: isLiveSession ? "icons/radio_button_checked_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/radio_button_unchecked_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                        width: 14
+                        height: 14
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    Label {
+                        text: "LIVE"
+                        color: theme.menuText
+                        font.pixelSize: 12
+                    }
                 }
-                Label {
-                    text: backendObject ? backendObject.liveOutputName() : "?"
-                    color: theme.menuText
-                    font.pixelSize: 12
-                }
-                Label {
-                    text: backendObject ? backendObject.liveVolume() + "%" : "80%"
-                    color: theme.menuText
-                    font.pixelSize: 12
-                }
-                Rectangle {
-                    width: 1
-                    height: 18
-                    color: theme.accent
-                }
-                Image {
-                    source: isLiveSession ? "icons/radio_button_checked_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/radio_button_unchecked_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                    width: 14
-                    height: 14
-                    fillMode: Image.PreserveAspectFit
-                }
-                Label {
-                    text: "LIVE"
-                    color: theme.menuText
-                    font.pixelSize: 12
+                onClicked: {
+                    if (backendObject) {
+                        backendObject.setLiveSession(!isLiveSession)
+                    }
+                    isLiveSession = !isLiveSession
                 }
             }
 
@@ -213,14 +240,18 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            Rectangle {
-                width: 250
-                height: 8
-                radius: 4
-                color: theme.accent
-                border.width: 1
-                border.color: theme.text
-                Layout.alignment: Qt.AlignVCenter
+            ProgressBar {
+                id: playbackProgressBar
+                objectName: "playbackProgressBar"
+                Layout.fillWidth: true
+                Layout.preferredHeight: 8
+                from: 0
+                to: 1
+                value: backendObject && backendObject.playbackDuration > 0 ? backendObject.playbackPosition / backendObject.playbackDuration : 0
+                background: Rectangle {
+                    color: theme.surface
+                    radius: 4
+                }
             }
 
             RowLayout {
@@ -229,6 +260,7 @@ ApplicationWindow {
 
                 Button {
                     id: prevButton
+                    objectName: "prevButton"
                     property alias iconSource: iconImagePrev.source
                     flat: true
                     width: smallIconButtonWidth
@@ -257,6 +289,7 @@ ApplicationWindow {
                 }
                 Button {
                     id: playPauseButton
+                    objectName: "playPauseButton"
                     property alias iconSource: iconImagePlayPause.source
                     flat: true
                     width: smallIconButtonWidth
@@ -293,6 +326,7 @@ ApplicationWindow {
                 }
                 Button {
                     id: nextButton
+                    objectName: "nextButton"
                     property alias iconSource: iconImageNext.source
                     flat: true
                     width: smallIconButtonWidth
@@ -318,6 +352,24 @@ ApplicationWindow {
                         source: nextButton.iconSource
                     }
                     iconSource: "icons/skip_next_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                }
+            }
+
+            RowLayout {
+                spacing: 8
+                Layout.alignment: Qt.AlignRight
+
+                Label {
+                    objectName: "playbackTimeElapsed"
+                    text: formatDuration(backendObject ? backendObject.playbackPosition : 0)
+                    color: theme.menuText
+                    font.pixelSize: 11
+                }
+                Label {
+                    objectName: "playbackTimeDuration"
+                    text: formatDuration(backendObject ? backendObject.playbackDuration : 0)
+                    color: theme.menuText
+                    font.pixelSize: 11
                 }
             }
         }
@@ -589,6 +641,7 @@ ApplicationWindow {
 
                         TextField {
                             id: saveNameField
+                            objectName: "saveNameField"
                             placeholderText: "Playlist name"
                             Layout.preferredWidth: 220
                             implicitHeight: 26
@@ -600,6 +653,58 @@ ApplicationWindow {
                             }
                             font.pixelSize: 10
                             color: theme.text
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32
+                        spacing: 8
+
+                        Button {
+                            id: playlistSaveButton
+                            objectName: "playlistSaveButton"
+                            text: "Save"
+                            flat: true
+                            enabled: saveNameField.text !== ""
+                            onClicked: {
+                                if (backendObject) {
+                                    backendObject.savePlaylist(saveNameField.text)
+                                    playlistSelector.model = backendObject.getSavedPlaylists()
+                                    if (playlistSelector.count > 0) {
+                                        playlistSelector.currentIndex = 0
+                                    }
+                                }
+                            }
+                        }
+
+                        ComboBox {
+                            id: playlistSelector
+                            objectName: "playlistSelector"
+                            Layout.fillWidth: true
+                            model: backendObject ? backendObject.getSavedPlaylists() : []
+                            currentIndex: -1
+                        }
+
+                        Button {
+                            id: playlistLoadButton
+                            objectName: "playlistLoadButton"
+                            text: "Load"
+                            flat: true
+                            enabled: playlistSelector.currentIndex >= 0
+                            onClicked: backendObject && backendObject.loadPlaylist(playlistSelector.currentText)
+                        }
+
+                        Button {
+                            id: playlistRefreshButton
+                            objectName: "playlistRefreshButton"
+                            text: "Refresh"
+                            flat: true
+                            onClicked: {
+                                if (backendObject) {
+                                    playlistSelector.model = backendObject.getSavedPlaylists()
+                                }
+                            }
                         }
                     }
 
@@ -1134,20 +1239,6 @@ ApplicationWindow {
                             }
                         }
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 0
-                            height: 0
-                            visible: false
-
-                            ComboBox {
-                                id: playlistSelector
-                                visible: false
-                                Layout.fillWidth: true
-                                model: backendObject ? backendObject.getSavedPlaylists() : []
-                                currentIndex: -1
-                            }
-                        }
                     }
                 }
             }
