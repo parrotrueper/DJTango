@@ -35,8 +35,8 @@ ApplicationWindow {
     property int selectedLibraryId: -1
     property int selectedPlaylistIndex: -1
     property int selectedPlaylistId: -1
-    property int trackInfoSectionHeight: 56
-    property int trackInfoSectionMinHeight: 40
+    property int trackInfoSectionHeight: 82
+    property int trackInfoSectionMinHeight: 82
     property int trackInfoSectionMaxHeight: Math.round(height * 0.35)
     property alias theme: themeObject
     property int libraryColWidthNumber: 32
@@ -49,11 +49,19 @@ ApplicationWindow {
     property int smallIconButtonHeight: 24
     property int smallIconSize: 24
 
-    function formatDuration(seconds) {
-        var total = Math.max(0, Math.round(seconds))
-        var minutes = Math.floor(total / 60)
-        var secs = total % 60
+    function formatDuration(timeValue) {
+        var totalSeconds = Math.max(0, Math.round(timeValue))
+        if (totalSeconds > 1000) {
+            totalSeconds = Math.round(timeValue / 1000)
+        }
+        var minutes = Math.floor(totalSeconds / 60)
+        var secs = totalSeconds % 60
         return minutes + ":" + (secs < 10 ? "0" + secs : secs)
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Q"
+        onActivated: Qt.quit()
     }
 
     /* Theme object and shared UI colors */
@@ -240,23 +248,10 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            ProgressBar {
-                id: playbackProgressBar
-                objectName: "playbackProgressBar"
-                Layout.fillWidth: true
-                Layout.preferredHeight: 8
-                from: 0
-                to: 1
-                value: backendObject && backendObject.playbackDuration > 0 ? backendObject.playbackPosition / backendObject.playbackDuration : 0
-                background: Rectangle {
-                    color: theme.surface
-                    radius: 4
-                }
-            }
-
             RowLayout {
-                spacing: 0
+                spacing: 6
                 Layout.alignment: Qt.AlignRight
+                Layout.rightMargin: 10
 
                 Button {
                     id: prevButton
@@ -353,12 +348,21 @@ ApplicationWindow {
                     }
                     iconSource: "icons/skip_next_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
                 }
-            }
-
-            RowLayout {
-                spacing: 8
-                Layout.alignment: Qt.AlignRight
-
+                ProgressBar {
+                    id: playbackProgressBar
+                    objectName: "playbackProgressBar"
+                    Layout.leftMargin: 20
+                    Layout.rightMargin: 0
+                    Layout.preferredWidth: parent ? parent.width * 0.5 : 270
+                    Layout.preferredHeight: 8
+                    from: 0
+                    to: 1
+                    value: backendObject && backendObject.playbackDuration > 0 ? backendObject.playbackPosition / backendObject.playbackDuration : 0
+                    background: Rectangle {
+                        color: theme.surface
+                        radius: 4
+                    }
+                }
                 Label {
                     objectName: "playbackTimeElapsed"
                     text: formatDuration(backendObject ? backendObject.playbackPosition : 0)
@@ -375,7 +379,7 @@ ApplicationWindow {
         }
     }
 
-    /* Main content area below the menu bar */
+    /* Track Now Playing Area */
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
@@ -386,7 +390,7 @@ ApplicationWindow {
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 12
-            spacing: 12
+            spacing: 2
 
             Rectangle {
                 clip: true
@@ -406,15 +410,6 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-
-                    Image {
-                        source: selectedTrackTitle === "" && !isPlaying ? "icons/music_off_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" : "icons/speaker_group_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                        width: 48
-                        height: 48
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                        Layout.alignment: Qt.AlignVCenter
-                    }
 
                     ColumnLayout {
                         spacing: 2
@@ -454,26 +449,26 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                height: 18
+                height: 8
                 radius: theme.cornerRadius
                 color: theme.surface
                 border.color: theme.borders
-                border.width: 1
+                border.width: 0
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 8
+                    anchors.margins: 2
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-
+                    /* blue drag for now playing resize */
                     Rectangle {
                         width: 80
-                        height: 4
+                        height: 2
                         color: theme.accent
                         radius: 2
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     }
                 }
-
+                /* drag to resize */
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.SizeVerCursor
@@ -560,32 +555,12 @@ ApplicationWindow {
                             onClicked: searchText = searchField.text
                         }
 
-                        Button {
-                            id: filterButton
-                            property alias iconSource: iconImageFilter.source
-                            flat: true
-                            Layout.preferredWidth: 36
+                        CheckBox {
+                            id: filterCheckbox
+                            objectName: "filterCheckbox"
                             Layout.preferredHeight: 28
-                            implicitWidth: 36
-                            implicitHeight: 28
-                            padding: 0
-                            leftPadding: 0
-                            rightPadding: 0
-                            topPadding: 0
-                            bottomPadding: 0
-                            contentItem: Image {
-                                id: iconImageFilter
-                                anchors.centerIn: parent
-                                width: 18
-                                height: 18
-                                fillMode: Image.PreserveAspectFit
-                                smooth: true
-                                source: filterButton.iconSource
-                            }
-                            checkable: true
                             checked: searchFiltersEnabled
-                            iconSource: "icons/search_gear_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                            onClicked: searchFiltersEnabled = !searchFiltersEnabled
+                            onCheckedChanged: searchFiltersEnabled = checked
                         }
 
                         ComboBox {
