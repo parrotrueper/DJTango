@@ -318,6 +318,45 @@ def test_qml_playback_time_labels_update(monkeypatch, tmp_path):
 
 
 @pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
+def test_library_panel_populates_with_backend_tracks(monkeypatch, tmp_path):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
+
+    try:
+        from ttvttm.quick_main import create_app
+    except ImportError as exc:
+        pytest.skip(f"Qt GUI cannot be imported in this environment: {exc}")
+
+    from PySide6.QtCore import QObject
+    from PySide6.QtTest import QTest
+
+    app, engine = create_app([])
+    root = engine.rootObjects()[0]
+    backend = engine.rootContext().contextProperty("backend")
+    assert backend is not None
+
+    # Create a dummy track in the test library so the UI has actual data to display.
+    dummy_dir = tmp_path / "music"
+    dummy_dir.mkdir(parents=True)
+    dummy_track = dummy_dir / "track.wav"
+    dummy_track.write_bytes(
+        b"RIFF$\x00\x00\x00WAVEfmt "
+        + b"\x10\x00\x00\x00\x01\x00\x01\x00\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
+    )
+
+    assert backend.addTrack(str(dummy_track))
+    app.processEvents()
+    QTest.qWait(100)
+    app.processEvents()
+
+    library_view = root.findChild(QObject, "libraryView")
+    assert library_view is not None, "Expected libraryView to exist in QML"
+    assert library_view.property("count") > 0, "Expected library list to contain tracks"
+
+    app.quit()
+
+
+@pytest.mark.skipif(not is_pyside_available(), reason="PySide6 is required for Qt Quick tests")
 def test_qml_playlist_save_and_load_workflow(monkeypatch, tmp_path):
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     monkeypatch.setenv("DJ_HOME_PATH", str(tmp_path / "ttvttm_home"))
