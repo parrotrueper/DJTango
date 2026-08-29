@@ -58,6 +58,10 @@ ComboBox {
                     elide: Text.ElideRight
                     wrapMode: Text.NoWrap
                 }
+                onClicked: {
+                    comboBox.currentIndex = index
+                    comboBox.popup.close()
+                }
             }
         }
         background: Rectangle {

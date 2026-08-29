@@ -1,5 +1,6 @@
 import glob
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 from PySide6.QtCore import (
@@ -170,6 +171,15 @@ class QmlBackend(QObject):
         self._playbackPosition = 0
         self._playbackDuration = 0
         self._wipContext = "Library"
+        
+        # Cache filter options to preserve them during searches
+        self._cached_artists = []
+        self._cached_albums = []
+        self._cached_genres = []
+        
+        # Cache full library tracks for search operations
+        self._cached_library_tracks = []
+        
         self.loadLibrary()
 
     def _load_track_type_names(self):
@@ -196,6 +206,59 @@ class QmlBackend(QObject):
             "duration": float(track.duration or 0),
             "path": track.path or "",
         }
+
+    def _sanitize_metadata(self, value: str) -> str:
+        """
+        Clean up metadata values by removing track numbers and normalizing separators.
+        
+        Handles patterns like:
+        - '12=Dante=Martel' -> 'Dante Martel'
+        - '05 Bruce Springsteen' -> 'Bruce Springsteen'
+        - '22Ficha de oro' -> 'Ficha de oro'
+        - '13 Con los amigos' -> 'Con los amigos'
+        """
+        if not value or not isinstance(value, str):
+            return value
+        
+        # Remove leading numbers followed by space, equals sign, or directly to letters
+        # Matches: digits followed by space/equals/or word boundary
+        cleaned = re.sub(r'^\d+[=\s]*', '', value)
+        
+        # Replace equals signs with spaces (for formats like "LastName=FirstName")
+        cleaned = cleaned.replace('=', ' ')
+        
+        # Normalize multiple spaces
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        
+        return cleaned
+
+    def _cache_filter_options(self) -> None:
+        """Cache filter options and full library tracks to preserve them during searches"""
+        # Get all tracks from the current library (before any search filters)
+        all_tracks = self._libraryModel.asList()
+        
+        # Cache the full library tracks for search operations
+        self._cached_library_tracks = list(all_tracks)
+        
+        # Extract unique artists (with sanitization to remove track numbers)
+        artists = {self._sanitize_metadata(track.get("artist", "").strip() or "Unknown") for track in all_tracks}
+        self._cached_artists = [artist for artist in sorted(artists) if artist is not None]
+        
+        # Extract unique albums (with sanitization)
+        albums = {self._sanitize_metadata(track.get("album", "").strip() or "Unknown") for track in all_tracks}
+        self._cached_albums = [album for album in sorted(albums) if album is not None]
+        
+        # Extract unique genres (with sanitization)
+        genres = {self._sanitize_metadata(track.get("genre", "").strip() or "Unknown") for track in all_tracks}
+        self._cached_genres = [genre for genre in sorted(genres) if genre is not None]
+        
+        # Extract unique albums
+        albums = {track.get("album", "").strip() or "Unknown" for track in all_tracks}
+        self._cached_albums = [album for album in sorted(albums) if album is not None]
+        
+        # Extract unique genres
+        genres = {track.get("genre", "").strip() or "Unknown" for track in all_tracks}
+        self._cached_genres = [genre for genre in sorted(genres) if genre is not None]
 
     def _ensure_player(self):
         if self._player is not None:
@@ -268,6 +331,10 @@ class QmlBackend(QObject):
 
         self.track_type_names = self._load_track_type_names()
         self._libraryModel.setTracks([self._track_to_dict(track) for track in tracks])
+        
+        # Cache filter options from full library before any search filters
+        self._cache_filter_options()
+        
         self.libraryChanged.emit()
         return TypeValidator.validate_bool(True, "loadLibrary")
 
@@ -458,20 +525,18 @@ class QmlBackend(QObject):
 
     @pyqtSlot(result="QVariantList")
     def getLibraryArtists(self) -> List[str]:
-        artists = {track.get("artist", "").strip() or "Unknown" for track in self._libraryModel.asList()}
-        result = [artist for artist in sorted(artists) if artist is not None]
-        return TypeValidator.validate_string_list(result, "getLibraryArtists")
+        # Return cached artists from full library, not the currently filtered library
+        return TypeValidator.validate_string_list(self._cached_artists, "getLibraryArtists")
 
     @pyqtSlot(result="QVariantList")
     def getLibraryAlbums(self) -> List[str]:
-        albums = {track.get("album", "").strip() or "Unknown" for track in self._libraryModel.asList()}
-        result = [album for album in sorted(albums) if album is not None]
-        return TypeValidator.validate_string_list(result, "getLibraryAlbums")
+        # Return cached albums from full library, not the currently filtered library
+        return TypeValidator.validate_string_list(self._cached_albums, "getLibraryAlbums")
 
     @pyqtSlot(result="QVariantList")
-    def getLibraryGenres(self):
-        genres = {track.get("genre", "").strip() or "Unknown" for track in self._libraryModel.asList()}
-        return [genre for genre in sorted(genres) if genre is not None]
+    def getLibraryGenres(self) -> List[str]:
+        # Return cached genres from full library, not the currently filtered library
+        return TypeValidator.validate_string_list(self._cached_genres, "getLibraryGenres")
 
     @pyqtSlot(result="QVariantList")
     def getWipContexts(self) -> List[str]:
@@ -519,3 +584,73 @@ class QmlBackend(QObject):
     @pyqtSlot(result=int)
     def liveVolume(self) -> int:
         return TypeValidator.validate_int(100, "liveVolume")
+
+    @pyqtSlot(str, str, str, str, str)
+    def performSearch(self, search_text: str, artist_filter: str, album_filter: str, 
+                      genre_filter: str, scope: str) -> None:
+        """
+        Perform search and update the library model with filtered results.
+        
+        Args:
+            search_text: Text to search across all fields (title, artist, album, genre, path)
+            artist_filter: Filter by artist (use "All artists" for no filter)
+            album_filter: Filter by album (use "All albums" for no filter)
+            genre_filter: Filter by genre (use "All genres" for no filter)
+            scope: Search scope (Library, Playlists, Library 2, etc.)
+        """
+        try:
+            # Get all tracks from the appropriate scope
+            # For Library scope, use cached tracks so searches work correctly even after filtering
+            if scope == "Playlists":
+                all_tracks = self._playlistModel.asList()
+            else:
+                # Use cached library tracks instead of current model to allow multiple sequential searches
+                all_tracks = self._cached_library_tracks
+            
+            filtered_tracks = all_tracks
+            
+            # Apply text search filter
+            if search_text.strip():
+                search_lower = search_text.lower()
+                filtered_tracks = [
+                    track for track in filtered_tracks
+                    if any(search_lower in str(track.get(field, "")).lower() 
+                           for field in ["title", "artist", "album", "genre", "path"])
+                ]
+            
+            # Apply artist filter
+            if artist_filter and artist_filter != "All artists":
+                filtered_tracks = [
+                    track for track in filtered_tracks
+                    if track.get("artist", "").strip() == artist_filter
+                ]
+            
+            # Apply album filter
+            if album_filter and album_filter != "All albums":
+                filtered_tracks = [
+                    track for track in filtered_tracks
+                    if track.get("album", "").strip() == album_filter
+                ]
+            
+            # Apply genre filter
+            if genre_filter and genre_filter != "All genres":
+                filtered_tracks = [
+                    track for track in filtered_tracks
+                    if track.get("genre", "").strip() == genre_filter
+                ]
+            
+            # Update the appropriate model with filtered results
+            if scope == "Playlists":
+                self._playlistModel.setTracks(filtered_tracks)
+                self.playlistChanged.emit()
+            else:
+                self._libraryModel.setTracks(filtered_tracks)
+                self.libraryChanged.emit()
+                
+        except Exception as e:
+            print(f"Error during search: {e}")
+            # On error, show all tracks
+            if scope == "Playlists":
+                self.playlistChanged.emit()
+            else:
+                self.libraryChanged.emit()

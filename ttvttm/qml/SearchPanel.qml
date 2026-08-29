@@ -34,6 +34,18 @@ Rectangle {
     property alias playlistLoadButton: playlistLoadButton
     property alias playlistRefreshButton: playlistRefreshButton
 
+    function performSearch() {
+        if (backendObject) {
+            backendObject.performSearch(
+                searchText,
+                selectedArtistFilter,
+                selectedAlbumFilter,
+                selectedGenreFilter,
+                searchScope
+            )
+        }
+    }
+
     function updateFilterOptions() {
         if (!backendObject) {
             return
@@ -96,6 +108,8 @@ Rectangle {
                     placeholderText: "Search library by title, artist, album, genre, path..."
                     text: searchText
                     onTextChanged: searchText = text
+                    Keys.onReturnPressed: performSearch()
+                    Keys.onEnterPressed: performSearch()
                     background: Rectangle {
                         color: "#0E3A61"
                         radius: theme.cornerRadius
@@ -129,7 +143,7 @@ Rectangle {
                         source: searchButton.iconSource
                     }
                     iconSource: "icons/search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
-                    onClicked: searchText = searchField.text
+                    onClicked: performSearch()
                 }
 
                 CheckBox {
@@ -151,7 +165,10 @@ Rectangle {
                     model: searchArtistOptions
                     currentIndex: Math.max(0, searchArtistOptions.indexOf(selectedArtistFilter))
                     enabled: searchFiltersEnabled
-                    onCurrentTextChanged: selectedArtistFilter = currentText
+                    onCurrentTextChanged: {
+                        selectedArtistFilter = currentText
+                        performSearch()
+                    }
                 }
 
                 FilterComboBox {
@@ -165,7 +182,10 @@ Rectangle {
                     model: searchAlbumOptions
                     currentIndex: Math.max(0, searchAlbumOptions.indexOf(selectedAlbumFilter))
                     enabled: searchFiltersEnabled
-                    onCurrentTextChanged: selectedAlbumFilter = currentText
+                    onCurrentTextChanged: {
+                        selectedAlbumFilter = currentText
+                        performSearch()
+                    }
                 }
 
                 FilterComboBox {
@@ -179,7 +199,10 @@ Rectangle {
                     model: searchGenreOptions
                     currentIndex: Math.max(0, searchGenreOptions.indexOf(selectedGenreFilter))
                     enabled: searchFiltersEnabled
-                    onCurrentTextChanged: selectedGenreFilter = currentText
+                    onCurrentTextChanged: {
+                        selectedGenreFilter = currentText
+                        performSearch()
+                    }
                 }
 
                 FilterComboBox {
@@ -192,7 +215,10 @@ Rectangle {
                     boxHeight: 24
                     model: searchScopeOptions
                     currentIndex: Math.max(0, searchScopeOptions.indexOf(searchScope))
-                    onCurrentTextChanged: searchScope = currentText
+                    onCurrentTextChanged: {
+                        searchScope = currentText
+                        performSearch()
+                    }
                 }
 
                 Item {
