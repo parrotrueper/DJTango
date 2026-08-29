@@ -31,8 +31,8 @@ Item {
 
     Connections {
         target: backendObject
-        onPlaybackPositionChanged: playbackPosition = backendObject.playbackPosition
-        onPlaybackDurationChanged: playbackDuration = backendObject.playbackDuration
+        function onPlaybackPositionChanged() { playbackPosition = backendObject.playbackPosition }
+        function onPlaybackDurationChanged() { playbackDuration = backendObject.playbackDuration }
     }
 
     function formatDuration(timeValue) {

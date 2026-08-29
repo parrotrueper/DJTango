@@ -1,5 +1,6 @@
 import glob
 import os
+from typing import Any, Dict, List, Optional
 
 from PySide6.QtCore import (
     Property,
@@ -18,6 +19,41 @@ from ttvttm.data import djDataConnection
 from ttvttm.tracksong import TrackSong
 
 QT_USER_ROLE = getattr(Qt, "UserRole", 256)
+
+
+class TypeValidator:
+    """Validates return types for QML backend methods"""
+    
+    @staticmethod
+    def validate_bool(value: Any, method_name: str) -> bool:
+        """Validate boolean return value"""
+        if not isinstance(value, bool):
+            raise TypeError(f"{method_name} returned {type(value).__name__}, expected bool")
+        return value
+    
+    @staticmethod
+    def validate_int(value: Any, method_name: str) -> int:
+        """Validate integer return value"""
+        if not isinstance(value, int) or isinstance(value, bool):
+            raise TypeError(f"{method_name} returned {type(value).__name__}, expected int")
+        return value
+    
+    @staticmethod
+    def validate_str(value: Any, method_name: str) -> str:
+        """Validate string return value"""
+        if not isinstance(value, str):
+            raise TypeError(f"{method_name} returned {type(value).__name__}, expected str")
+        return value
+    
+    @staticmethod
+    def validate_string_list(value: Any, method_name: str) -> List[str]:
+        """Validate list of strings return value"""
+        if not isinstance(value, list):
+            raise TypeError(f"{method_name} returned {type(value).__name__}, expected list")
+        for i, item in enumerate(value):
+            if not isinstance(item, str):
+                raise TypeError(f"{method_name}[{i}] is {type(item).__name__}, expected str")
+        return value
 
 class TrackListModel(QAbstractListModel):
     TrackIdRole = QT_USER_ROLE + 1
@@ -223,7 +259,7 @@ class QmlBackend(QObject):
         return True
 
     @pyqtSlot(result=bool)
-    def loadLibrary(self):
+    def loadLibrary(self) -> bool:
         try:
             tracks = self.djData.getAllTracks()
         except Exception:
@@ -233,12 +269,12 @@ class QmlBackend(QObject):
         self.track_type_names = self._load_track_type_names()
         self._libraryModel.setTracks([self._track_to_dict(track) for track in tracks])
         self.libraryChanged.emit()
-        return True
+        return TypeValidator.validate_bool(True, "loadLibrary")
 
     @pyqtSlot(str, result=bool)
-    def addTrack(self, path):
+    def addTrack(self, path: str) -> bool:
         if not os.path.isfile(path):
-            return False
+            return TypeValidator.validate_bool(False, "addTrack")
 
         track = TrackSong(path, 0, True)
         inserted_id = self.djData.insertTrack(track)
@@ -246,13 +282,13 @@ class QmlBackend(QObject):
             track.ID = inserted_id
             self._libraryModel.addTrack(self._track_to_dict(track))
             self.libraryChanged.emit()
-            return True
+            return TypeValidator.validate_bool(True, "addTrack")
 
         self.loadLibrary()
         return False
 
     @pyqtSlot(int, result=bool)
-    def addTrackToPlaylist(self, track_id):
+    def addTrackToPlaylist(self, track_id: int) -> bool:
         try:
             library_ids = [int(track.get("id", 0)) for track in self._libraryModel.asList()]
             print(f"addTrackToPlaylist called track_id={track_id}, library_ids={library_ids[:10]}, playlist_count_before={self._playlistModel.rowCount()}")
@@ -268,7 +304,7 @@ class QmlBackend(QObject):
         return False
 
     @pyqtSlot(int, result=bool)
-    def playPlaylistTrack(self, track_id):
+    def playPlaylistTrack(self, track_id: int) -> bool:
         if track_id is None or track_id < 0:
             print(f"playPlaylistTrack invalid track_id={track_id}")
             return False
@@ -295,32 +331,32 @@ class QmlBackend(QObject):
         return False
 
     @pyqtSlot(int, result=bool)
-    def removeTrackFromPlaylist(self, row):
+    def removeTrackFromPlaylist(self, row: int) -> bool:
         if self._playlistModel.removeTrack(row):
             self.playlistChanged.emit()
-            return True
-        return False
+            return TypeValidator.validate_bool(True, "removeTrackFromPlaylist")
+        return TypeValidator.validate_bool(False, "removeTrackFromPlaylist")
 
     @pyqtSlot(str, result=bool)
-    def savePlaylist(self, name):
+    def savePlaylist(self, name: str) -> bool:
         if not name:
-            return False
+            return TypeValidator.validate_bool(False, "savePlaylist")
         track_ids = [int(track.get("id", 0)) for track in self._playlistModel.asList() if track.get("id")]
         if not track_ids:
-            return False
+            return TypeValidator.validate_bool(False, "savePlaylist")
         self.djData.saveMilonga(name, track_ids)
-        return True
+        return TypeValidator.validate_bool(True, "savePlaylist")
 
     @pyqtSlot(str, result=bool)
-    def loadPlaylist(self, name):
+    def loadPlaylist(self, name: str) -> bool:
         if not name:
-            return False
+            return TypeValidator.validate_bool(False, "loadPlaylist")
         tracks = self.djData.getTrackFromMilonga(name)
         if not tracks:
-            return False
+            return TypeValidator.validate_bool(False, "loadPlaylist")
         self._playlistModel.setTracks([self._track_to_dict(track) for track in tracks])
         self.playlistChanged.emit()
-        return True
+        return TypeValidator.validate_bool(True, "loadPlaylist")
 
     @pyqtSlot(result=bool)
     def play(self):
@@ -403,31 +439,34 @@ class QmlBackend(QObject):
             return False
 
     @pyqtSlot(result="QVariantList")
-    def getSavedPlaylists(self):
-        return self.djData.getListOfMilongas()
+    def getSavedPlaylists(self) -> List[str]:
+        result = self.djData.getListOfMilongas()
+        return TypeValidator.validate_string_list(result, "getSavedPlaylists")
 
     @pyqtSlot(str, result="QVariantList")
-    def getM3u8Playlists(self, playlist_directory):
+    def getM3u8Playlists(self, playlist_directory: str) -> List[str]:
         if not playlist_directory:
-            return []
+            return TypeValidator.validate_string_list([], "getM3u8Playlists")
         try:
             if not os.path.isdir(playlist_directory):
-                return []
+                return TypeValidator.validate_string_list([], "getM3u8Playlists")
             pattern = os.path.join(playlist_directory, "*.m3u8")
             playlist_files = [os.path.basename(path) for path in glob.glob(pattern)]
-            return sorted(playlist_files)
+            return TypeValidator.validate_string_list(sorted(playlist_files), "getM3u8Playlists")
         except Exception:
-            return []
+            return TypeValidator.validate_string_list([], "getM3u8Playlists")
 
     @pyqtSlot(result="QVariantList")
-    def getLibraryArtists(self):
+    def getLibraryArtists(self) -> List[str]:
         artists = {track.get("artist", "").strip() or "Unknown" for track in self._libraryModel.asList()}
-        return [artist for artist in sorted(artists) if artist is not None]
+        result = [artist for artist in sorted(artists) if artist is not None]
+        return TypeValidator.validate_string_list(result, "getLibraryArtists")
 
     @pyqtSlot(result="QVariantList")
-    def getLibraryAlbums(self):
+    def getLibraryAlbums(self) -> List[str]:
         albums = {track.get("album", "").strip() or "Unknown" for track in self._libraryModel.asList()}
-        return [album for album in sorted(albums) if album is not None]
+        result = [album for album in sorted(albums) if album is not None]
+        return TypeValidator.validate_string_list(result, "getLibraryAlbums")
 
     @pyqtSlot(result="QVariantList")
     def getLibraryGenres(self):
@@ -435,47 +474,48 @@ class QmlBackend(QObject):
         return [genre for genre in sorted(genres) if genre is not None]
 
     @pyqtSlot(result="QVariantList")
-    def getWipContexts(self):
-        return ["Library", "Library 2", "Last playlist"]
+    def getWipContexts(self) -> List[str]:
+        result = ["Library", "Library 2", "Last playlist"]
+        return TypeValidator.validate_string_list(result, "getWipContexts")
 
     @pyqtSlot(str, result=bool)
-    def selectWipContext(self, context):
+    def selectWipContext(self, context: str) -> bool:
         if context not in self.getWipContexts():
-            return False
+            return TypeValidator.validate_bool(False, "selectWipContext")
         self._wipContext = context
-        return True
+        return TypeValidator.validate_bool(True, "selectWipContext")
 
     @pyqtSlot(result=str)
-    def currentWipContext(self):
-        return self._wipContext
+    def currentWipContext(self) -> str:
+        return TypeValidator.validate_str(self._wipContext, "currentWipContext")
 
     @pyqtSlot(bool, result=bool)
-    def setLiveSession(self, enabled):
+    def setLiveSession(self, enabled: bool) -> bool:
         self._isLiveSession = bool(enabled)
-        return True
+        return TypeValidator.validate_bool(True, "setLiveSession")
 
     @pyqtSlot(result=int)
-    def playlistTotalDuration(self):
+    def playlistTotalDuration(self) -> int:
         total = 0
         for track in self._playlistModel.asList():
             try:
                 total += int(round(float(track.get("duration", 0))))
             except Exception:
                 continue
-        return total
+        return TypeValidator.validate_int(total, "playlistTotalDuration")
 
     @pyqtSlot(result=str)
-    def appTitle(self):
-        return "ttvttm"
+    def appTitle(self) -> str:
+        return TypeValidator.validate_str("ttvttm", "appTitle")
 
     @pyqtSlot(result=str)
-    def appVersion(self):
-        return "0.1.0"
+    def appVersion(self) -> str:
+        return TypeValidator.validate_str("0.1.0", "appVersion")
 
     @pyqtSlot(result=str)
-    def liveOutputName(self):
-        return "Default"
+    def liveOutputName(self) -> str:
+        return TypeValidator.validate_str("Default", "liveOutputName")
 
     @pyqtSlot(result=int)
-    def liveVolume(self):
-        return 100
+    def liveVolume(self) -> int:
+        return TypeValidator.validate_int(100, "liveVolume")
