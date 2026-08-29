@@ -440,7 +440,7 @@ class djDataConnection:
         conn.commit()
         conn.close()
 
-    def updateProperties(self, durationFadOut, fadoutTime, writeTagBox, normalize, TYPE):
+    def updateProperties(self, durationFadOut, fadeOutTime, writeTagBox, normalize, TYPE):
         conn = sqlite3.connect(self.path)
         cursor = conn.cursor()
 
@@ -450,7 +450,7 @@ class djDataConnection:
 		writeID3tag = ?,
 		normalize = ? """
 
-        cursor.execute(sql, (fadoutTime / 1000, durationFadOut / 1000, writeTagBox, normalize))
+        cursor.execute(sql, (fadeOutTime / 1000, durationFadOut / 1000, writeTagBox, normalize))
 
         conn.commit()
         conn.close()
@@ -526,7 +526,7 @@ class djDataConnection:
         for row in rows:
             ret["path"] = row[0]
             ret["cortinaDuration"] = row[1]
-            ret["fadoutTime"] = row[2]
+            ret["fadeOutTime"] = row[2]
             ret["writeTag"] = row[3]
             ret["normalize"] = row[4]
 

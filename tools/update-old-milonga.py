@@ -12,9 +12,9 @@ if len(sys.argv) < 3:
 	print ("USAGE: "+sys.argv[0]+ "source-database destination-database")
 
 
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
-djDataSource = djDataConnection(djhome, sys.argv[1])
-djDataDest = djDataConnection(djhome, sys.argv[2])
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djDataSource = djDataConnection(djHome, sys.argv[1])
+djDataDest = djDataConnection(djHome, sys.argv[2])
 print (len(djDataDest.getAllTracks()))
 
 milongas = djDataSource.getListOfMilongas()

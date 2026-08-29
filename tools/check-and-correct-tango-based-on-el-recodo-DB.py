@@ -15,8 +15,8 @@ from colors import *
 from ttvttm.data import djDataConnection
 
 #listOfTango = []
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
-djData = djDataConnection(djhome)
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djData = djDataConnection(djHome)
 TYPE = djData.getTrackTypeList()
 
 def remove_accents(input_str):

@@ -14,6 +14,7 @@ COPY --from=docker.io/astral/uv:latest /uv /uvx /bin/
 COPY ci/docker-bashrc /etc/bash.bashrc
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
+    ca-certificates \
     curl \
     dbus-x11 \
     gcc \
@@ -33,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-shm0 \
     libpulse0 \
     libasound2 \
-    libdbus-1-3 \
+    libdbus-1-3 \ca-certificates \
     libxkbcommon0 \
     libxkbcommon-x11-0 \
     libxcb-xinerama0 \
@@ -53,9 +54,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gstreamer1.0-libav \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-bad \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd --gid "$USER_GID" "$USERNAME" 2>/dev/null || true \
-    && useradd -m -u "$USER_UID" -g "$USER_GID" -s /bin/bash "$USERNAME"
+    && rm -rf /var/lib/apt/lists/* 
+RUN  DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash \
+    # Add a new user with specified UID and GID
+    && groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} --shell /bin/bash ${USERNAME}
 
 RUN mkdir -p /workspace && chown "$USER_UID":"$USER_GID" /workspace
 

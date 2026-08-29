@@ -14,7 +14,7 @@ class PreferencesMixin:
         self.prefContent.setupUi(self.prefWindow)
         self.prefContent.lineEditSongDir.setText(self.audioPath)
         self.prefContent.spinBoxFadeOut.setValue(int(self.durationFadOut / 1000))
-        self.prefContent.spinBoxCortinaDuration.setValue(int(self.FadOutTime / 1000))
+        self.prefContent.spinBoxCortinaDuration.setValue(int(self.FadeOutTime / 1000))
         self.prefContent.checkBoxWriteTags.setCheckState(Qt.Checked if self.writeTag else Qt.Unchecked)
         self.prefContent.checkBoxNormalize.setCheckState(Qt.Checked if self.normalize else Qt.Unchecked)
 
@@ -34,14 +34,14 @@ class PreferencesMixin:
         sys.stdout.write(str(self.prefWindow.result()))
         self._tangoList.songpath = self.prefContent.lineEditSongDir.text()
         self.durationFadOut = self.prefContent.spinBoxFadeOut.value() * 1000
-        self.FadOutTime = self.prefContent.spinBoxCortinaDuration.value() * 1000
+        self.FadeOutTime = self.prefContent.spinBoxCortinaDuration.value() * 1000
         self.stepFadOut = self.durationFadOut / (
             self.player.notifyInterval() if hasattr(self.player, "notifyInterval") else 100
         )
         self.writeTag = self.prefContent.checkBoxWriteTags.checkState()
         self.normalize = self.prefContent.checkBoxNormalize.checkState()
 
-        self.djData.updateProperties(self.durationFadOut, self.FadOutTime, self.writeTag, self.normalize, self.TYPE)
+        self.djData.updateProperties(self.durationFadOut, self.FadeOutTime, self.writeTag, self.normalize, self.TYPE)
         if self.destModel.rowCount(QModelIndex()) > 1:
             self.updateMilongaInfos()
 

@@ -6,8 +6,8 @@ import os
 from ttvttm.data import djDataConnection
 from ttvttm.dirsong import dirSong
 
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
-djData = djDataConnection(djhome)
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djData = djDataConnection(djHome)
 
 trackList = dirSong("/home/hoonakker/media/track-propres-HQ", False)
 trackList.loadTangos(djData.getAllTracks())

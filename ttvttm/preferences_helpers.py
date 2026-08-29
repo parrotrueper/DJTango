@@ -25,4 +25,4 @@ class PreferencesHelperMixin:
         if self._dialog.checkBoxLetCortinaUntilEnd.isChecked:
             self.bar.setRange(0, self.duration * 1000)
         else:
-            self.bar.setRange(0, self.FadOutTime)
+            self.bar.setRange(0, self.FadeOutTime)

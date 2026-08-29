@@ -229,12 +229,12 @@ class AudioPlaybackMixin:
             if progress >= self.curTango.tend:
                 self.player.stop()
         elif self.curTango.type == 4 and not self._dialog.checkBoxLetCortinaUntilEnd.isChecked():
-            self.bar.setRange(0, self.FadOutTime)
-            self.bar.setValue(self.FadOutTime - progress)
-            if (self.FadOutTime - self.durationFadOut) <= progress:
+            self.bar.setRange(0, self.FadeOutTime)
+            self.bar.setValue(self.FadeOutTime - progress)
+            if (self.FadeOutTime - self.durationFadOut) <= progress:
                 if self.player.volume() > 1:
                     self.player.setVolume(self.player.volume() - 100 / self.stepFadOut)
-                if self.player.volume() <= 1 and progress >= self.FadOutTime:
+                if self.player.volume() <= 1 and progress >= self.FadeOutTime:
                     self.volumeSetToInitial = False
                     self.player.stop()
                     self.player.setVolume(100)

@@ -28,9 +28,9 @@ def clear():
     print()
 
 
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
-data = djDataConnection(djhome)
+data = djDataConnection(djHome)
 tracks = data.getAllTracks()
 sizeBackSpace = 1000
 

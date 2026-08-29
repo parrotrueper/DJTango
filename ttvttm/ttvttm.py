@@ -128,7 +128,7 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self._connect()
 
         # Create the shortcuts
-        self._createShorcuts()
+        self._createShortcuts()
 
         # launch the worker thread only when directory scanning is enabled
         self._start_library_scanner()
@@ -149,13 +149,13 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         self.tapTable = []
         self.info_thread = InfoThreading()
         self.mediaSource = None
-        self.djhome = os.environ.get("DJ_HOME_PATH", os.path.join(os.path.expanduser("~"), ".ttvttm"))
-        print("DJ_HOME_PATH: " + self.djhome)
+        self.djHome = os.environ.get("DJ_HOME_PATH", os.path.join(os.path.expanduser("~"), ".ttvttm"))
+        print("DJ_HOME_PATH: " + self.djHome)
         self.addedEffects = {}
         self.effectsDict = {}
         self.curTango = None
         self.curLibraryRow = 0
-        self.djData = djDataConnection(self.djhome)
+        self.djData = djDataConnection(self.djHome)
         self.disableDirScan = os.environ.get("TTVTTM_DISABLE_DIR_SCAN", "0") == "1" or os.environ.get("QT_QPA_PLATFORM") == "offscreen"
         self.curTangoEditingIndexes = []
         self.curTangoEditing = 0  # an index for the current track edited in properties window
@@ -182,8 +182,8 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
     def _configure_audio_preferences(self):
         prop = self.djData.getPreferences()
         self.audioPath = prop["path"]
-        self.durationFadOut = prop["fadoutTime"] * 1000  # in ms
-        self.FadOutTime = prop["cortinaDuration"] * 1000  # in ms, to get form the database
+        self.durationFadOut = prop["fadeOutTime"] * 1000  # in ms
+        self.FadeOutTime = prop["cortinaDuration"] * 1000  # in ms, to get form the database
         self.writeTag = prop["writeTag"]
         self.normalize = prop["normalize"]
         self.stepFadOut = self.durationFadOut / (self.player.notifyInterval() if hasattr(self.player, "notifyInterval") else 100)
@@ -248,7 +248,7 @@ class AudioPlayerDialog(AudioPlaybackMixin, SelectionHandlerMixin, LibraryManage
         if self.disableDirScan:
             return self._build_dummy_progress_dialog()
 
-        progressBar = QProgressDialog("Scanning dir and analyzing the tracks...", "Abort", 0, 100, self)
+        progressBar = QProgressDialog("Scanning dir and analysing the tracks...", "Abort", 0, 100, self)
         progressBar.setWindowTitle("Importing tracks into the database and setting tags")
         progressBar.setWindowModality(Qt.WindowModal)
         progressBar.setStyleSheet(progress_dialog_style())

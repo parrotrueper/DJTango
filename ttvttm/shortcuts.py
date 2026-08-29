@@ -3,7 +3,7 @@ from PySide6.QtGui import QShortcut, Qt
 
 
 class ShortcutsMixin:
-    def _createShorcuts(self):
+    def _createShortcuts(self):
         playSourceOnEnter = QShortcut(self._dialog.milongaSource)
         playSourceOnEnter.setContext(Qt.WidgetShortcut)
         playSourceOnEnter.setKey(QtCore.Qt.Key_Return)

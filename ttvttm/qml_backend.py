@@ -118,8 +118,8 @@ class QmlBackend(QObject):
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
-        self.djhome = os.environ.get("DJ_HOME_PATH", os.path.join(os.path.expanduser("~"), ".ttvttm"))
-        self.djData = djDataConnection(self.djhome)
+        self.djHome = os.environ.get("DJ_HOME_PATH", os.path.join(os.path.expanduser("~"), ".ttvttm"))
+        self.djData = djDataConnection(self.djHome)
         if not os.path.exists(self.djData.path):
             self.djData.createDatabase()
 
@@ -418,6 +418,21 @@ class QmlBackend(QObject):
             return sorted(playlist_files)
         except Exception:
             return []
+
+    @pyqtSlot(result="QVariantList")
+    def getLibraryArtists(self):
+        artists = {track.get("artist", "").strip() or "Unknown" for track in self._libraryModel.asList()}
+        return [artist for artist in sorted(artists) if artist is not None]
+
+    @pyqtSlot(result="QVariantList")
+    def getLibraryAlbums(self):
+        albums = {track.get("album", "").strip() or "Unknown" for track in self._libraryModel.asList()}
+        return [album for album in sorted(albums) if album is not None]
+
+    @pyqtSlot(result="QVariantList")
+    def getLibraryGenres(self):
+        genres = {track.get("genre", "").strip() or "Unknown" for track in self._libraryModel.asList()}
+        return [genre for genre in sorted(genres) if genre is not None]
 
     @pyqtSlot(result="QVariantList")
     def getWipContexts(self):

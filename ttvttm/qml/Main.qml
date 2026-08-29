@@ -18,10 +18,6 @@ ApplicationWindow {
     property string selectedArtistFilter: "All artists"
     property string selectedAlbumFilter: "All albums"
     property string selectedGenreFilter: "All genres"
-    property var searchArtistOptions: ["All artists", "All artists"]
-    property var searchAlbumOptions: ["All albums", "All albums"]
-    property var searchGenreOptions: ["All genres", "All genres"]
-    property var searchScopeOptions: ["Library", "Playlists", "Library 2", "Live", "WIP"]
     property bool isPlaying: false
     property bool isLiveSession: false
     property string viewMode: "both"
@@ -77,6 +73,11 @@ ApplicationWindow {
         function onPlaylistChanged() {
             // playlist change notifications are handled by the model bindings
         }
+        function onLibraryChanged() {
+            if (backendObject) {
+                searchPanel.updateFilterOptions()
+            }
+        }
     }
 
     TopBar {
@@ -104,6 +105,7 @@ ApplicationWindow {
 
         NowPlayingPanel {
             id: nowPlayingPanel
+            objectName: "nowPlayingPanel"
             theme: themeObject
             isPlaying: isPlaying
             selectedTrackTitle: selectedTrackTitle
@@ -116,6 +118,10 @@ ApplicationWindow {
 
         SearchPanel {
             id: searchPanel
+            objectName: "searchPanel"
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: implicitHeight
             backendObject: appWindow.backendObject
             theme: themeObject
             searchText: searchText
@@ -124,13 +130,6 @@ ApplicationWindow {
             selectedAlbumFilter: selectedAlbumFilter
             selectedGenreFilter: selectedGenreFilter
             searchScope: searchScope
-            searchArtistOptions: searchArtistOptions
-            searchAlbumOptions: searchAlbumOptions
-            searchGenreOptions: searchGenreOptions
-            searchScopeOptions: searchScopeOptions
-            playlistDirectory: playlistDirectory
-            m3u8Playlists: m3u8Playlists
-            selectedM3u8Playlist: selectedM3u8Playlist
         }
 
         RowLayout {
@@ -140,6 +139,9 @@ ApplicationWindow {
 
             LibraryPanel {
                 id: libraryPanel
+                objectName: "libraryPanel"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 backendObject: appWindow.backendObject
                 theme: themeObject
                 searchText: searchText
@@ -166,6 +168,9 @@ ApplicationWindow {
 
             PlaylistPanel {
                 id: playlistPanel
+                objectName: "playlistPanel"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 backendObject: appWindow.backendObject
                 theme: themeObject
                 viewModeLibraryOnly: viewMode === "library"

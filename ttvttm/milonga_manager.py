@@ -122,7 +122,7 @@ class MilongaManagerMixin:
                 totalDurWithCort += float(track.duration)
                 songnum += 1
             else:
-                totalDuration += self.FadOutTime
+                totalDuration += self.FadeOutTime
 
         if totalDurWithCort > 0:
             self.infoMilongaSentence = (

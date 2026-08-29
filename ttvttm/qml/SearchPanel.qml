@@ -5,7 +5,8 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: searchPanel
     Layout.fillWidth: true
-    Layout.preferredHeight: searchContent.implicitHeight + 4
+    Layout.preferredHeight: 42
+    implicitHeight: 42
     radius: theme ? theme.cornerRadius : 0
     color: "#0C2847"
     border.color: theme ? theme.borders : "#444444"
@@ -19,9 +20,9 @@ Rectangle {
     property string selectedAlbumFilter: "All albums"
     property string selectedGenreFilter: "All genres"
     property string searchScope: "Library"
-    property var searchArtistOptions: ["All artists", "All artists"]
-    property var searchAlbumOptions: ["All albums", "All albums"]
-    property var searchGenreOptions: ["All genres", "All genres"]
+    property var searchArtistOptions: ["All artists"]
+    property var searchAlbumOptions: ["All albums"]
+    property var searchGenreOptions: ["All genres"]
     property var searchScopeOptions: ["Library", "Playlists", "Library 2", "Live", "WIP"]
     property string playlistDirectory: ""
     property var m3u8Playlists: []
@@ -32,6 +33,30 @@ Rectangle {
     property alias playlistSelector: playlistSelector
     property alias playlistLoadButton: playlistLoadButton
     property alias playlistRefreshButton: playlistRefreshButton
+
+    function updateFilterOptions() {
+        if (!backendObject) {
+            return
+        }
+        searchArtistOptions = ["All artists"].concat(backendObject.getLibraryArtists())
+        searchAlbumOptions = ["All albums"].concat(backendObject.getLibraryAlbums())
+        searchGenreOptions = ["All genres"].concat(backendObject.getLibraryGenres())
+    }
+
+    Component.onCompleted: {
+        if (backendObject) {
+            updateFilterOptions()
+        }
+    }
+
+    onBackendObjectChanged: updateFilterOptions()
+
+    Connections {
+        target: backendObject
+        function onLibraryChanged() {
+            updateFilterOptions()
+        }
+    }
 
     function formatDuration(timeValue) {
         var totalSeconds = Math.max(0, Math.round(timeValue))
@@ -45,14 +70,16 @@ Rectangle {
 
     ColumnLayout {
         id: searchContent
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.margins: 2
         spacing: 6
 
         RowLayout {
             id: searchHeader
-            anchors.fill: parent
-            anchors.margins: 2
+            Layout.fillWidth: true
+            Layout.preferredHeight: 32
             spacing: 6
 
             RowLayout {
@@ -113,50 +140,58 @@ Rectangle {
                     onCheckedChanged: searchFiltersEnabled = checked
                 }
 
-                ComboBox {
-                    id: artistFilterCombo
-                    Layout.preferredWidth: 120
-                    implicitHeight: 24
+                FilterComboBox {
+                    id: artistFilterButton
+                    objectName: "artistFilterButton"
+                    Layout.preferredWidth: 200
                     Layout.preferredHeight: 24
-                    font.pixelSize: 10
+                    Layout.fillWidth: false
+                    boxWidth: 200
+                    boxHeight: 24
                     model: searchArtistOptions
-                    currentIndex: searchArtistOptions ? searchArtistOptions.indexOf(selectedArtistFilter) : -1
+                    currentIndex: Math.max(0, searchArtistOptions.indexOf(selectedArtistFilter))
+                    enabled: searchFiltersEnabled
                     onCurrentTextChanged: selectedArtistFilter = currentText
-                    enabled: searchFiltersEnabled
                 }
 
-                ComboBox {
-                    id: albumFilterCombo
-                    Layout.preferredWidth: 120
-                    implicitHeight: 24
+                FilterComboBox {
+                    id: albumFilterButton
+                    objectName: "albumFilterButton"
+                    Layout.preferredWidth: 200
                     Layout.preferredHeight: 24
-                    font.pixelSize: 10
+                    Layout.fillWidth: false
+                    boxWidth: 200
+                    boxHeight: 24
                     model: searchAlbumOptions
-                    currentIndex: searchAlbumOptions ? searchAlbumOptions.indexOf(selectedAlbumFilter) : -1
+                    currentIndex: Math.max(0, searchAlbumOptions.indexOf(selectedAlbumFilter))
+                    enabled: searchFiltersEnabled
                     onCurrentTextChanged: selectedAlbumFilter = currentText
-                    enabled: searchFiltersEnabled
                 }
 
-                ComboBox {
-                    id: genreFilterCombo
-                    Layout.preferredWidth: 120
-                    implicitHeight: 24
+                FilterComboBox {
+                    id: genreFilterButton
+                    objectName: "genreFilterButton"
+                    Layout.preferredWidth: 200
                     Layout.preferredHeight: 24
-                    font.pixelSize: 10
+                    Layout.fillWidth: false
+                    boxWidth: 200
+                    boxHeight: 24
                     model: searchGenreOptions
-                    currentIndex: searchGenreOptions ? searchGenreOptions.indexOf(selectedGenreFilter) : -1
-                    onCurrentTextChanged: selectedGenreFilter = currentText
+                    currentIndex: Math.max(0, searchGenreOptions.indexOf(selectedGenreFilter))
                     enabled: searchFiltersEnabled
+                    onCurrentTextChanged: selectedGenreFilter = currentText
                 }
 
-                ComboBox {
-                    id: scopeCombo
-                    Layout.preferredWidth: 110
-                    implicitHeight: 24
+                FilterComboBox {
+                    id: scopeButton
+                    objectName: "scopeButton"
+                    Layout.preferredWidth: 140
                     Layout.preferredHeight: 24
-                    font.pixelSize: 10
+                    Layout.fillWidth: false
+                    boxWidth: 140
+                    boxHeight: 24
                     model: searchScopeOptions
-                    currentIndex: searchScopeOptions ? searchScopeOptions.indexOf(searchScope) : -1
+                    currentIndex: Math.max(0, searchScopeOptions.indexOf(searchScope))
                     onCurrentTextChanged: searchScope = currentText
                 }
 
@@ -306,8 +341,9 @@ Rectangle {
                             }
 
                             RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 8
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                Layout.margins: 8
                                 spacing: 8
 
                                 Label {

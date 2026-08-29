@@ -6,14 +6,22 @@ set -euo pipefail
 # shellcheck source=/dev/null
 . /etc/bash.bashrc
 
+venv_dir=".venv"
+in_docker=$(is_in_container)
+
+if [[ "$in_docker" == "true" ]]; then
+  venv_dir=".dkr_venv"
+  export PIP_NO_CACHE_DIR=1
+fi
+
 if [[ ! -f pyproject.toml ]]; then
   fatal 1 "dev-check.sh must be run from the repository root"
 fi
 
 # Prefer a local virtual environment if present, otherwise create one.
 PYTHON=""
-if [[ -x ".venv/bin/python" ]]; then
-  PYTHON=".venv/bin/python"
+if [[ -x "${venv_dir}/bin/python" ]]; then
+  PYTHON="${venv_dir}/bin/python"
 else
   # Avoid a partially-created .venv/bin/python3 from a stale VIRTUAL_ENV
   SEARCH_PATH=$(printf '%s\n' "${PATH}" | grep -v "\.venv/bin" | paste -sd ':' -)
@@ -29,30 +37,30 @@ if [[ -z "${PYTHON}" ]]; then
   fatal 1 "No Python interpreter found. Install Python 3 and retry."
 fi
 
-if [[ -d ".venv" && ! -x ".venv/bin/python" ]]; then
-  info "Removing incomplete virtual environment .venv"
-  rm -rf .venv
+if [[ -d "${venv_dir}" && ! -x "${venv_dir}/bin/python" ]]; then
+  info "Removing incomplete virtual environment ${venv_dir}"
+  rm -rf "${venv_dir}"
 fi
 
-if [[ ! -x ".venv/bin/python" ]]; then
-  info "Creating local virtual environment in .venv"
-  "${PYTHON}" -m venv .venv
-  PYTHON=".venv/bin/python"
+if [[ ! -x "${venv_dir}/bin/python" ]]; then
+  info "Creating local virtual environment in ${venv_dir}"
+  "${PYTHON}" -m venv "${venv_dir}"
+  PYTHON="${venv_dir}/bin/python"
 fi
 
-if [[ ! -x ".venv/bin/python3" && -x ".venv/bin/python" ]]; then
-  info "Creating python3 symlink in .venv/bin"
-  ln -sf python .venv/bin/python3
+if [[ ! -x "${venv_dir}/bin/python3" && -x "${venv_dir}/bin/python" ]]; then
+  info "Creating python3 symlink in ${venv_dir}/bin"
+  ln -sf python "${venv_dir}/bin/python3"
 fi
-if [[ ! -x ".venv/bin/python3.14" && -x ".venv/bin/python3" ]]; then
-  ln -sf python3 .venv/bin/python3.14 || true
+if [[ ! -x "${venv_dir}/bin/python3.14" && -x "${venv_dir}/bin/python3" ]]; then
+  ln -sf python3 "${venv_dir}/bin/python3.14" || true
 fi
 
 info "Using Python interpreter: ${PYTHON}"
 if ! "${PYTHON}" -m pip install --upgrade pip >/dev/null 2>&1; then
   info "Bootstrapping pip into the virtual environment"
   if ! "${PYTHON}" -m ensurepip --upgrade >/dev/null 2>&1; then
-    fatal 1 "Failed to bootstrap pip in .venv. Install pip or recreate the virtualenv."
+    fatal 1 "Failed to bootstrap pip in ${venv_dir}. Install pip or recreate the virtualenv."
   fi
   "${PYTHON}" -m pip install --upgrade pip >/dev/null
 fi

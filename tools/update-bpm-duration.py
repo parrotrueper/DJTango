@@ -10,8 +10,8 @@ from ttvttm.data import djDataConnection
 
 #import gi
 
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
-djData = djDataConnection(djhome)
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djData = djDataConnection(djHome)
 trackList = djData.getAllTracks()
 
 TYPE=djData.getTrackTypeList()

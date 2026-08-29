@@ -6,9 +6,9 @@ import string
 
 from ttvttm.data import djDataConnection
 
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
-djData = djDataConnection(djhome)
+djData = djDataConnection(djHome)
 
 Tracks = djData.getAllTracks()
 #start = 3880

@@ -9,7 +9,7 @@ import unicodedata
 from ttvttm.data import djDataConnection
 
 p = re.compile("(\s\(2\)| \(3\)| \(4\)| \(5\))")
-djhome = os.path.join(os.path.expanduser("~"), ".ttvttm")
+djHome = os.path.join(os.path.expanduser("~"), ".ttvttm")
 
 def remove_accents(input_str):
     nfkd_form = unicodedata.normalize("NFKD", input_str)
@@ -29,7 +29,7 @@ def normalize(track):
 	return(track)
 
 
-data = djDataConnection(djhome)
+data = djDataConnection(djHome)
 tracks = data.getAllTangInTangoDatabase()
 
 for track in tracks:

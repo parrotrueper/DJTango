@@ -5,6 +5,7 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: playlistPanel
     Layout.fillWidth: true
+    Layout.preferredWidth: 600
     Layout.fillHeight: true
     radius: theme.cornerRadius
     color: theme.surface

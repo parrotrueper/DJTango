@@ -128,7 +128,7 @@ def test_update_milonga_infos_handles_string_type_values():
         4: ("cortina", "Cortina", 0, 0, 0, 255),
         5: ("unknown", "Unknown", 42, 42, 42, 255),
     }
-    manager.FadOutTime = 1000
+    manager.FadeOutTime = 1000
     manager._startMilongaTimeStamp = 0
     manager._dialog = SimpleNamespace(labelSizeDuration=SimpleNamespace(setText=lambda text: setattr(manager, "info_text", text)))
     manager.djData = SimpleNamespace(getTrackFromListID=lambda ids: [TrackSong("/tmp/song.mp3", 1)])

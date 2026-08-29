@@ -3,28 +3,35 @@ set -euo pipefail
 # shellcheck source=/dev/null
 . ci/functions.sh
 
+venv_dir=".venv"
+in_docker=$(is_in_container)
 
-if [ ! -d ".venv" ]; then
-  fatal 1 ".venv not found. Run ./setup-ttvttm.sh first." >&2
+if [[ "$in_docker" == "true" ]]; then
+  venv_dir=".dkr_venv"
+  export PIP_NO_CACHE_DIR=1
+fi
+  
+if [ ! -d "${venv_dir}" ]; then
+  fatal 1 "$venv_dir not found. Run ./setup-ttvttm.sh first." >&2
 fi
 
-VENV_PYTHON=".venv/bin/python"
+VENV_PYTHON="${venv_dir}/bin/python"
 if [[ ! -x "$VENV_PYTHON" ]]; then
-  VENV_PYTHON=".venv/bin/python3"
+  VENV_PYTHON="${venv_dir}/bin/python3"
 fi
 
 if [[ ! -x "$VENV_PYTHON" ]] || ! "$VENV_PYTHON" -c 'import sys' >/dev/null 2>&1; then
-  info ".venv is broken or missing Python; recreating via ./setup-ttvttm.sh"
+  info "$venv_dir is broken or missing Python; recreating via ./setup-ttvttm.sh"
   run ./setup-ttvttm.sh
 fi
 
-VENV_PYTHON=".venv/bin/python"
+VENV_PYTHON="${venv_dir}/bin/python"
 if [[ ! -x "$VENV_PYTHON" ]]; then
-  VENV_PYTHON=".venv/bin/python3"
+  VENV_PYTHON="${venv_dir}/bin/python3"
 fi
 
 if [[ ! -x "$VENV_PYTHON" ]] || ! "$VENV_PYTHON" -c 'import sys' >/dev/null 2>&1; then
-  fatal 1 ".venv Python not found or broken after regen. Run ./setup-ttvttm.sh first." >&2
+  fatal 1 "$venv_dir Python not found or broken after regen. Run ./setup-ttvttm.sh first." >&2
 fi
 
 is_running_in_container() {
@@ -38,7 +45,7 @@ is_running_in_container() {
 }
 
 # shellcheck source=/dev/null
-. .venv/bin/activate
+. "${venv_dir}/bin/activate"
 
 if ! "$VENV_PYTHON" -c 'import PySide6.QtCore' >/dev/null 2>&1; then
   info "Qt Quick GUI mode requires a working PySide6 runtime and native Qt/GL libraries."

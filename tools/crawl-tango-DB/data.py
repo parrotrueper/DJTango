@@ -260,7 +260,7 @@ class DBtangoConnexion:
 		conn.close()
 
 
-	def updateProperties(self, durationFadOut, fadoutTime, writeTagBox, TYPE):
+	def updateProperties(self, durationFadOut, fadeOutTime, writeTagBox, TYPE):
 		print("I will update the database for preferences")
 		conn = sqlite3.connect(self.path)
 		cursor = conn.cursor()
@@ -270,7 +270,7 @@ class DBtangoConnexion:
 		timeFadOut = ?,
 		writeID3tag = ? """
 		
-		cursor.execute(sql, (fadoutTime/1000, durationFadOut/1000, writeTagBox))
+		cursor.execute(sql, (fadeOutTime/1000, durationFadOut/1000, writeTagBox))
 		
 		conn.commit()
 		conn.close()
@@ -325,7 +325,7 @@ class DBtangoConnexion:
 		for row in rows:
 			ret["path"] = row[0]
 			ret["cortinaDuration"] = row[1]
-			ret["fadoutTime"] = row[2]
+			ret["fadeOutTime"] = row[2]
 			ret["writeTag"] = row[3]
 			
 		return ret
