@@ -149,7 +149,18 @@ Rectangle {
                             // Text/uri-list can contain multiple URIs separated by newlines
                             var uris = uriList.split("\n").filter(function(uri) { return uri.trim().length > 0 })
                             console.log("  -> Parsed", uris.length, "URI(s)")
-                            // TODO: Implement importing files from external paths
+                            
+                            // Add each file to playlist
+                            for (var i = 0; i < uris.length; i++) {
+                                var uri = uris[i].trim()
+                                console.log("  -> Importing file:", i, "=>", uri)
+                                if (backendObject && backendObject.addTrackFromPath) {
+                                    var success = backendObject.addTrackFromPath(uri)
+                                    console.log("      -> Result:", success)
+                                } else {
+                                    console.log("      -> No addTrackFromPath method")
+                                }
+                            }
                         }
                     } catch(e) {
                         console.log("  -> Method 2 failed:", e)

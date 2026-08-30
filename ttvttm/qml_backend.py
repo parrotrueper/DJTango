@@ -370,6 +370,67 @@ class QmlBackend(QObject):
             print(f"addTrackToPlaylist exception track_id={track_id}: {exc}")
         return False
 
+    @pyqtSlot(str, result=bool)
+    def addTrackFromPath(self, file_path: str) -> bool:
+        """Add a track to playlist from an external file path.
+        
+        Args:
+            file_path: Full path to audio file (can include file:// URI prefix)
+            
+        Returns:
+            True if track was added, False otherwise
+        """
+        try:
+            from ttvttm import utils
+            
+            # Handle file:// URIs
+            if file_path.startswith("file://"):
+                file_path = file_path[7:]  # Remove file:// prefix
+            
+            # Normalize path
+            file_path = file_path.strip()
+            
+            print(f"addTrackFromPath called with: {file_path}")
+            
+            # Check if file exists
+            if not os.path.isfile(file_path):
+                print(f"addTrackFromPath file not found: {file_path}")
+                return False
+            
+            # Check if file has supported audio extension
+            _, ext = os.path.splitext(file_path)
+            if ext.lower() not in utils.acceptedFileExt:
+                print(f"addTrackFromPath unsupported file type: {ext}")
+                return False
+            
+            # Create track with metadata extraction
+            track_song = TrackSong(file_path, ID=0, extractTag=True)
+            
+            # Convert to dict format for model
+            track_dict = {
+                "id": 0,  # External tracks don't have DB IDs
+                "path": file_path,
+                "title": track_song.title,
+                "artist": track_song.artist,
+                "album": track_song.album,
+                "genre": track_song.type,
+                "year": track_song.year,
+                "bpm": int(track_song.bpmFromFile or 0),
+                "duration": int(track_song.duration or 0),
+            }
+            
+            # Add to playlist
+            self._playlistModel.addTrack(track_dict)
+            self.playlistChanged.emit()
+            print(f"addTrackFromPath added track from {file_path}, playlist_count={self._playlistModel.rowCount()}")
+            return True
+            
+        except Exception as exc:
+            print(f"addTrackFromPath exception: {exc}")
+            import traceback
+            traceback.print_exc()
+        return False
+
     @pyqtSlot(int, result=bool)
     def playPlaylistTrack(self, track_id: int) -> bool:
         if track_id is None or track_id < 0:
