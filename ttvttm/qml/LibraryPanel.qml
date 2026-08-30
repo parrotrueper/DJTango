@@ -92,8 +92,16 @@ Rectangle {
                 Drag.dragType: Drag.Automatic
                 Drag.active: mouseArea.drag.active
                 Drag.supportedActions: Qt.CopyAction
-                Drag.mimeData: { "application/x-ttvttm-trackid": String(trackId) }
-                Drag.keys: ["application/x-ttvttm-trackid"]
+                Drag.mimeData: {
+                    "application/x-ttvttm-trackid": String(trackId),
+                    "text/uri-list": "file://" + path,
+                    "text/plain": artist + " - " + title
+                }
+                Drag.keys: [
+                    "application/x-ttvttm-trackid",
+                    "text/uri-list",
+                    "text/plain"
+                ]
                 Drag.hotSpot.x: width / 2
                 Drag.hotSpot.y: height / 2
                 

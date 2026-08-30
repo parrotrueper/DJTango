@@ -101,7 +101,12 @@ Rectangle {
             anchors.rightMargin: 12
             anchors.bottomMargin: 12
             
-            keys: ["application/x-ttvttm-trackid"]
+            // Accept both internal drag-drop and external file drops
+            keys: [
+                "application/x-ttvttm-trackid",  // Internal drag-drop
+                "text/uri-list",                   // Files from file manager
+                "text/plain"                       // Text from other apps
+            ]
             
             Component.onCompleted: {
                 console.log("PlaylistPanel DropArea created: x=", x, "y=", y, "width=", width, "height=", height, "visible=", visible)
@@ -120,29 +125,62 @@ Rectangle {
             }
             onDropped: function(drop) {
                 console.log("*** PlaylistPanel DropArea: onDropped fired! ***")
+                console.log("  -> drop.formats:", drop.formats)
                 var trackId = null
+                var uriList = null
                 
-                // Method 1: Get from MIME data using getDataAsString
+                // Method 1: Internal drag-drop via trackId
                 try {
                     var mimeData = drop.getDataAsString("application/x-ttvttm-trackid")
                     if (mimeData) {
                         trackId = parseInt(mimeData)
-                        console.log("  -> Extracted trackId from MIME data:", trackId)
+                        console.log("  -> Method 1: Extracted trackId from internal MIME:", trackId)
                     }
                 } catch(e) {
-                    console.log("  -> Error extracting from MIME:", e)
+                    console.log("  -> Method 1 failed:", e)
+                }
+                
+                // Method 2: External files via text/uri-list
+                if (!trackId) {
+                    try {
+                        uriList = drop.getDataAsString("text/uri-list")
+                        if (uriList) {
+                            console.log("  -> Method 2: Got uri-list:", uriList)
+                            // Text/uri-list can contain multiple URIs separated by newlines
+                            var uris = uriList.split("\n").filter(function(uri) { return uri.trim().length > 0 })
+                            console.log("  -> Parsed", uris.length, "URI(s)")
+                            // TODO: Implement importing files from external paths
+                        }
+                    } catch(e) {
+                        console.log("  -> Method 2 failed:", e)
+                    }
+                }
+                
+                // Method 3: Fallback to plain text
+                if (!trackId && !uriList) {
+                    try {
+                        var plainText = drop.getDataAsString("text/plain")
+                        if (plainText) {
+                            console.log("  -> Method 3: Got plain text:", plainText)
+                            // TODO: Implement searching for track by text description
+                        }
+                    } catch(e) {
+                        console.log("  -> Method 3 failed:", e)
+                    }
                 }
                 
                 // Accept the drop
                 drop.accept()
                 console.log("  -> Accepted drop")
                 
-                // Add track to playlist
+                // Add track to playlist (internal drag-drop)
                 if (trackId && backendObject) {
                     console.log("  -> Adding trackId", trackId, "to playlist")
                     backendObject.addTrackToPlaylist(trackId)
+                } else if (trackId) {
+                    console.log("  -> No backendObject")
                 } else {
-                    console.log("  -> No valid trackId or backendObject, trackId:", trackId, "backend:", backendObject)
+                    console.log("  -> No valid trackId, uriList, or method to handle dropped data")
                 }
             }
         }
