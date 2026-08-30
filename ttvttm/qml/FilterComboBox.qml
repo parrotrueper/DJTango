@@ -5,6 +5,7 @@ ComboBox {
     id: comboBox
     property int boxWidth: 200
     property int boxHeight: 24
+    property int maxPopupHeight: 300  // Maximum height for scrollable popup
     
     implicitWidth: boxWidth
     implicitHeight: boxHeight
@@ -34,14 +35,23 @@ ComboBox {
     popup: Popup {
         width: boxWidth
         implicitWidth: boxWidth
+        implicitHeight: Math.min(listView.contentHeight, maxPopupHeight)
+        
         contentItem: ListView {
+            id: listView
             width: boxWidth
             implicitWidth: boxWidth
-            implicitHeight: contentHeight
             model: comboBox.model
             clip: true
+            
+            // Add scrollbar
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                width: 12
+            }
+            
             delegate: ItemDelegate {
-                width: boxWidth
+                width: boxWidth - (listView.ScrollBar.vertical.visible ? 12 : 0)
                 height: boxHeight
                 highlighted: ListView.isCurrentItem
                 background: Rectangle {
@@ -64,6 +74,7 @@ ComboBox {
                 }
             }
         }
+        
         background: Rectangle {
             color: "#0C2847"
             border.color: "#444444"
