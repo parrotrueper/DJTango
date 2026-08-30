@@ -38,32 +38,6 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                DropArea {
-                    width: parent.width
-                    height: parent.height
-                    z: 1
-                    onDropped: function(drop) {
-                        var mimeData = null
-                        if (drop && drop.mimeData) {
-                            mimeData = drop.mimeData
-                        } else if (drop && drop.drag && drop.drag.mimeData) {
-                            mimeData = drop.drag.mimeData
-                        }
-                        if (mimeData) {
-                            var trackIdString = null
-                            if (mimeData.hasFormat && mimeData.hasFormat("application/x-ttvttm-trackid")) {
-                                trackIdString = mimeData.data("application/x-ttvttm-trackid")
-                            } else {
-                                trackIdString = mimeData["application/x-ttvttm-trackid"]
-                            }
-                            var trackId = parseInt(trackIdString)
-                            if (!isNaN(trackId) && backendObject) {
-                                backendObject.addTrackToPlaylist(trackId)
-                            }
-                        }
-                    }
-                }
-
                 ListView {
                     z: 0
                     id: playlistView
@@ -71,8 +45,6 @@ Rectangle {
                     model: backendObject ? backendObject.playlistModel : null
                     clip: true
                     anchors.fill: parent
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
                     delegate: Rectangle {
                         width: playlistView.width
                         height: 42
@@ -112,6 +84,65 @@ Rectangle {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // DropArea at root level so ListView.clip doesn't affect it
+        DropArea {
+            id: playlistDropArea
+            z: 100
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 50  // Account for label
+            anchors.leftMargin: 12
+            anchors.rightMargin: 12
+            anchors.bottomMargin: 12
+            
+            keys: ["application/x-ttvttm-trackid"]
+            
+            Component.onCompleted: {
+                console.log("PlaylistPanel DropArea created: x=", x, "y=", y, "width=", width, "height=", height, "visible=", visible)
+            }
+            
+            onEntered: function(drag) {
+                console.log("PlaylistPanel DropArea: onEntered fired!")
+                console.log("  -> drag.formats:", drag.formats)
+                console.log("  -> drag.keys:", drag.keys)
+                // Accept the drag with CopyAction
+                drag.accept(Qt.CopyAction)
+                console.log("  -> Accepted drag with Qt.CopyAction")
+            }
+            onExited: function() {
+                console.log("PlaylistPanel DropArea: onExited fired!")
+            }
+            onDropped: function(drop) {
+                console.log("*** PlaylistPanel DropArea: onDropped fired! ***")
+                var trackId = null
+                
+                // Method 1: Get from MIME data using getDataAsString
+                try {
+                    var mimeData = drop.getDataAsString("application/x-ttvttm-trackid")
+                    if (mimeData) {
+                        trackId = parseInt(mimeData)
+                        console.log("  -> Extracted trackId from MIME data:", trackId)
+                    }
+                } catch(e) {
+                    console.log("  -> Error extracting from MIME:", e)
+                }
+                
+                // Accept the drop
+                drop.accept()
+                console.log("  -> Accepted drop")
+                
+                // Add track to playlist
+                if (trackId && backendObject) {
+                    console.log("  -> Adding trackId", trackId, "to playlist")
+                    backendObject.addTrackToPlaylist(trackId)
+                } else {
+                    console.log("  -> No valid trackId or backendObject, trackId:", trackId, "backend:", backendObject)
                 }
             }
         }
