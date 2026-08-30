@@ -85,6 +85,8 @@ Rectangle {
                 width: libraryView.width
                 height: 42
                 color: index % 2 === 0 ? (theme ? theme.background : "#1e1e1e") : (theme ? theme.surface : "#2c2c2c")
+                x: 0
+                y: 0
                 
                 // Drag setup with automatic drag handling
                 Drag.dragType: Drag.Automatic
@@ -95,8 +97,15 @@ Rectangle {
                 Drag.hotSpot.x: width / 2
                 Drag.hotSpot.y: height / 2
                 
-                // Visual feedback during drag
-                opacity: mouseArea.drag.active ? 0.5 : 1.0
+                // Keep position fixed during drag
+                states: State {
+                    when: mouseArea.drag.active
+                    PropertyChanges {
+                        target: delegateItem
+                        x: 0
+                        y: 0
+                    }
+                }
 
                 MouseArea {
                     id: mouseArea
