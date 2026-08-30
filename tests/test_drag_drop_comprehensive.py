@@ -24,7 +24,7 @@ class TestDragDropInternal:
     def test_add_track_to_playlist_basic(self):
         """Test basic internal drag-drop: library track to playlist"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Get first track from library
         library_tracks = backend.libraryModel.asList()
@@ -54,7 +54,7 @@ class TestDragDropInternal:
     def test_add_multiple_tracks_to_playlist(self):
         """Test adding multiple tracks via drag-drop"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         assert len(library_tracks) >= 3, "Library should have at least 3 tracks"
@@ -72,7 +72,7 @@ class TestDragDropInternal:
     def test_add_nonexistent_track(self):
         """Test that adding nonexistent track returns False"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Try to add track with invalid ID
         result = backend.addTrackToPlaylist(999999)
@@ -84,7 +84,7 @@ class TestDragDropInternal:
     def test_add_same_track_twice(self):
         """Test that same track can be added to playlist multiple times"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         assert len(library_tracks) > 0
@@ -105,7 +105,7 @@ class TestDragDropExport:
     def test_library_track_has_required_mime_types(self):
         """Test that library tracks provide all required MIME types"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         assert len(library_tracks) > 0
@@ -129,7 +129,7 @@ class TestDragDropExport:
     def test_library_track_export_format(self):
         """Test the actual export format for external apps"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         track = backend.libraryModel.asList()[0]
         
@@ -153,7 +153,7 @@ class TestDragDropImport:
     def test_add_track_from_external_file_basic(self):
         """Test importing external audio file to playlist"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Get a real file from library to test with
         library_tracks = backend.libraryModel.asList()
@@ -180,7 +180,7 @@ class TestDragDropImport:
     def test_add_track_from_file_uri(self):
         """Test that file:// URIs are properly handled"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         real_file = library_tracks[0]["path"]
@@ -223,7 +223,7 @@ class TestDragDropImport:
     def test_add_multiple_files_from_external(self):
         """Test importing multiple files at once (from file manager selection)"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         assert len(library_tracks) >= 3, "Need at least 3 tracks for this test"
@@ -244,7 +244,7 @@ class TestDragDropIntegration:
     def test_mixed_internal_and_external_drag_drop(self):
         """Test mixing internal drag-drop with external file import"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         assert len(library_tracks) >= 2
@@ -266,7 +266,7 @@ class TestDragDropIntegration:
     def test_playback_of_dragged_track(self):
         """Test that dragged tracks can be played"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         track_id = library_tracks[0]["id"]
@@ -285,7 +285,7 @@ class TestDragDropIntegration:
     def test_drag_drop_preserves_track_metadata(self):
         """Test that metadata is preserved through drag-drop"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         original_track = library_tracks[0]
@@ -310,7 +310,7 @@ class TestDragDropEdgeCases:
     def test_add_track_with_special_characters(self):
         """Test handling tracks with special characters in metadata"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Find a track with special characters if available
         for track in backend.libraryModel.asList():
@@ -323,7 +323,7 @@ class TestDragDropEdgeCases:
     def test_add_track_with_unicode_metadata(self):
         """Test handling tracks with unicode in metadata"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Try adding any track - unicode handling is implicit
         tracks = backend.libraryModel.asList()
@@ -334,7 +334,7 @@ class TestDragDropEdgeCases:
     def test_rapid_consecutive_drag_drops(self):
         """Test stress test with rapid drag-drop operations"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         library_tracks = backend.libraryModel.asList()
         
@@ -349,7 +349,7 @@ class TestDragDropEdgeCases:
     def test_playlist_model_clear_after_drag_drop(self):
         """Test that playlist can be cleared after drag-drop"""
         backend = QmlBackend()
-        backend.load_library()
+        backend.loadLibrary()
         
         # Add some tracks
         tracks = backend.libraryModel.asList()
